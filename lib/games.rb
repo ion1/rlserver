@@ -1,5 +1,6 @@
 require "date"
 require "server"
+require "escape"
 
 module Games
   def self.crawl(user)
