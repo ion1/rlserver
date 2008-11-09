@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
-#Module User
+#Module Users
 
 require 'digest'
 require 'yaml'
 
 module Users
   USERS = 'user'
-  def self.initialize
+  def self.load
     @users = YAML::load_file(USERS)
   end
   class User
@@ -16,28 +16,37 @@ module Users
       @password = Digest::SHA256.digest(password)
     end
   end
-  def self.dump
+  
+  def self.save
     File.open(USERS, 'w') do |out|
       YAML.dump(@users, out)
     end
   end
+  
   def self.adduser(name, password)
-    exists = false
-    @users.each do |user|
-      if exists == false
-        exists = user.name == name
+    if (name > "") && (password > "")
+      exists = false
+      @users.each do |user|
+        if exists == false
+          exists = user.name == name
+        end
       end
+      if exists == false 
+        @users = @users + [self::User.new(name, password)]
+      end
+      exists == false
+    else
+      false
     end
-    if exists == false 
-      @users = @users + [self::User.new(name, password)]
-    end
-    exists == false
   end
+  
   def self.login(name, password)
-    login = false
+    login = ""
     @users.each do |user|
-      if login == false
-        login = (user.name == name) && (user.password == Digest::SHA256.digest(password))
+      if login == ""
+        if (user.name == name.chomp) && (user.password == Digest::SHA256.digest(password.chomp))
+          login = user.name
+        end
       end
     end
     login

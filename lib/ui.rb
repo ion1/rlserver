@@ -138,7 +138,7 @@ module UI
     Ncurses.noecho
   end
   def self.echo() Ncurses.echo end
-  def self.noecho() Ncurses.echo end
+  def self.noecho() Ncurses.noecho end
   def self.raw() Ncurses.raw end
   def self.destroy
     Ncurses.echo

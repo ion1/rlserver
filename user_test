@@ -9,15 +9,16 @@ else
   puts "User added"
 end
 
-if Users::login("joosa","password") == true
+puts "username: "
+name = gets
+puts "password: "
+pass = gets
+
+if Users::login(name, pass) == true
   puts "Success"
 else
   puts "Failure"
 end
-if Users::login("joosa","asdasd") == true
-  puts "Success"
-else
-  puts "Failure"
-end
+
 
 Users::dump
