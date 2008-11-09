@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'lib/users'
+
+Users::initialize
+if Users::adduser("ojosa","password") == false
+  print "User exists\n"
+end
+Users::dump
