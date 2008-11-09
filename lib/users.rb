@@ -33,5 +33,14 @@ module Users
     end
     exists == false
   end
+  def self.login(name, password)
+    login = false
+    @users.each do |user|
+      if login == false
+        login = (user.name == name) && (user.password == Digest::SHA256.digest(password))
+      end
+    end
+    login
+  end
 end
 

@@ -6,4 +6,11 @@ Users::initialize
 if Users::adduser("ojosa","password") == false
   print "User exists\n"
 end
+
+if Users::login("joosa","password") == true
+  print "Success\n"
+else
+  print "Failure\n"
+end
+
 Users::dump
