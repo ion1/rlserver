@@ -30,10 +30,10 @@ module Menu
     @window.puts "(W)atch games\n"
     @window.puts "(Q)uit\n"
     UI::noecho
-    key = ""
-    while key != "q" do
-      keycode = @window.getc
-      @window.puts keycode.to_s
+    key = 0
+    while key != "113" do
+      key = @window.getc
+      @window.puts key.to_s
     end
   end
     
