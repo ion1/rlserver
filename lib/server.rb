@@ -1,3 +1,3 @@
 module Server
-  SERVER_DIR = "/home/rlserver/rlserver"
+  SERVER_DIR = "/home/rlserver/rlserver/"
 end
