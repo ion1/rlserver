@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-require "./lib/menu"
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+
+require "menu"
 
 begin
   Menu::initialize
