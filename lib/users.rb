@@ -3,9 +3,10 @@
 
 require 'digest'
 require 'yaml'
+require 'server'
 
 module Users
-  USERS = 'user'
+  USERS = Server::RLSERVER_DIR + 'user'
   def self.load
     @users = YAML::load_file(USERS)
   end
