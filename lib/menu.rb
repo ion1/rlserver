@@ -1,5 +1,5 @@
-require "lib/ui"
-require "lib/users"
+require "ui"
+require "users"
 
 module Menu
   def self.initialize
