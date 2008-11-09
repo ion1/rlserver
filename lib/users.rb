@@ -22,19 +22,24 @@ module Users
       YAML.dump(@users, out)
     end
   end
-  
-  def self.adduser(name, password)
-    if (name > "") && (password > "")
-      exists = false
-      @users.each do |user|
-        if exists == false
-          exists = user.name == name
-        end
+
+  def self.exists(username)
+    exists = false
+    @users.each do |user|
+      if exists == false
+        exists = user.name == username
       end
-      if exists == false 
+    end
+    exists
+  end
+
+  def self.adduser(name, password,password2)
+    if (name > "") && (password > "") && (password == password2)
+      if exists(name) == false 
         @users = @users + [self::User.new(name, password)]
+        save
       end
-      exists == false
+      true
     else
       false
     end
