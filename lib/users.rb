@@ -6,7 +6,7 @@ require 'yaml'
 require 'server'
 
 module Users
-  USERS = Server::SERVER_DIR + 'user'
+  USERS = 'user'
   def self.load
     @users = YAML::load_file(USERS)
   end
