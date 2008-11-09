@@ -31,7 +31,7 @@ module Menu
     @window.puts "(Q)uit\n"
     UI::noecho
     key = 0
-    while key != "113" do
+    while key != 113 do
       key = @window.getc
       @window.puts key.to_s
     end
