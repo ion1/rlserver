@@ -4,7 +4,7 @@ require "fileutils"
 
 module Games
   def self.ttyrec(user, gamename, executable, options, env)
-    ttyrec = user + " " + gamename + " " + DateTime.now.to_s + ".ttyrec"
+    ttyrec = user + " " + gamename + " " + DateTime.now.to_s
     env.each do |e|
       ENV[e[0]] = e[1]
     end

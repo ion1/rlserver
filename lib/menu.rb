@@ -72,6 +72,39 @@ module Menu
   end
 
   def self.watchmenu
+    quit = false
+    start = 0
+    sel = 0
+    while !quit do
+      ttyrecs = []
+      Dir.foreach("inprogress") do |f|
+        unless f == "." or f == ".." then
+          ttyrecs += [f]
+        end
+      end
+      chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"]
+      ttyrecmenu = []
+      for i in start..start+15 do
+        if i < ttyrecs.length then
+          ttyrecmenu += [chars[i % 16] + " - " + ttyrecs[i]]
+        end
+      end
+      sel = menu ttyrecmenu + ["> - Next page", "< - Previous page", "q - Quit"]
+
+      case sel
+      when 81, 113: quit = true
+      when 65..84: begin
+        if start+sel-65 < ttyrecs.length then
+          Games::ttyplay "inprogress/" + ttyrecs[start+sel-65]
+        end
+      end
+      when 97..116: begin
+        if start+sel-97 < ttyrecs.length then
+          Games::ttyplay "inprogress/" + ttyrecs[start+sel-97]
+        end
+      end
+      end
+    end
   end
 
   def self.menu(lines)
@@ -141,7 +174,7 @@ module Menu
         case menu ["Welcome to rlserver!", "l - Login", "n - New player", "w - Watch", "q - Quit"]
         when 76, 108: @user = login
         when 78, 110: @user = newuser
-        when 87, 119: watch
+        when 87, 119: watchmenu
         when 81, 113: quit = true
         end
       else
