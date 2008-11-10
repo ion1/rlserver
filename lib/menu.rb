@@ -75,6 +75,7 @@ module Menu
     quit = false
     start = 0
     sel = 0
+    chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"]
     while !quit do
       ttyrecs = []
       Dir.foreach("inprogress") do |f|
@@ -82,27 +83,32 @@ module Menu
           ttyrecs += [f]
         end
       end
-      chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"]
       ttyrecmenu = []
-      for i in start..start+15 do
-        if i < ttyrecs.length then
-          ttyrecmenu += [chars[i % 16] + " - " + ttyrecs[i]]
+      unless ttyrecs == [] then
+        for i in start..start+15 do
+          if i < ttyrecs.length then
+            ttyrecmenu += [chars[i % 16] + " - " + ttyrecs[i]]
+          end
         end
       end
-      sel = menu ttyrecmenu + ["> - Next page", "< - Previous page", "q - Quit"]
+      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "Any key refreshes", "q - Quit"]
 
       case sel
       when 81, 113: quit = true
-      when 65..84: begin
+      when 60: 
+        start -= 16
+        if start < 0 then start = 0 end
+      when 62:
+        start += 16
+        if start > ttyrecs.length-1 then start = ttyrecs.length-1 end
+      when 65..84:
         if start+sel-65 < ttyrecs.length then
           Games::ttyplay "inprogress/" + ttyrecs[start+sel-65]
         end
-      end
-      when 97..116: begin
+      when 97..116:
         if start+sel-97 < ttyrecs.length then
           Games::ttyplay "inprogress/" + ttyrecs[start+sel-97]
         end
-      end
       end
     end
   end
