@@ -65,7 +65,7 @@ module Users
     valid = true
     name.each_byte do |b|
       case b 
-      when 45, 48..57, 65..90, 95, 97..122:
+      when 32, 45, 48..57, 65..90, 95, 97..122:
       else 
         valid = false
         break
