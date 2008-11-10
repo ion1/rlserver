@@ -146,6 +146,21 @@ module UI
     Ncurses.nl
     Ncurses.endwin
   end
+  def self.endwin
+    Ncurses.endwin
+  end
+  def self.nl
+    Ncurses.nl
+  end
+  def self.nonl
+    Ncurses.nonl
+  end
+  def self.cbreak
+    Ncurses.cbreak
+  end
+  def self.nocbreak
+    Ncurses.nocbreak
+  end
   def self.refresh() Ncurses.doupdate end
   def self.move(y,x)
     Ncurses.move(y,x)

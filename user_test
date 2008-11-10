@@ -1,24 +1,27 @@
 #!/usr/bin/env ruby
 
-require 'lib/users'
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
-Users::initialize
-if Users::adduser("ojosa","password") == false
+require 'users'
+
+Users::load
+if Users::adduser("ojosa","password","password")
   puts "User exists"
 else
   puts "User added"
 end
 
-puts "username: "
-name = gets
-puts "password: "
-pass = gets
+#puts "username: "
+#name = gets
+#puts "password: "
+#pass = gets
 
-if Users::login(name, pass) == true
-  puts "Success"
-else
-  puts "Failure"
-end
+#if Users::login(name, pass) == true
+#  puts "Success"
+#else
+#  puts "Failure"
+#end
 
+puts Users::exists("joossa").to_s
 
-Users::dump
+Users::save
