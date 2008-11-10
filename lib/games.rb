@@ -14,7 +14,7 @@ module Games
   end
 
   def self.ttyplay(file)
-    system "tail -f \""+ file + "\"|" + "ttyplay -n"
+    system "tail -n 30 -f \""+ file + "\"|" + "ttyplay -n"
   end
 
   def self.editrc(user, game)
