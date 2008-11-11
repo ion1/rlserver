@@ -6,6 +6,7 @@ require "fileutils"
 module Menu
   def self.initialize
     UI::initialize
+    Games::initialize
     Users::load
     @menuwindow = UI::Window.new 0, 0, 0, 0
     @user = ""
@@ -74,40 +75,36 @@ module Menu
 
   def self.watchmenu
     quit = false
-    start = 0
+    offset = 0
     sel = 0
-    chars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"]
+    #pagesize = @menuwindow.rows - 4 # we're limited to 16 lines for now
+    pagesize = 16
+    chars = "abcdefghijklmnop"
     while !quit do
-      ttyrecs = []
-      Dir.foreach("inprogress") do |f|
-        unless f == "." or f == ".." then
-          ttyrecs += [f]
-        end
-      end
+      Games::populate
       ttyrecmenu = []
-      unless ttyrecs == [] then
-        for i in start..start+15 do
-          if i < ttyrecs.length then
-            ttyrecmenu += [chars[i % 16] + " - " + ttyrecs[i]]
+      unless Games::games == [] then
+        for i in offset..offset + pagesize - 1 do
+          if i < Games::games.length then
+            ttyrecmenu += [chars[i % 16,1] + " - " + Games::games[i].ttyrec]
           end
         end
       end
-      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "Any key refreshes", "q - Quit"]
-
+      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Any key refreshes. Use uppercase to try to change size."]
       case sel
       when "<"[0]: 
-        start -= 16
-        if start < 0 then start = 0 end
+        offset -= pagesize
+        if offset < 0 then offset = 0 end
       when ">"[0]:
-        start += 16
-        if start > ttyrecs.length-1 then start = ttyrecs.length-1 end
+        offset += pagesize
+        if offset > Games::games.length-1 then offset = Games::games.length-1 end
       when "A"[0].."P"[0]:
-        if start+sel-65 < ttyrecs.length then
-          Games::ttyplay "inprogress/" + ttyrecs[start+sel-65]
+        if offset+sel-65 < Games::games.length then
+          Games::ttyplay "inprogress/" + Games::games[offset+sel-65].ttyrec
         end
       when "a"[0].."p"[0]:
-        if start+sel-97 < ttyrecs.length then
-          Games::ttyplay "inprogress/" + ttyrecs[start+sel-97]
+        if offset+sel-97 < Games::games.length then
+          Games::ttyplay "inprogress/" + Games::games[offset+sel-97].ttyrec
         end
       when "q"[0], "Q"[0]: quit = true
       end
@@ -130,6 +127,7 @@ module Menu
       when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "angband", "-mgcu -u\"" + @user + "\"", []
+        #UI::initialize
       when "e"[0], "E"[0]:
       when "q"[0], "Q"[0]: quit = true
       end
@@ -143,6 +141,7 @@ module Menu
       when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "nethack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
+        #UI::initialize
       when "e"[0], "E"[0]: Games::editrc @user, "nethack"
       when "q"[0], "Q"[0]: quit = true
       end
@@ -156,6 +155,7 @@ module Menu
       when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
+        #UI::initialize
       when "e"[0], "E"[0]: Games::editrc @user, "crawl"
       when "q"[0], "Q"[0]: quit = true
       end
