@@ -1,0 +1,20 @@
+ttyrec is a tty recorder. ttyplay is a tty player.
+
+Installation:
+
+  % make
+
+or if your system is SVR4 system (Solaris etc.),
+
+  % make CFLAGS=-DSVR4
+
+Usage:
+
+  % ttyrec
+  (In the excuted shell, do whatever you want and exit)
+
+  % ttyplay ttyrecord
+
+Have fun!
+
+-- Satoru Takabayashi <satoru@namazu.org>

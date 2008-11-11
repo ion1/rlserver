@@ -31,8 +31,8 @@ module Menu
     pass2 = ""
     UI::echo
     until Users::checkname name do
-      @menuwindow.clear
-      @menuwindow.puts "Alphanumerics, spaces, dashes and underscores only.\nBlank entry aborts.\n"
+      #@menuwindow.clear
+      @menuwindow.puts "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
       name = getstring "Name: "
     end
     unless name == "" then
@@ -47,8 +47,8 @@ module Menu
           name = ""
         end
       else
-        @menuwindow.puts "Player exists! Press any key.\n"
-        @menuwindow.getc
+        @menuwindow.puts "Player exists!\n"
+        #@menuwindow.getc
         name = ""
       end
     else
@@ -66,6 +66,11 @@ module Menu
       unless pass == "" then
         pass2 = getstring "Retype password: "
         Users::changepass name, pass, pass2
+        #if Users::changepass name, pass, pass2 then
+        #  @menuwindow.puts "Password updated successfully."
+        #else
+        #  @menuwindow.puts "The passwords do not match!"
+        #end
         #Users::login name, pass
       end
     end
@@ -175,6 +180,7 @@ module Menu
 
   def self.mainmenu
     quit = false
+    @menuwindow.clear
     while !quit do
       if @user == "" then
         case menu ["Welcome to rlserver!", "l - Login", "n - New player", "w - Watch", "q - Quit"]
