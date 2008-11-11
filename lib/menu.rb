@@ -31,7 +31,7 @@ module Menu
     pass2 = ""
     UI::echo
     until Users::checkname name do
-      #@menuwindow.clear
+      @menuwindow.clear
       @menuwindow.puts "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
       name = getstring "Name: "
     end
