@@ -1,7 +1,0 @@
-#!/bin/sh
-rm -fv rcfiles/*
-rm -fv ttyrec/*
-rm -fv inprogress/*
-rm -fv morgue-*
-rm -fv crawl/*
-rm -fv user
