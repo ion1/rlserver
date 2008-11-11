@@ -9,7 +9,7 @@ module Games
       ENV[e[0]] = e[1]
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", " " + executable + " " + options
-    system "apack", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
+    system "gzip", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
     FileUtils.rm "inprogress/" + ttyrec
   end
 
