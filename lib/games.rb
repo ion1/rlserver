@@ -14,7 +14,7 @@ module Games
   end
 
   def self.ttyplay(file)
-    system "./ttyplay", "-n", "-p", file
+    system "./bin/ttyplay", "-n", "-p", file
   end
 
   def self.editrc(user, game)

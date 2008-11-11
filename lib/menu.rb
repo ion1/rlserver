@@ -35,23 +35,19 @@ module Menu
       @menuwindow.puts "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
       name = getstring "Name: "
     end
-    unless name == "" then
-      unless Users::exists name then
-        UI::noecho
-        pass = getstring "Password: "
-        unless pass == "" then
-          pass2 = getstring "Retype password: "
-          Users::adduser name, pass, pass2
-          Users::login name, pass
-        else
-          name = ""
-        end
+    unless name == "" or Users::exists name then
+      UI::noecho
+      pass = getstring "Password: "
+      unless pass == "" then
+        pass2 = getstring "Retype password: "
+        Users::adduser name, pass, pass2
+        Users::login name, pass
       else
-        @menuwindow.puts "Player exists!\n"
-        #@menuwindow.getc
         name = ""
       end
     else
+      #@menuwindow.puts "Player exists!\n"
+      #@menuwindow.getc
       name = ""
     end
   end
@@ -99,21 +95,21 @@ module Menu
       sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "Any key refreshes", "q - Quit"]
 
       case sel
-      when 81, 113: quit = true
-      when 60: 
+      when "<"[0]: 
         start -= 16
         if start < 0 then start = 0 end
-      when 62:
+      when ">"[0]:
         start += 16
         if start > ttyrecs.length-1 then start = ttyrecs.length-1 end
-      when 65..84:
+      when "A"[0].."P"[0]:
         if start+sel-65 < ttyrecs.length then
           Games::ttyplay "inprogress/" + ttyrecs[start+sel-65]
         end
-      when 97..116:
+      when "a"[0].."p"[0]:
         if start+sel-97 < ttyrecs.length then
           Games::ttyplay "inprogress/" + ttyrecs[start+sel-97]
         end
+      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -131,11 +127,11 @@ module Menu
     quit = false
     while !quit do
       case menu ["Logged in as " + @user, "p - Play Angband", "e - Edit rc file", "q - Quit"]
-      when 80, 112:
+      when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "angband", "-mgcu -u\"" + @user + "\"", []
-      when 69, 101:
-      when 81, 113: quit = true
+      when "e"[0], "E"[0]:
+      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -144,11 +140,11 @@ module Menu
     quit = false
     while !quit do
       case menu ["Logged in as " + @user, "p - Play NetHack", "e - Edit rc file", "q - Quit"]
-      when 80, 112:
+      when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "nethack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
-      when 69, 101: Games::editrc @user, "nethack"
-      when 81, 113: quit = true
+      when "e"[0], "E"[0]: Games::editrc @user, "nethack"
+      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -157,11 +153,11 @@ module Menu
     quit = false
     while !quit do
       case menu ["Logged in as " + @user, "p - Play Crawl", "e - Edit rc file", "q - Quit"]
-      when 80, 112:
+      when "p"[0], "P"[0]:
         UI::endwin
         Games::play @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
-      when 69, 101: Games::editrc @user, "crawl"
-      when 81, 113: quit = true
+      when "e"[0], "E"[0]: Games::editrc @user, "crawl"
+      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -170,10 +166,10 @@ module Menu
     quit = false
     while !quit do
       case menu ["Logged in as " + @user, "a - Angband", "c - Crawl", "n - NetHack", "q - Quit"]
-      when 81, 113: quit = true
-      when 67, 99: crawlmenu
-      when 65, 97: angbandmenu
-      when 78, 110: nethackmenu
+      when "c"[0], "C"[0]: crawlmenu
+      when "a"[0], "A"[0]: angbandmenu
+      when "n"[0], "N"[0]: nethackmenu
+      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -184,17 +180,17 @@ module Menu
     while !quit do
       if @user == "" then
         case menu ["Welcome to rlserver!", "l - Login", "n - New player", "w - Watch", "q - Quit"]
-        when 76, 108: @user = login
-        when 78, 110: @user = newuser
-        when 87, 119: watchmenu
-        when 81, 113: quit = true
+        when "l"[0], "L"[0]: @user = login
+        when "n"[0], "N"[0]: @user = newuser
+        when "w"[0], "W"[0]: watchmenu
+        when "q"[0], "Q"[0]: quit = true
         end
       else
         case menu ["Logged in as " + @user, "p - Change password", "g - Games", "w - Watch", "q - Quit"]
-        when 80, 112: change_password
-        when 71, 103: gamesmenu
-        when 87, 119: watchmenu
-        when 81, 113: quit = true
+        when "p"[0], "P"[0]: change_password
+        when "g"[0], "G"[0]: gamesmenu
+        when "w"[0], "W"[0]: watchmenu
+        when "q"[0], "Q"[0]: quit = true
         end
       end
     end
