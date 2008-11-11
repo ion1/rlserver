@@ -3,6 +3,34 @@ require "server"
 require "fileutils"
 
 module Games
+  def self.initialize
+    @games = []
+  end
+
+  def self.games=(games)
+    @games = games
+  end
+
+  def self.games
+    @games
+  end
+
+  class Game
+    attr_reader :ttyrec
+    def initialize(filename)
+      @ttyrec = filename
+    end
+  end
+
+  def self.populate
+    @games = []
+    Dir.foreach("inprogress") do |f|
+      unless f == "." or f == ".." then
+        @games += [Game.new(f)]
+      end
+    end
+  end
+
   def self.ttyrec(user, gamename, executable, options, env)
     ttyrec = user + " " + gamename + " " + DateTime.now.to_s
     env.each do |e|
