@@ -38,8 +38,8 @@ module Games
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
     Thread.new do
-      system "apack", "-q", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
-      FileUtils.rm "inprogress/" + ttyrec
+      system "gzip", "-q", "inprogress/" + ttyrec
+      FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
     end
   end
 
