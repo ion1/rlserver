@@ -37,8 +37,10 @@ module Games
       ENV[e[0]] = e[1]
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
-    system "apack", "-q", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
-    FileUtils.rm "inprogress/" + ttyrec
+    Thread.new do
+      system "apack", "-q", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
+      FileUtils.rm "inprogress/" + ttyrec
+    end
   end
 
   def self.ttyplay(file)
