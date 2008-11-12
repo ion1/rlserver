@@ -51,7 +51,7 @@ module CrawlScores
   end
 
   def self.update
-    score = CrawlScores.new(FILENAME)
+    score = Scores.new(FILENAME)
     html = <<HTML_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
