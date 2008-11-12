@@ -2,6 +2,7 @@ require "ui"
 require "users"
 require "games"
 require "fileutils"
+require "crawlscores"
 
 module Menu
   def self.initialize
@@ -155,6 +156,9 @@ module Menu
       when "p"[0], "P"[0]:
         UI.endwin
         Games.ttyrec @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
+        Thread.new do
+          CrawlScores.update
+        end
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "crawl"
       when "q"[0], "Q"[0]: quit = true
