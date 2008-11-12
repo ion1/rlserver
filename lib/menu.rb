@@ -5,20 +5,20 @@ require "fileutils"
 
 module Menu
   def self.initialize
-    UI::initialize
-    Games::initialize
-    Users::load
+    UI.initialize
+    Games.initialize
+    Users.load
     @menuwindow = UI::Window.new 0, 0, 0, 0
     @user = ""
   end
 
   def self.login
     @menuwindow.clear
-    UI::echo
+    UI.echo
     name = getstring "Name: "
-    UI::noecho
+    UI.noecho
     pass = getstring "Password: "
-    Users::login name, pass
+    Users.login name, pass
   end
 
   def self.getstring(query)
@@ -30,19 +30,19 @@ module Menu
     name = "#this#is#invalid#"
     pass = ""
     pass2 = ""
-    UI::echo
-    until Users::checkname name do
+    UI.echo
+    until Users.checkname name do
       @menuwindow.clear
       @menuwindow.puts "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
       name = getstring "Name: "
     end
-    unless name == "" or Users::exists name then
-      UI::noecho
+    unless name == "" or Users.exists name then
+      UI.noecho
       pass = getstring "Password: "
       unless pass == "" then
         pass2 = getstring "Retype password: "
-        Users::adduser name, pass, pass2
-        Users::login name, pass
+        Users.adduser name, pass, pass2
+        Users.login name, pass
       else
         name = ""
       end
@@ -54,21 +54,21 @@ module Menu
   end
 
   def self.change_password
-    UI::noecho
+    UI.noecho
     @menuwindow.clear
     @menuwindow.puts "Changing password. Blank entry aborts.\n"
     pass = getstring "Current password: "
-    if Users::login(@user, pass) == @user then
+    if Users.login(@user, pass) == @user then
       pass = getstring "New password: "
       unless pass == "" then
         pass2 = getstring "Retype password: "
-        Users::changepass name, pass, pass2
-        #if Users::changepass name, pass, pass2 then
+        Users.changepass name, pass, pass2
+        #if Users.changepass name, pass, pass2 then
         #  @menuwindow.puts "Password updated successfully."
         #else
         #  @menuwindow.puts "The passwords do not match!"
         #end
-        #Users::login name, pass
+        #Users.login name, pass
       end
     end
   end
@@ -81,12 +81,12 @@ module Menu
     pagesize = 16
     chars = "abcdefghijklmnop"
     while !quit do
-      Games::populate
+      Games.populate
       ttyrecmenu = []
-      unless Games::games == [] then
+      unless Games.games == [] then
         for i in offset..offset + pagesize - 1 do
-          if i < Games::games.length then
-            ttyrecmenu += [chars[i % 16,1] + " - " + Games::games[i].ttyrec]
+          if i < Games.games.length then
+            ttyrecmenu += [chars[i % 16,1] + " - " + Games.games[i].ttyrec]
           end
         end
       end
@@ -97,14 +97,14 @@ module Menu
         if offset < 0 then offset = 0 end
       when ">"[0]:
         offset += pagesize
-        if offset > Games::games.length-1 then offset = Games::games.length-1 end
+        if offset > Games.games.length-1 then offset = Games.games.length-1 end
       when "A"[0].."P"[0]:
-        if offset+sel-65 < Games::games.length then
-          Games::ttyplay "inprogress/" + Games::games[offset+sel-65].ttyrec
+        if offset+sel-65 < Games.games.length then
+          Games.ttyplay "inprogress/" + Games.games[offset+sel-65].ttyrec
         end
       when "a"[0].."p"[0]:
-        if offset+sel-97 < Games::games.length then
-          Games::ttyplay "inprogress/" + Games::games[offset+sel-97].ttyrec
+        if offset+sel-97 < Games.games.length then
+          Games.ttyplay "inprogress/" + Games.games[offset+sel-97].ttyrec
         end
       when "q"[0], "Q"[0]: quit = true
       end
@@ -112,7 +112,7 @@ module Menu
   end
 
   def self.menu(lines)
-    UI::noecho
+    UI.noecho
     @menuwindow.clear
     lines.each do |option|
       @menuwindow.puts option + "\n"
@@ -125,9 +125,9 @@ module Menu
     while !quit do
       case menu ["Logged in as " + @user, "p - Play Angband", "e - Edit rc file", "q - Quit"]
       when "p"[0], "P"[0]:
-        UI::endwin
-        Games::play @user, "angband", "-mgcu -u\"" + @user + "\"", []
-        #UI::initialize
+        UI.endwin
+        Games.ttyrec @user, "angband", "-mgcu -u\"" + @user + "\"", []
+        #UI.initialize
       when "e"[0], "E"[0]:
       when "q"[0], "Q"[0]: quit = true
       end
@@ -139,10 +139,10 @@ module Menu
     while !quit do
       case menu ["Logged in as " + @user, "p - Play NetHack", "e - Edit rc file", "q - Quit"]
       when "p"[0], "P"[0]:
-        UI::endwin
-        Games::play @user, "nethack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
-        #UI::initialize
-      when "e"[0], "E"[0]: Games::editrc @user, "nethack"
+        UI.endwin
+        Games.ttyrec @user, "nethack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
+        #UI.initialize
+      when "e"[0], "E"[0]: Games.editrc @user, "nethack"
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -153,10 +153,10 @@ module Menu
     while !quit do
       case menu ["Logged in as " + @user, "p - Play Crawl", "e - Edit rc file", "q - Quit"]
       when "p"[0], "P"[0]:
-        UI::endwin
-        Games::play @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
-        #UI::initialize
-      when "e"[0], "E"[0]: Games::editrc @user, "crawl"
+        UI.endwin
+        Games.ttyrec @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
+        #UI.initialize
+      when "e"[0], "E"[0]: Games.editrc @user, "crawl"
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -197,6 +197,6 @@ module Menu
   end
     
   def self.destroy
-    UI::destroy
+    UI.destroy
   end
 end

@@ -7,9 +7,9 @@ require "server"
 
 begin
   Dir.chdir(Server::SERVER_DIR)
-  Menu::initialize
-  Menu::mainmenu
+  Menu.initialize
+  Menu.mainmenu
 ensure
-  Menu::destroy
+  Menu.destroy
 end
 

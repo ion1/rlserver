@@ -31,12 +31,12 @@ module Games
     end
   end
 
-  def self.ttyrec(user, gamename, executable, options, env)
-    ttyrec = user + " " + gamename + " " + DateTime.now.to_s
+  def self.ttyrec(user, executable, options, env)
+    ttyrec = user + " " + executable.capitalize +  " " + DateTime.now.to_s
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    system "ttyrec", "inprogress/" + ttyrec, "-e", executable + " " + options
+    system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
     system "apack", "-q", "ttyrec/" + ttyrec + ".gz", "inprogress/" + ttyrec
     FileUtils.rm "inprogress/" + ttyrec
   end
@@ -49,7 +49,4 @@ module Games
     system "nano", "-R", "rcfiles/" + user + "." + game
   end
 
-  def self.play(user, game, options, env)
-    ttyrec user, game.capitalize, "/usr/games/" + game, options, env
-  end
 end

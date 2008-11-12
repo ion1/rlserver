@@ -9,7 +9,7 @@ module Users
   USERS = 'user'
   def self.load
     if File.exists? USERS then
-      @users = YAML::load_file USERS
+      @users = YAML.load_file USERS
     else
       @users = []
       save
@@ -42,7 +42,7 @@ module Users
   def self.adduser(name, password, password2)
     if (name != "") and (password != "") and (password == password2)
       unless exists name 
-        @users = @users + [self::User.new(name, password)]
+        @users = @users + [User.new(name, password)]
         save
       end
       true
