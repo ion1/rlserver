@@ -36,8 +36,9 @@ module Games
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
+    system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     Thread.new do
+      FileUtils.rm ttyrec + ".pid"
       system "gzip", "-q", "inprogress/" + ttyrec
       FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
     end
