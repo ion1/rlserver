@@ -19,7 +19,7 @@ module Games
     attr_reader :ttyrec, :pid, :idle
     def initialize(filename)
       @ttyrec = filename
-      if File.exists "pid/" + filename then
+      if File.exists? "pid/" + filename then
         File.open "pid/" + filename do |file|
           @pid = file.readline
         end
