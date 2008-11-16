@@ -4,7 +4,7 @@ require "fileutils"
 
 module Games
   def self.initialize
-    @games = []
+    @games = {} 
   end
 
   def self.games=(games)
@@ -16,9 +16,14 @@ module Games
   end
 
   class Game
-    attr_reader :ttyrec
+    attr_reader :ttyrec, :pid, :idle
     def initialize(filename)
       @ttyrec = filename
+      File.open "pid/" + filename do |file|
+        @pid = file.readline
+      end
+        now = Time.new
+        @idle = now - File.new("inprogress/" + filename).mtime
     end
   end
 

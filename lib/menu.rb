@@ -74,6 +74,19 @@ module Menu
     end
   end
 
+  def self.mktime(time)
+    hour = time / 3600
+    min = time % 3600 / 60
+    sec = time % 3600 % 60
+    str = ""
+    if hour < 10 then str += "0" end
+    str += hour.to_s + ":"
+    if min < 10 then str += "0" end
+    str += min.to_s + ":"
+    if sec < 10 then str += "0" end
+    str += sec.to_s
+  end
+
   def self.watchmenu
     quit = false
     offset = 0
@@ -87,7 +100,7 @@ module Menu
       unless Games.games == [] then
         for i in offset..offset + pagesize - 1 do
           if i < Games.games.length then
-            ttyrecmenu += [chars[i % 16,1] + " - " + Games.games[i].ttyrec]
+            ttyrecmenu += [chars[i % 16,1] + " - " + Games.games[i].ttyrec + " (idle " + mktime(Games.games[i].idle.round) + ")"]
           end
         end
       end
