@@ -43,7 +43,7 @@ module Games
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     Thread.new do
-      FileUtils.rm ttyrec + ".pid"
+      FileUtils.rm "pid/" + ttyrec
       system "gzip", "-q", "inprogress/" + ttyrec
       FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
     end
