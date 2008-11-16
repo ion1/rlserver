@@ -61,6 +61,12 @@ module Games
       ENV[e[0]] = e[1]
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
+    if Process.ppid != Server.ppid then
+      File.open "pid/" + filename do |file|
+        pid = file.readline.to_i
+      end
+      Process.kill("HUP",pid)
+    end
     Thread.new do
       FileUtils.rm "pid/" + ttyrec
       system "gzip", "-q", "inprogress/" + ttyrec
