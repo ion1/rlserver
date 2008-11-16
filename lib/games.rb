@@ -19,11 +19,13 @@ module Games
     attr_reader :ttyrec, :pid, :idle
     def initialize(filename)
       @ttyrec = filename
-      File.open "pid/" + filename do |file|
-        @pid = file.readline
-      end
-        now = Time.new
-        @idle = now - File.new("inprogress/" + filename).mtime
+      if File.exists "pid/" + filename then
+        File.open "pid/" + filename do |file|
+          @pid = file.readline
+        end
+      end else @pid = 0
+      now = Time.new
+      @idle = now - File.new("inprogress/" + filename).mtime
     end
   end
 
