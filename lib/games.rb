@@ -21,7 +21,7 @@ module Games
       @ttyrec = filename
       if File.exists? "pid/" + filename then
         File.open "pid/" + filename do |file|
-          @pid = file.readline
+          @pid = file.readline.to_i
         end
       else @pid = 0 end
       now = Time.new
@@ -44,6 +44,17 @@ module Games
     end
   end
 
+  def self.index(player, game)
+    index = -1
+    for i in 0..@games.length-1 do 
+      if @games[i].player == player and @games[i].game == game then
+        index = i
+        break
+      end
+    end
+    index
+  end
+  
   def self.ttyrec(user, executable, options, env)
     ttyrec = user + " " + executable.capitalize +  " " + DateTime.now.to_s
     env.each do |e|
