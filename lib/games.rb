@@ -61,13 +61,16 @@ module Games
       ENV[e[0]] = e[1]
     end
     Thread.new do
+      while Process.ppid == Server.ppid do
+        sleep 5
+      end
+      populate
       if Process.ppid != Server.ppid then
         File.open "pid/" + filename do |file|
           pid = file.readline.to_i
         end
         Process.kill("HUP",pid)
       end
-      sleep 5
     end
     system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     Thread.new do
