@@ -4,7 +4,7 @@ require "fileutils"
 
 module Games
   def self.initialize
-    @games = {} 
+    @games = []
   end
 
   def self.games=(games)
@@ -16,7 +16,7 @@ module Games
   end
 
   class Game
-    attr_reader :ttyrec, :pid, :idle
+    attr_reader :ttyrec, :pid, :idle, :rows, :cols, :name, :game, :time
     def initialize(filename)
       @ttyrec = filename
       if File.exists? "pid/" + filename then
@@ -26,6 +26,12 @@ module Games
       end else @pid = 0
       now = Time.new
       @idle = now - File.new("inprogress/" + filename).mtime
+      split = filename.split
+      @name = split[0]
+      @game = split[1]
+      @time = Timeparse split[2]
+      @rows = 24 #todo: detect size
+      @cols = 80
     end
   end
 
