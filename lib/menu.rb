@@ -98,7 +98,7 @@ module Menu
           end
         end
       end
-      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Press any key to refresh. Use uppercase to try to change size (defaults to 80x24 at the moment)."]
+      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Press any key to refresh. Use uppercase to try to change size\n(defaults to 80x24 at the moment)."]
       case sel
       when "<"[0]: 
         offset -= pagesize
