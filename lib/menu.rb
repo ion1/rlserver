@@ -98,7 +98,7 @@ module Menu
           end
         end
       end
-      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Any key refreshes. Use uppercase to try to change size."]
+      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Press any key to refresh. Use uppercase to try to change size (defaults to 80x24 at the moment)."]
       case sel
       when "<"[0]: 
         offset -= pagesize
@@ -108,6 +108,7 @@ module Menu
         if offset > Games.games.length-1 then offset = Games.games.length-1 end
       when "A"[0].."P"[0]:
         if offset+sel-65 < Games.games.length then
+          puts "\033[8;#{Games.games[offset+sel-65].rows};#{Games.games[offset+sel-65].cols}t"
           Games.ttyplay "inprogress/" + Games.games[offset+sel-65].ttyrec
         end
       when "a"[0].."p"[0]:

@@ -23,7 +23,7 @@ module Games
         File.open "pid/" + filename do |file|
           @pid = file.readline
         end
-      end else @pid = 0
+      else @pid = 0 end
       now = Time.new
       @idle = now - File.new("inprogress/" + filename).mtime
       split = filename.split
