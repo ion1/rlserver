@@ -60,13 +60,16 @@ module Games
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
-    if Process.ppid != Server.ppid then
-      File.open "pid/" + filename do |file|
-        pid = file.readline.to_i
+    Thread.new do
+      if Process.ppid != Server.ppid then
+        File.open "pid/" + filename do |file|
+          pid = file.readline.to_i
+        end
+        Process.kill("HUP",pid)
       end
-      Process.kill("HUP",pid)
+      sleep 5
     end
+    system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     Thread.new do
       FileUtils.rm "pid/" + ttyrec
       system "gzip", "-q", "inprogress/" + ttyrec
