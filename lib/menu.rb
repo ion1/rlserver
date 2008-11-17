@@ -94,7 +94,7 @@ module Menu
       unless Games.games == [] then
         for i in offset..offset + pagesize - 1 do
           if i < Games.games.length then
-            ttyrecmenu += [chars[i % 16,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")"]
+            ttyrecmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")"]
           end
         end
       end
@@ -104,8 +104,10 @@ module Menu
         offset -= pagesize
         if offset < 0 then offset = 0 end
       when ">"[0]:
-        offset += pagesize
-        if offset > Games.games.length-1 then offset = Games.games.length-1 end
+        if Games.games.length > pagesize and offset+pagesize < Games.games.length then
+          offset += pagesize
+          if offset > Games.games.length-1 then offset = Games.games.length-1 end
+        end
       when "A"[0].."P"[0]:
         if offset+sel-65 < Games.games.length then
           puts "\033[8;#{Games.games[offset+sel-65].rows};#{Games.games[offset+sel-65].cols}t"
