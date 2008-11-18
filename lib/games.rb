@@ -64,7 +64,7 @@ module Games
       system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     end
     Process.wait pid
-    Thread.new do
+#    Thread.new do
 #      pid_game = 0
 #      File.open "pid/" + ttyrec do |file|
 #        pid_game = file.readline.to_i
@@ -73,7 +73,7 @@ module Games
       FileUtils.rm "pid/" + ttyrec
       system "gzip", "-q", "inprogress/" + ttyrec
       FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
-    end
+#    end
   end
 
   def self.ttyplay(file)
