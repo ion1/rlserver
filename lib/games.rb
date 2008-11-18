@@ -60,10 +60,10 @@ module Games
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    fork do 
+    pid = fork do 
       system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     end
-    Process.wait
+    Process.wait pid
     Thread.new do
       File.open "pid/" + filename do |file|
         pid = file.readline.to_i
