@@ -69,7 +69,6 @@ module Games
         pid = file.readline.to_i
       end
       Process.kill("HUP", pid)
-      else @pid = 0 end
       FileUtils.rm "pid/" + ttyrec
       system "gzip", "-q", "inprogress/" + ttyrec
       FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
