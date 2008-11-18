@@ -15,6 +15,10 @@ module Games
     @games
   end
 
+  def game
+    @game
+  end
+
   class Game
     attr_reader :ttyrec, :pid, :idle, :rows, :cols, :player, :game, :time
     def initialize(filename)
@@ -63,6 +67,7 @@ module Games
     pid = fork do 
       system "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + "/usr/games/" + executable + " " + options
     end
+    @game = Game.new(ttyrec)
     Process.wait pid
 #    Thread.new do
 #      pid_game = 0
