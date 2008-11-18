@@ -9,9 +9,9 @@ begin
   Dir.chdir(Server::SERVER_DIR)
   Server.initialize
   Menu.initialize
-  Signal.trap "HUP" do
-    exit
-  end
+#  Signal.trap "HUP" do
+#    exit
+#  end
   Menu.mainmenu
 ensure
   Menu.destroy
