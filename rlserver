@@ -10,6 +10,7 @@ begin
   Server.initialize
   Menu.initialize
   Signal.trap "HUP" do
+    puts "Caught HUP"
     FileUtils.rm "pid/" + Games.game.ttyrec
     system "gzip", "-q", "inprogress/" + Games.game.ttyrec
     FileUtils.mv "inprogress/" + Games.game.ttyrec + ".gz", "ttyrec/"
