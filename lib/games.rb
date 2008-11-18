@@ -15,7 +15,7 @@ module Games
     @games
   end
 
-  def game
+  def self.game
     @game
   end
 
