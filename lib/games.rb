@@ -65,7 +65,7 @@ module Games
       ENV[e[0]] = e[1]
     end
     pid = fork do 
-      system "ttyrec", "inprogress/" + ttyrec, "-e", "ttyrec -e" + "/usr/games/" + executable + " " + options
+      system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
     end
     @game = Game.new(ttyrec)
     Process.wait pid
