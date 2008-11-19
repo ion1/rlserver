@@ -57,9 +57,9 @@ module Scores
 <html>
 <head>
   <title>Crawl Scores</title>
-  <script type=\"text/javascript\" src=\"sortabletable/js/sortabletable.js\"></script>
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"sortabletable/css/sortabletable.css\"/>
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"record.css\"/>
+  <script type="text/javascript" src="sortabletable/js/sortabletable.js"></script>
+  <link rel="stylesheet" type="text/css" href="sortabletable/css/sortabletable.css"/>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
 	<table>
