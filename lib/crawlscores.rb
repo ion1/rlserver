@@ -63,7 +63,7 @@ module CrawlScores
 	</table>
 	<table>
 		<tr><th>#</th><th>Name</th><th>Race/Class</th><th>Dungeon</th><th>Score</th></tr>
-		#{i=0;score.data.map{|points| "<tr><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>D:#{points["lvl"]}<td>#{points["sc"]}</td></tr>"}.join("\n")}
+		#{i=0;score.data.map{|points| "<tr><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["ltyp"]}:#{points["lvl"]}<td>#{points["sc"]}</td></tr>"}.join("\n")}
 	</table>
 </body>
 </html>
