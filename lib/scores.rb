@@ -88,7 +88,7 @@ module Scores
             return;
         }
         p[p.length] = sClassName;
-        el.className = p.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
+        el.className = p.join(" ").replace( /(^\s+)|(\s+\$)/g, "" );
     }
     function removeClassName(el, sClassName)
     {
@@ -102,7 +102,7 @@ module Scores
             if (p[i] != sClassName)
             np[j++] = p[i];
         }
-        el.className = np.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
+        el.className = np.join(" ").replace( /(^\s+)|(\s+\$)/g, "" );
     }
     var st1 = new SortableTable(document.getElementById("player-ranking"),["Number", "CaseInsensitiveString", "Number", "Number", "Number", "CaseInsensitiveString"]);
     st1.onsort = function ()
