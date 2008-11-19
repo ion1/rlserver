@@ -67,6 +67,7 @@ module Games
     pid = fork do 
       system "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
     end
+    sleep 1
     @game = Game.new(ttyrec)
     Process.wait pid
 #    Thread.new do
@@ -82,7 +83,10 @@ module Games
   end
 
   def self.ttyplay(file)
-    system "./bin/ttyplay", "-n", "-p", file
+    pid = fork do
+      system "./bin/ttyplay", "-n", "-p", file
+    end
+    Process.wait pid
   end
 
   def self.editrc(user, game)
