@@ -1,8 +1,8 @@
-FILENAME = "/var/games/crawl/scores"
-HTML     = "/home/www/rlserver/public/crawl.html"
+CRAWL_FILENAME = "/var/games/crawl/scores"
+CRAWL_HTML     = "/home/www/rlserver/public/crawl.html"
 
-module CrawlScores
-  class Scores
+module Scores
+  class CrawlScores
     attr_reader :player_points, :bonus_points, :total_points, :bonus_mult, :data, :bonuses
     def initialize(filename)
       @data = []
@@ -50,8 +50,8 @@ module CrawlScores
     end
   end
 
-  def self.update
-    score = Scores.new(FILENAME)
+  def self.updatecrawl
+    score = CrawlScores.new(CRAWL_FILENAME)
     html = <<HTML_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
@@ -63,11 +63,11 @@ module CrawlScores
 	</table>
 	<table>
 		<tr><th>#</th><th>Name</th><th>Race/Class</th><th>Dungeon</th><th>Score</th></tr>
-		#{i=0;score.data.map{|points| "<tr><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["ltyp"]}:#{points["lvl"]}<td>#{points["sc"]}</td></tr>"}.join("\n")}
+		#{i=0;score.data.map{|points| "<tr><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td></tr>"}.join("\n")}
 	</table>
 </body>
 </html>
 HTML_END
-    File.open(HTML, "w") {|file| file.write(html)}
+    File.open(CRAWL_HTML, "w") {|file| file.write(html)}
   end
 end

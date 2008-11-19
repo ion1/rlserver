@@ -2,7 +2,7 @@ require "ui"
 require "users"
 require "games"
 require "fileutils"
-require "crawlscores"
+require "scores"
 
 module Menu
   def self.initialize
@@ -177,7 +177,7 @@ module Menu
         UI.endwin
         Games.ttyrec @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
         Thread.new do
-          CrawlScores.update
+          Scores.updatecrawl
         end
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "crawl"
