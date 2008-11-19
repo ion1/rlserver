@@ -55,7 +55,12 @@ module Scores
     html = <<HTML_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
-<head><title>Crawl Scores</title></head>
+<head>
+  <title>Crawl Scores</title>
+  <script type=\"text/javascript\" src=\"sortabletable/js/sortabletable.js\"></script>
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"sortabletable/css/sortabletable.css\"/>
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"record.css\"/>
+</head>
 <body>
 	<table>
 		<tr align="left"><th>#</th><th>Name</th><th>Player Points</th><th>Bonus Points</th><th>Total Score</th><th>Best</th></tr>
