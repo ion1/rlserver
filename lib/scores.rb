@@ -1,5 +1,6 @@
 CRAWL_FILENAME = "/var/games/crawl/scores"
-CRAWL_HTML     = "/home/www/rlserver/public/crawl.html"
+CRAWL_HTML = "/home/www/rlserver/public/crawl.html"
+COLORS = ["odd", "even"]
 
 module Scores
   class CrawlScores
@@ -64,11 +65,11 @@ module Scores
   <body>
     <table>
       <thead><tr align="left"><th>#</th><th>Name</th><th>Player Points</th><th>Bonus Points</th><th>Total Score</th><th>Best</th></tr></thead>
-      <tbody>#{i=0;score.total_points.sort{|x,y|y[1] <=> x[1]}.map{|x| "<tr><td>#{i+=1}</td><td>#{x[0]}</td><td>#{score.player_points[x[0]].to_i}</td><td>#{score.bonus_points[x[0]].to_i*score.bonus_mult}</td><td>#{x[1]}</td><td>#{score.bonuses[x[0]].join(", ")}</td></tr>"}.join("\n")}</tbody>
+      <tbody>#{i=0;score.total_points.sort{|x,y|y[1] <=> x[1]}.map{|x| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{x[0]}</td><td>#{score.player_points[x[0]].to_i}</td><td>#{score.bonus_points[x[0]].to_i*score.bonus_mult}</td><td>#{x[1]}</td><td>#{score.bonuses[x[0]].join(", ")}</td></tr>"}.join("\n")}</tbody>
     </table>
     <table>
       <thead><tr align="left"><th>#</th><th>Name</th><th>Race/Class</th><th>HP</th><th>Dungeon</th><th>Score</th><th>Killer</th><th>with</th></tr></thead>
-      <tbody>#{i=0;score.data.map{|points| "<tr><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{points["killer"]}</td><td>#{points["kaux"]}</td></tr>"}.join("\n")}</tbody>
+      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{points["killer"]}</td><td>#{points["kaux"]}</td></tr>"}.join("\n")}</tbody>
     </table>
   </body>
 </html>
