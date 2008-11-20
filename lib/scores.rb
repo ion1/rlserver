@@ -76,7 +76,6 @@ module Scores
     </table>
     </p>
     <script type="text/javascript">
-    //<![CDATA[
     function addClassName(el, sClassName)
     {
         var s = el.className;
@@ -88,7 +87,7 @@ module Scores
             return;
         }
         p[p.length] = sClassName;
-        el.className = p.join(" ").replace( /(^\s+)|(\s+\$)/g, "" );
+        el.className = p.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
     }
     function removeClassName(el, sClassName)
     {
@@ -102,7 +101,7 @@ module Scores
             if (p[i] != sClassName)
             np[j++] = p[i];
         }
-        el.className = np.join(" ").replace( /(^\s+)|(\s+\$)/g, "" );
+        el.className = np.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
     }
     var st1 = new SortableTable(document.getElementById("player-ranking"),["Number", "CaseInsensitiveString", "Number", "Number", "Number", "CaseInsensitiveString"]);
     st1.onsort = function ()
@@ -115,9 +114,8 @@ module Scores
             addClassName(rows[i], i % 2 ? "even" : "odd");
         }
     };
-    //]]>
     </script>
-    </body>
+  </body>
 </html>
 HTML_END
     File.open(CRAWL_HTML, "w") {|file| file.write(html)}
