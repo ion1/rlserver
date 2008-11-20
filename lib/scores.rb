@@ -1,5 +1,5 @@
 CRAWL_FILENAME = "/var/games/crawl/scores"
-CRAWL_HTML = "/home/www/rlserver/public/crawl.html"
+CRAWL_HTML = "/home/www/joosa/public/crawl.html"
 COLORS = ["odd", "even"]
 
 module Scores
@@ -49,38 +49,110 @@ module Scores
         @total_points[key] = @total_points[key].to_f + val * @bonus_mult
       end
     end
-#    def range_type_verb(aux)
-#      case aux[0,4]
-#      when "Shot": return "shot"
-#      when "Hit ", "voll": return "hit from afar"
-#      else return "blasted"
-#      end
-#    end
-#    def damage_verb(hp)
-#      if hp > -6 then return "Slain"
-#      else if hp > -14 then return "Mangled"
-#      else if hp > -22 then return "Demolished"
-#      else return "Annihilated"
-#      end
-#    end
-#    def strip_article_a(s)
-#      if s["a "] == " a"
-#        return s.delete("a ")
-#      else if s["an "] == "an "
-#        return s.delete("an ")
-#      else return s
-#      end
-#    end
-    def death_description(score)
-      needs_beam_cause_line = false
-      needs_called_by_monster_line = false
-      needs_damage = false
-      case score["ktyp"]
-      when "mon":
-      when "pois": return "Succumbed to poison"
-      when "cloud": return "Engulfed by a cloud of #{score["kaux"]}"
-      else return score["killer"]
+    def range_type_verb(score)
+      case score["kaux"][0,4]
+      when "Shot": return "Shot"
+      when "Hit ", "voll": return "Hit from afar"
+      else return "Blasted"
       end
+    end
+    def damage_verb(score)
+      if score["hp"].to_i > -6 then return "Slain"
+      elsif score["hp"].to_i > -14 then return "Mangled"
+      elsif score["hp"].to_i > -22 then return "Demolished"
+      else return "Annihilated"
+      end
+    end
+    def strip_article_a(s)
+      if s["a "] == " a"
+        return s.delete("a ")
+      elsif s["an "] == "an "
+        return s.delete("an ")
+      else return s
+      end
+    end
+    def death_source_desc(score)
+      if score["ktyp"] != "beam" and score["ktyp"] != "mon" then return "" end
+      if score["killer"] == "" then return "" else return score["killer"] end
+    end
+    def death_description(score)
+      #needs_beam_cause_line = false
+      #needs_called_by_monster_line = false
+      #needs_damage = false
+      desc=""
+      case score["ktyp"]
+      when "mon": desc += damage_verb(score) + " by " + death_source_desc(score)
+      when "pois": desc += "Succumbed to poison"
+      when "cloud": desc += "Engulfed by a cloud of #{score["kaux"]}"
+      when "beam": 
+        desc += range_type_verb(score) + " by " + death_source_desc(score)
+      when "lava":
+        if score["race"] == "Mummy" then
+          desc += "Turned to ash by lava"
+        else
+          desc += "Took a swim in moltem lava"
+        end
+      when "water":
+        if score["race"] == "Mummy" then
+          desc += "Soaked and fell apart"
+        else
+          desc += "Drowned"
+        end
+      when "trap":
+        desc += "Killed by triggering a" + score["aux"] + " trap"
+      when "left":
+        if score["nrune"].to_i > 0 then
+          desc += "Got out of the dungeon"
+        else
+          desc += "Got out of the dungeon alive"
+        end
+      when "escaped":
+        desc += "Escaped with the Orb"
+        if score["nrune"].to_i < 1 then desc += "!" end
+      when "quit"
+        desc += "Quit"
+      when "drained"
+        desc += "Was drained of all life"
+      when "starvation"
+        desc += "Starved to death"
+      when "frozen"
+        desc += "Froze to death"
+      when "burnt"
+        desc += "burnt to a crisp"
+      when "wild magic"
+        if score["kaux"]["by "] == "by " then
+          desc =+ "Killed " + score["kaux"]
+        else
+          desc += "Killed by " + score["kaux"]
+        end
+      when "statue"
+        desc += "Killed by a statue"
+      when "rotting"
+        desc += "Rotted away"
+      when "shot self"
+        desc += "Killed themselves with bad targetting"
+      when "spore"
+        desc += "Killed by an exploding spore"
+      when "smote by Shining One"
+        desc += "Smote by The Shining One"
+      when "petrified"
+        desc += "Turned to stone"
+      when ""
+        desc += "Died"
+      when "fell downstairs"
+        desc += "Fell down a flight of stairs"
+      when "acid"
+        desc += "Splashed by acid"
+      when "asphyx"
+        desc += "Asphyxiated"
+      when "melted"
+        desc += "Melted into a puddle"
+      when "bleeding"
+        desc += "Bled to death"
+      when "program bug"
+        desc += "Nibbled to death by software bugs"
+      end
+      return desc
     end
   end
 
@@ -104,7 +176,7 @@ module Scores
     </p>
     <p>
     <table class="sort-table" id="scores">
-      <thead><tr align="left"><th>#</th><th>Name</th><th>Race/Class</th><th>HP</th><th>Dungeon</th><th>Score</th><th>Killer</th></tr></thead>
+      <thead><tr align="left"><th>#</th><th>Name</th><th>Race/Class</th><th>HP</th><th>Dungeon</th><th>Score</th><th>Quit reason</th></tr></thead>
       <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{score.death_description(points)}</td></tr>"}.join("\n")}</tbody>
     </table>
     </p>
