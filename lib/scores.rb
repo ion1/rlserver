@@ -1,5 +1,5 @@
 CRAWL_FILENAME = "/var/games/crawl/scores"
-CRAWL_HTML = "/home/www/joosa/public/crawl.html"
+CRAWL_HTML = "/home/www/rlserver/public/crawl.html"
 COLORS = ["odd", "even"]
 
 module Scores
