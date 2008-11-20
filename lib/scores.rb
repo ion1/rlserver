@@ -49,28 +49,28 @@ module Scores
         @total_points[key] = @total_points[key].to_f + val * @bonus_mult
       end
     end
-    def range_type_verb(aux)
-      case aux[0,4]
-      when "Shot": return "shot"
-      when "Hit ", "voll": return "hit from afar"
-      else return "blasted"
-      end
-    end
-    def damage_verb(hp)
-      if hp > -6 then return "Slain"
-      else if hp > -14 then return "Mangled"
-      else if hp > -22 then return "Demolished"
-      else return "Annihilated"
-      end
-    end
-    def strip_article_a(s)
-      if s["a "] == " a"
-        return s.delete "a "
-      else if s["an "] == "an "
-        return s.delete "an "
-      else return s
-      end
-    end
+#    def range_type_verb(aux)
+#      case aux[0,4]
+#      when "Shot": return "shot"
+#      when "Hit ", "voll": return "hit from afar"
+#      else return "blasted"
+#      end
+#    end
+#    def damage_verb(hp)
+#      if hp > -6 then return "Slain"
+#      else if hp > -14 then return "Mangled"
+#      else if hp > -22 then return "Demolished"
+#      else return "Annihilated"
+#      end
+#    end
+#    def strip_article_a(s)
+#      if s["a "] == " a"
+#        return s.delete("a ")
+#      else if s["an "] == "an "
+#        return s.delete("an ")
+#      else return s
+#      end
+#    end
     def death_description(score)
       needs_beam_cause_line = false
       needs_called_by_monster_line = false
@@ -79,6 +79,7 @@ module Scores
       when "mon":
       when "pois": return "Succumbed to poison"
       when "cloud": return "Engulfed by a cloud of #{score["kaux"]}"
+      else return score["killer"]
       end
     end
   end
@@ -104,7 +105,7 @@ module Scores
     <p>
     <table class="sort-table" id="scores">
       <thead><tr align="left"><th>#</th><th>Name</th><th>Race/Class</th><th>HP</th><th>Dungeon</th><th>Score</th><th>Killer</th></tr></thead>
-      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{points["killer"]}</td></tr>"}.join("\n")}</tbody>
+      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{score.death_description(points)}</td></tr>"}.join("\n")}</tbody>
     </table>
     </p>
     <script type="text/javascript">
