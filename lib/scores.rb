@@ -99,7 +99,7 @@ module Scores
           desc += "Drowned"
         end
       when "trap":
-        desc += "Killed by triggering a" + score["aux"] + " trap"
+        desc += "Killed by triggering " + score["aux"] + " trap"
       when "leaving":
         if score["nrune"].to_i > 0 then
           desc += "Got out of the dungeon"
@@ -118,7 +118,7 @@ module Scores
       when "freezing"
         desc += "Froze to death"
       when "burning"
-        desc += "burnt to a crisp"
+        desc += "Burnt to a crisp"
       when "wild_magic"
         if score["kaux"]["by "] == "by " then
           desc =+ "Killed " + score["kaux"]
