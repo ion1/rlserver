@@ -176,7 +176,7 @@ module Menu
 #        end
         UI.endwin
         Games.ttyrec @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
-        Thread.new do
+        pid = fork do
           Scores.updatecrawl
         end
         #UI.initialize

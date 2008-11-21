@@ -76,12 +76,14 @@ module Scores
       if score["killer"] == "" then return "" else return score["killer"] end
     end
     def death_description(score)
-      #needs_beam_cause_line = false
-      #needs_called_by_monster_line = false
+      needs_beam_cause_line = false
+      needs_called_by_monster_line = false
       #needs_damage = false
       desc=""
       case score["ktyp"]
-      when "mon": desc += damage_verb(score) + " by " + death_source_desc(score)
+      when "mon": 
+        desc += damage_verb(score) + " by " + death_source_desc(score)
+        #if score["kaux"] != nil then desc += " with " + score["kaux"] end
       when "pois": desc += "Succumbed to poison"
       when "cloud": desc += "Engulfed by a cloud of #{score["kaux"]}"
       when "beam": 
@@ -99,7 +101,7 @@ module Scores
           desc += "Drowned"
         end
       when "trap":
-        desc += "Killed by triggering " + score["aux"] + " trap"
+        desc += "Killed by triggering " + score["kaux"] + " trap"
       when "leaving":
         if score["nrune"].to_i > 0 then
           desc += "Got out of the dungeon"
