@@ -77,7 +77,7 @@ module Games
 #      end
 #      Process.kill("HUP", pid_game)
 #      FileUtils.rm "pid/" + ttyrec
-      pid = fork do
+      Thread.new do
         system "gzip", "-q", "inprogress/" + ttyrec
         FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
       end
