@@ -77,10 +77,8 @@ module Games
 #      end
 #      Process.kill("HUP", pid_game)
 #      FileUtils.rm "pid/" + ttyrec
-      Thread.new do
         system "gzip", "-q", "inprogress/" + ttyrec
         FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
-      end
 #    end
   end
 
@@ -92,7 +90,10 @@ module Games
   end
 
   def self.editrc(user, game)
-    system "nano", "-R", "rcfiles/" + user + "." + game
+    pid = fork do
+     exec "nano", "-R", "rcfiles/" + user + "." + game
+    end
+    Process.wait pid
   end
 
 end
