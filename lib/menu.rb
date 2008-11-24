@@ -196,9 +196,9 @@ module Menu
 #        end
         UI.endwin
         Games.ttyrec @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl-033\" -dir crawl", []
-        Thread.new do
-          Scores.updatecrawl
-        end
+        #Thread.new do
+        #  Scores.updatecrawl
+        #end
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "crawl-033"
       when "q"[0], "Q"[0]: quit = true
