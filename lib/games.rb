@@ -59,13 +59,13 @@ module Games
     index
   end
   
-  def self.ttyrec(user, executable, options, env)
-    ttyrec = user + " " + executable.capitalize +  " " + DateTime.now.to_s
+  def self.ttyrec(user, executable, gamename, options, env)
+    ttyrec = user + " " + gamename +  " " + DateTime.now.to_s
     env.each do |e|
       ENV[e[0]] = e[1]
     end
     pid = fork do 
-      exec "ttyrec", "inprogress/" + ttyrec, "-e", "/usr/games/" + executable + " " + options
+      exec "ttyrec", "inprogress/" + ttyrec, "-e", executable + " " + options
     end
     sleep 1
     @game = Game.new(ttyrec)

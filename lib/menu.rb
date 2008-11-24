@@ -141,7 +141,7 @@ module Menu
 #          Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
 #        end
         UI.endwin
-        Games.ttyrec @user, "angband", "-mgcu -u\"" + @user + "\"", []
+        Games.ttyrec @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", []
         #UI.initialize
       when "e"[0], "E"[0]:
       when "q"[0], "Q"[0]: quit = true
@@ -158,9 +158,29 @@ module Menu
 #          Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
 #        end
         UI.endwin
-        Games.ttyrec @user, "nethack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
+        Games.ttyrec @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "nethack"
+      when "q"[0], "Q"[0]: quit = true
+      end
+    end
+  end
+
+  def self.crawl043menu
+    quit = false
+    while !quit do
+      case menu ["Logged in as " + @user, "p - Play Crawl SS 0.4.3", "e - Edit rc file", "q - Quit"]
+      when "p"[0], "P"[0]:
+#        if Games.index(@user, "Crawl") >= 0 then
+#          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
+#        end
+        UI.endwin
+        Games.ttyrec @user, "/usr/games/crawl-0.4.3/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl-043\" -dir crawl", []
+        Thread.new do
+          Scores.updatecrawl
+        end
+        #UI.initialize
+      when "e"[0], "E"[0]: Games.editrc @user, "crawl-043"
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -169,18 +189,18 @@ module Menu
   def self.crawlmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "p - Play Crawl", "e - Edit rc file", "q - Quit"]
+      case menu ["Logged in as " + @user, "p - Play Crawl SS 0.3.3", "e - Edit rc file", "q - Quit"]
       when "p"[0], "P"[0]:
 #        if Games.index(@user, "Crawl") >= 0 then
 #          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
 #        end
         UI.endwin
-        Games.ttyrec @user, "crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
+        Games.ttyrec @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl-033\" -dir crawl", []
         Thread.new do
           Scores.updatecrawl
         end
         #UI.initialize
-      when "e"[0], "E"[0]: Games.editrc @user, "crawl"
+      when "e"[0], "E"[0]: Games.editrc @user, "crawl-033"
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -189,8 +209,9 @@ module Menu
   def self.gamesmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "a - Angband (not working)", "c - Crawl", "n - NetHack", "q - Quit"]
-      when "c"[0], "C"[0]: crawlmenu
+      case menu ["Logged in as " + @user, "a - Angband (not working)", "c - Crawl SS 0.4.3", "C - Crawl SS 0.3.3", "n - NetHack", "q - Quit"]
+      when "c"[0]: crawl043menu
+      when "C"[0]: crawlmenu
       when "a"[0], "A"[0]: #angbandmenu
       when "n"[0], "N"[0]: nethackmenu
       when "q"[0], "Q"[0]: quit = true
