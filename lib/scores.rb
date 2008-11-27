@@ -144,7 +144,7 @@ module Scores
       when "falling_down_stairs":
         desc += "Fell down a flight of stairs"
       when "acid":
-        desc += "Splashed by acid":
+        desc += "Splashed by acid"
       when "curare":
         desc += "Asphyxiated"
       when "melting":
