@@ -153,6 +153,8 @@ module Scores
         desc += "Bled to death"
       when "something"
         desc += "Nibbled to death by software bugs"
+      when "stupidity"
+        desc += "Forgot to breathe"
       end
       return desc
     end
