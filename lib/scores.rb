@@ -111,49 +111,49 @@ module Scores
       when "winning":
         desc += "Escaped with the Orb"
         if score["nrune"].to_i < 1 then desc += "!" end
-      when "quitting"
+      when "quitting":
         desc += "Quit"
-      when "draining"
+      when "draining":
         desc += "Was drained of all life"
-      when "starvation"
+      when "starvation":
         desc += "Starved to death"
-      when "freezing"
+      when "freezing":
         desc += "Froze to death"
-      when "burning"
+      when "burning":
         desc += "Burnt to a crisp"
-      when "wild_magic"
+      when "wild_magic":
         if score["kaux"]["by "] == "by " then
           desc =+ "Killed " + score["kaux"]
         else
           desc += "Killed by " + score["kaux"]
         end
-      when "statue"
+      when "statue":
         desc += "Killed by a statue"
-      when "rotting"
+      when "rotting":
         desc += "Rotted away"
-      when "targeting"
+      when "targeting":
         desc += "Killed themselves with bad targetting"
-      when "spore"
+      when "spore":
         desc += "Killed by an exploding spore"
-      when "tso_smiting"
+      when "tso_smiting":
         desc += "Smote by The Shining One"
-      when "petrification"
+      when "petrification":
         desc += "Turned to stone"
-      when "unknown"
+      when "unknown":
         desc += "Died"
-      when "falling_down_stairs"
+      when "falling_down_stairs":
         desc += "Fell down a flight of stairs"
-      when "acid"
-        desc += "Splashed by acid"
-      when "curare"
+      when "acid":
+        desc += "Splashed by acid":
+      when "curare":
         desc += "Asphyxiated"
-      when "melting"
+      when "melting":
         desc += "Melted into a puddle"
-      when "bleeding"
+      when "bleeding":
         desc += "Bled to death"
-      when "something"
+      when "something":
         desc += "Nibbled to death by software bugs"
-      when "stupidity"
+      when "stupidity":
         desc += "Forgot to breathe"
       end
       return desc
