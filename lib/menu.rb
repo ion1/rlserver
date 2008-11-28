@@ -104,7 +104,7 @@ module Menu
       "< - Previous page",
       "q - Quit",
       "Press any key to refresh. Use uppercase to try to change size
-      (defaults to 80x24 at the moment)."]
+(defaults to 80x24 at the moment)."]
       case sel
       when "<"[0]: 
         offset -= pagesize
