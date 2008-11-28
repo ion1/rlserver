@@ -98,7 +98,13 @@ module Menu
           end
         end
       end
-      sel = menu ttyrecmenu + ["", "> - Next page", "< - Previous page", "q - Quit", "Press any key to refresh. Use uppercase to try to change size\n(defaults to 80x24 at the moment)."]
+      sel = menu ttyrecmenu + [
+      "",
+      "> - Next page",
+      "< - Previous page",
+      "q - Quit",
+      "Press any key to refresh. Use uppercase to try to change size
+      (defaults to 80x24 at the moment)."]
       case sel
       when "<"[0]: 
         offset -= pagesize
@@ -134,7 +140,11 @@ module Menu
   def self.angbandmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "p - Play Angband", "e - Edit rc file", "q - Quit"]
+      case menu [
+      "Logged in as " + @user,
+      "p - Play Angband",
+      "e - Edit rc file",
+      "q - Quit"]
       when "p"[0], "P"[0]:
 #        Games.populate
 #        if Games.index(@user, "Angband") >= 0 then
@@ -152,7 +162,11 @@ module Menu
   def self.nethackmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "p - Play NetHack", "e - Edit rc file", "q - Quit"]
+      case menu [
+      "Logged in as " + @user,
+      "p - Play NetHack",
+      "e - Edit rc file",
+      "q - Quit"]
       when "p"[0], "P"[0]:
 #        if Games.index(@user, "Nethack") >= 0 then
 #          Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
@@ -169,7 +183,11 @@ module Menu
   def self.crawl043menu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "p - Play Crawl SS 0.4.3", "e - Edit rc file", "q - Quit"]
+      case menu [
+      "Logged in as " + @user,
+      "p - Play Crawl SS 0.4.3",
+      "e - Edit rc file",
+      "q - Quit"]
       when "p"[0], "P"[0]:
 #        if Games.index(@user, "Crawl") >= 0 then
 #          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
@@ -189,7 +207,11 @@ module Menu
   def self.crawlmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "p - Play Crawl SS 0.3.3", "e - Edit rc file", "q - Quit"]
+      case menu [
+      "Logged in as " + @user,
+      "p - Play Crawl SS 0.3.3",
+      "e - Edit rc file",
+      "q - Quit"]
       when "p"[0], "P"[0]:
 #        if Games.index(@user, "Crawl") >= 0 then
 #          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
@@ -209,9 +231,14 @@ module Menu
   def self.gamesmenu
     quit = false
     while !quit do
-      case menu ["Logged in as " + @user, "a - Angband (not working)", "c - Crawl SS 0.4.3", "C - Crawl SS 0.3.3", "n - NetHack", "q - Quit"]
+      case menu [
+      "Logged in as " + @user, 
+      "a - Angband (not working)", 
+      "c - Crawl SS 0.4.3", 
+#      "C - Crawl SS 0.3.3", 
+      "n - NetHack", "q - Quit"]
       when "c"[0]: crawl043menu
-      when "C"[0]: crawlmenu
+      #when "C"[0]: crawlmenu
       when "a"[0], "A"[0]: #angbandmenu
       when "n"[0], "N"[0]: nethackmenu
       when "q"[0], "Q"[0]: quit = true
@@ -224,14 +251,24 @@ module Menu
     @menuwindow.clear
     while !quit do
       if @user == "" then
-        case menu ["Welcome to rlserver!", "l - Login", "n - New player", "w - Watch", "q - Quit"]
+        case menu [
+        "Welcome to rlserver!",
+        "l - Login",
+        "n - New player",
+        "w - Watch",
+        "q - Quit"]
         when "l"[0], "L"[0]: @user = login
         when "n"[0], "N"[0]: @user = newuser
         when "w"[0], "W"[0]: watchmenu
         when "q"[0], "Q"[0]: quit = true
         end
       else
-        case menu ["Logged in as " + @user, "p - Change password", "g - Games", "w - Watch", "q - Quit"]
+        case menu [
+        "Logged in as " + @user,
+        "g - Games",
+        "w - Watch",
+        "p - Change password",
+        "q - Quit"]
         when "p"[0], "P"[0]: change_password
         when "g"[0], "G"[0]: gamesmenu
         when "w"[0], "W"[0]: watchmenu
