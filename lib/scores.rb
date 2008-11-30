@@ -92,7 +92,7 @@ module Scores
         if score["race"] == "Mummy" then
           desc += "Turned to ash by lava"
         else
-          desc += "Took a swim in moltem lava"
+          desc += "Took a swim in molten lava"
         end
       when "water":
         if score["race"] == "Mummy" then
