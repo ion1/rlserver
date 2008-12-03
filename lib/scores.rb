@@ -157,7 +157,7 @@ module Scores
         desc += "Forgot to breathe"
       end
       if score["nrune"].to_i > 0 then
-        desc += "(with #{score["nrune"]} rune#{if score["nrune"].to_i > 1 then "s" end})"
+        desc += " (with #{score["nrune"]} rune#{if score["nrune"].to_i > 1 then "s" end})"
       end
       return desc
     end
