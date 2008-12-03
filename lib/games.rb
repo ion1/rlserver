@@ -60,7 +60,7 @@ module Games
   end
   
   def self.ttyrec(user, executable, gamename, options, env)
-    ttyrec = user + " " + gamename +  " " + DateTime.now.to_s
+    ttyrec = user + " " + gamename +  " " + DateTime.now.to_s + ".ttyrec"
     env.each do |e|
       ENV[e[0]] = e[1]
     end
