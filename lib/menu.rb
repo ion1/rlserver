@@ -146,10 +146,10 @@ module Menu
       "e - Edit rc file",
       "q - Quit"]
       when "p"[0], "P"[0]:
-#        Games.populate
-#        if Games.index(@user, "Angband") >= 0 then
-#          Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
-#        end
+        Games.populate
+        if Games.index(@user, "Angband") >= 0 then
+          Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
+        end
         UI.endwin
         Games.ttyrec @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", []
         #UI.initialize
@@ -168,9 +168,10 @@ module Menu
       "e - Edit rc file",
       "q - Quit"]
       when "p"[0], "P"[0]:
-#        if Games.index(@user, "Nethack") >= 0 then
-#          Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
-#        end
+        Games.populate
+        if Games.index(@user, "NetHack") >= 0 then
+          Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
+        end
         UI.endwin
         Games.ttyrec @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
         #UI.initialize
@@ -189,9 +190,10 @@ module Menu
       "e - Edit rc file",
       "q - Quit"]
       when "p"[0], "P"[0]:
-#        if Games.index(@user, "Crawl") >= 0 then
-#          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
-#        end
+        Games.populate
+        if Games.index(@user, "Crawl") >= 0 then
+          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
+        end
         UI.endwin
         Games.ttyrec @user, "/usr/games/crawl-0.4.3/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl-043\" -dir crawl", []
         Thread.new do
@@ -213,9 +215,10 @@ module Menu
       "e - Edit rc file",
       "q - Quit"]
       when "p"[0], "P"[0]:
-#        if Games.index(@user, "Crawl") >= 0 then
-#          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
-#        end
+        Games.populate
+        if Games.index(@user, "Crawl") >= 0 then
+          Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
+        end
         UI.endwin
         Games.ttyrec @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl-033\" -dir crawl", []
         #Thread.new do

@@ -20,14 +20,14 @@ module Games
   end
 
   class Game
-    attr_reader :ttyrec, :idle, :rows, :cols, :player, :game, :time
+    attr_reader :ttyrec, :idle, :rows, :cols, :player, :game, :time, :pid
     def initialize(filename)
       @ttyrec = filename
-      #if File.exists? "pid/" + filename then
-      #  File.open "pid/" + filename do |file|
-      #    @pid = file.readline.to_i
-      #  end
-      #else @pid = 0 end
+      if File.exists? "pid/" + filename then
+        File.open "pid/" + filename do |file|
+          @pid = file.readline.to_i
+        end
+      else @pid = 0 end
       now = Time.new
       @idle = now - File.new("inprogress/" + filename).mtime
       split = filename.split
@@ -64,22 +64,15 @@ module Games
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    pid = fork do 
-      exec "ttyrec", "inprogress/" + ttyrec, "-e", executable + " " + options
+    pid = fork do
+      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + executable + " " + options
     end
     sleep 1
     @game = Game.new(ttyrec)
     Process.wait pid
-#    Thread.new do
-#      pid_game = 0
-#      File.open "pid/" + ttyrec do |file|
-#        pid_game = file.readline.to_i
-#      end
-#      Process.kill("HUP", pid_game)
-#      FileUtils.rm "pid/" + ttyrec
-        system "gzip", "-q", "inprogress/" + ttyrec
-        FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
-#    end
+    FileUtils.rm "pid/" + ttyrec
+    system "gzip", "-q", "inprogress/" + ttyrec
+    FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
   end
 
   def self.ttyplay(file)
