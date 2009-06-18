@@ -151,7 +151,7 @@ module Menu
           Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
         end
         UI.endwin
-        Games.ttyrec @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", []
+        Games.ttyrec @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]:
       when "q"[0], "Q"[0]: quit = true
@@ -173,7 +173,7 @@ module Menu
           Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
         end
         UI.endwin
-        Games.ttyrec @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")]]
+        Games.ttyrec @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "nethack"
       when "q"[0], "Q"[0]: quit = true
@@ -195,7 +195,7 @@ module Menu
           Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         end
         UI.endwin
-        Games.ttyrec @user, "/usr/games/crawl/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", []
+        Games.ttyrec @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", [["SHELL", "/bin/sh"]]
         Thread.new do
           Scores.updatecrawl
         end
