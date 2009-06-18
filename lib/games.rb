@@ -30,7 +30,7 @@ module Games
       else @pid = 0 end
       now = Time.new
       @idle = now - File.new("inprogress/" + filename).mtime
-      split = filename.split
+      split = filename.split(".")
       @player = split[0]
       @game = split[1]
       @time = split[2]
@@ -60,12 +60,12 @@ module Games
   end
   
   def self.ttyrec(user, executable, gamename, options, env)
-    ttyrec = user + " " + gamename +  " " + DateTime.now.to_s + ".ttyrec"
+    ttyrec = user + "." + gamename + "." + DateTime.now.to_s + ".ttyrec"
     env.each do |e|
       ENV[e[0]] = e[1]
     end
     pid = fork do
-      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run\ \"pid/" + ttyrec + "\"\ " + executable + "\ " + options
+      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run pid/" + ttyrec + " " + executable + " " + options
     end
     #File.open "pid/" + ttyrec, 'w' do |out|
     #  out.puts pid
