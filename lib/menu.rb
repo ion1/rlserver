@@ -212,7 +212,7 @@ module Menu
       case menu [
       "Logged in as " + @user, 
       "a - Angband (coming soon)", 
-      "c - Crawl SS 0.4.5", 
+      "c - Crawl SS 0.5", 
 #      "C - Crawl SS 0.3.3", 
       "n - NetHack (coming soon)", "q - Quit"]
       when "c"[0], "C"[0]: crawlmenu
