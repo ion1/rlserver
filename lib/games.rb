@@ -67,6 +67,9 @@ module Games
     pid = fork do
       exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + executable + " " + options
     end
+    #File.open "pid/" + ttyrec, 'w' do |out|
+    #  out.puts pid
+    #end
     sleep 1
     @game = Game.new(ttyrec)
     Process.wait pid
