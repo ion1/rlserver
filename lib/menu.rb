@@ -195,7 +195,7 @@ module Menu
           Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         end
         UI.endwin
-        Games.ttyrec @user, "/usr/games/crawl/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", [["SHELL", "/bin/sh"]]
+        Games.ttyrec @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -dir crawl", [["SHELL", "/bin/sh"]]
         Thread.new do
           Scores.updatecrawl
         end
