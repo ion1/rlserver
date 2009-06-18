@@ -1,4 +1,4 @@
-CRAWL_FILENAME = "/var/games/crawl-0.4.3/saves/scores"
+CRAWL_FILENAME = "/var/games/saves/scores"
 CRAWL_HTML = "/home/www/rlserver/public/crawl.html"
 COLORS = ["odd", "even"]
 
