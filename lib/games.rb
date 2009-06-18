@@ -65,7 +65,7 @@ module Games
       ENV[e[0]] = e[1]
     end
     pid = fork do
-      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run \"pid/" + ttyrec + "\" " + executable + " " + options
+      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run\ \"pid/" + ttyrec + "\"\ " + executable + "\ " + options
     end
     #File.open "pid/" + ttyrec, 'w' do |out|
     #  out.puts pid
