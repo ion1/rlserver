@@ -15,33 +15,22 @@ module Games
     @games
   end
 
-  def self.game
-    @game
-  end
-
   class Game
-    attr_reader :ttyrec, :idle, :rows, :cols, :player, :game, :time, :pid
-    def initialize(filename)
-      @ttyrec = filename
-      if File.exists? "pid/" + filename then
-        File.open "pid/" + filename do |file|
-          @pid = file.readline.to_i
-        end
-      else @pid = 0 end
+    attr_reader :socket, :idle, :player, :game, :time
+    def initialize(name)
+      @socket = name
       now = Time.new
-      @idle = now - File.new("inprogress/" + filename).mtime
-      split = filename.split(".")
+      @idle = now - File.new("inprogress/" + name).mtime
+      split = name.split(".")
       @player = split[0]
       @game = split[1]
       @time = split[2]
-      @rows = 24 #todo: detect size
-      @cols = 80
     end
   end
 
   def self.populate
     @games = []
-    Dir.foreach("inprogress") do |f|
+    Dir.foreach("socket") do |f|
       unless f == "." or f == ".." then
         @games += [Game.new(f)]
       end
@@ -59,37 +48,43 @@ module Games
     index
   end
   
-  def self.ttyrec(user, executable, gamename, options, env)
+  def self.launchgame(user, executable, gamename, options, env)
     ttyrec = user + "." + gamename + "." + DateTime.now.to_s + ".ttyrec"
     env.each do |e|
       ENV[e[0]] = e[1]
     end
-    pid = fork do
-      exec "ttyrec", "inprogress/" + ttyrec, "-e", "./run pid/" + ttyrec + " " + executable + " " + options
-    end
-    #File.open "pid/" + ttyrec, 'w' do |out|
-    #  out.puts pid
+    #pid = fork do
+    system "ttyrec", "inprogress/" + ttyrec, "-e", "dtach -A socket/" + ttyrec + " -E -z " + executable + " " + options
     #end
-    sleep 1
-    @game = Game.new(ttyrec)
-    Process.wait pid
-    FileUtils.rm "pid/" + ttyrec
-    system "gzip", "-q", "inprogress/" + ttyrec
-    FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
+    #sleep 1
+    #@game = Game.new(ttyrec)
+    #Process.wait pid
+    #FileUtils.rm "pid/" + ttyrec
+    Thread.new do
+      system "gzip", "-q", "inprogress/" + ttyrec
+      FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
+    end
   end
 
-  def self.ttyplay(file)
-    pid = fork do
-      exec "./bin/ttyplay", "-n", "-p", file
-    end
-    Process.wait pid
+  def self.attachgame(index)
+    if index >= 0 then
+      system "dtach", "-a", "socket/" + @games[index].socket, "-E", "-z"
+      true
+    else false end
+  end
+
+  def self.watchgame(file)
+    #pid = fork do
+    system "dtach", "-a", file, "-R","-e", "\q", "-z"
+    #end
+    #Process.wait pid
   end
 
   def self.editrc(user, game)
-    pid = fork do
-     exec "nano", "-R", "rcfiles/" + user + "." + game
-    end
-    Process.wait pid
+    #pid = fork do
+    system "nano", "-R", "rcfiles/" + user + "." + game
+    #end
+    #Process.wait pid
   end
 
 end
