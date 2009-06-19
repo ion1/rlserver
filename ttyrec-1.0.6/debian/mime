@@ -1,1 +1,0 @@
-application/x-ttyrec; /usr/bin/ttyplay '%s'; needsterminal; description=tty record file; nametemplate=%s.tty; priority=5;
