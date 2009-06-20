@@ -1,5 +1,5 @@
 CRAWL_FILENAME = "/var/games/crawl/saves/scores"
-CRAWL_HTML = "crawl.html"
+CRAWL_HTML = "crawl/scores.html"
 COLORS = ["odd", "even"]
 
 module Scores
