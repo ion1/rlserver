@@ -1,6 +1,8 @@
 require "date"
 require "server"
 require "fileutils"
+require "menu"
+require "ui"
 
 module Games
   def self.initialize
@@ -16,23 +18,37 @@ module Games
   end
 
   class Game
-    attr_reader :socket, :idle, :player, :game, :time
+    attr_reader :socket, :idle, :player, :game, :time, :size, :attached
     def initialize(name)
-      @socket = name
+      pidremoved = name.sub /\A\d*\./, ""
+      @socket = pidremoved
       now = Time.new
-      @idle = now - File.new("inprogress/" + name).mtime
-      split = name.split(".")
+      @idle = now - File.new("inprogress/" + pidremoved).mtime
+      @attached = File.executable? "/var/run/screen/S-" + Server::SERVER_USER + "/" + name
+      split = pidremoved.split(".")
       @player = split[0]
       @game = split[1]
-      @time = split[2]
+      @size = Termsize.new split[2].split("x")[0].to_i, split[2].split("x")[1].to_i
+      @time = split[3]
+    end
+  end
+
+  class Termsize
+    attr_reader :cols, :rows
+    def initialize(cols, rows)
+      @rows = rows
+      @cols = cols
     end
   end
 
   def self.populate
     @games = []
-    Dir.foreach("socket") do |f|
+    Dir.foreach("/var/run/screen/S-" + Server::SERVER_USER) do |f|
       unless f == "." or f == ".." then
-        @games += [Game.new(f)]
+        pidremoved = f.sub /\A\d*\./, ""
+        if File.exists? "inprogress/" + pidremoved then
+          @games += [Game.new(f)]
+        end
       end
     end
   end
@@ -48,43 +64,38 @@ module Games
     index
   end
   
-  def self.launchgame(user, executable, gamename, options, env)
-    ttyrec = user + "." + gamename + "." + DateTime.now.to_s + ".ttyrec"
-    env.each do |e|
-      ENV[e[0]] = e[1]
+  def self.launchgame(user, executable, gamename, env, *options)
+    populate
+    i = index user, gamename
+    if i >= 0 then
+      socket = @games[i].socket
+      puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
+      system "dtach", "-A", "socket/" + socket, "-E", "-r", "winch", "-z", "screen", "-D", "-r", socket
+    else
+      size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
+      socket = user + "." + gamename + "." + size.cols.to_s + "x" + size.rows.to_s + "." + DateTime.now.to_s
+      env.each do |e|
+        ENV[e[0]] = e[1]
+      end
+      system "dtach", "-A", "socket/" + socket, "-E", "-r", "winch", "-z", "screen", "-S", socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + socket , "-e", executable + " " + options.join(" ")
     end
-    #pid = fork do
-    system "ttyrec", "inprogress/" + ttyrec, "-e", "dtach -A socket/" + ttyrec + " -E -z " + executable + " " + options
-    #end
-    #sleep 1
-    #@game = Game.new(ttyrec)
-    #Process.wait pid
-    #FileUtils.rm "pid/" + ttyrec
-    Thread.new do
-      system "gzip", "-q", "inprogress/" + ttyrec
-      FileUtils.mv "inprogress/" + ttyrec + ".gz", "ttyrec/"
+    populate
+    i = index user, gamename
+    if i < 0 then
+      Thread.new do
+        FileUtils.mv "inprogress/" + socket, "inprogress/" + socket + ".ttyrec"
+        system "gzip", "-q", "inprogress/" + socket + ".ttyrec"
+        FileUtils.mv "inprogress/" + socket + ".ttyrec.gz", "ttyrec/"
+      end
     end
   end
 
-  def self.attachgame(index)
-    if index >= 0 then
-      system "dtach", "-a", "socket/" + @games[index].socket, "-E", "-z"
-      true
-    else false end
-  end
-
-  def self.watchgame(file)
-    #pid = fork do
-    system "dtach", "-a", file, "-R","-e", "\q", "-z"
-    #end
-    #Process.wait pid
+  def self.watchgame(socket)
+    system "dtach", "-a", "socket/" + socket, "-e", "\q", "-R", "-s", "-r", "screen", "-z"
   end
 
   def self.editrc(user, game)
-    #pid = fork do
     system "nano", "-R", "rcfiles/" + user + "." + game
-    #end
-    #Process.wait pid
   end
 
 end

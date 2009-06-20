@@ -1,0 +1,22 @@
+multiuser on
+defwritelock on
+aclchg joosa +x meta,stuff,redisplay
+aclchg joosa -x acldel,activity,allpartial,at,autodetach,autonuke,bell_msg
+aclchg joosa -x bind,bindkey,break,bufferfile,c1,charset,chdir,clear,colon
+aclchg joosa -x command,console,copy,copy_reg,crlf,debug,defautonuke,defc1
+aclchg joosa -x defcharset,defescape,defflow,defgr,defhstatus,defkanji
+aclchg joosa -x deflogin,defmode,defmonitor,defobuflimit,defscrollback
+aclchg joosa -x defwrap,defwritelock,defzombie,detach,digraph,dumptermcap
+aclchg joosa -x echo,escape,exec,flow,gr,hardcopy,hardcopy_append
+aclchg joosa -x hardcopydir,hardstatus,height,help,history,info,ins_reg
+aclchg joosa -x kanji,kill,lastmsg,license,lockscreen,log,logfile,login
+aclchg joosa -x mapdefault,mapnotnext,maptimeout,markkeys,monitor
+aclchg joosa -x msgminwait,msgwait,multiuser,nethack,next,number,obuflimit
+aclchg joosa -x other,partial,password,paste,pastefont,pow_break
+aclchg joosa -x pow_detach,pow_detach_msg,prev,printcmd,process,quit
+aclchg joosa -x readbuf,readreg,register,removebuf,reset,screen,scrollback
+aclchg joosa -x select,sessionname,setenv,shell,shelltitle,silence
+aclchg joosa -x silencewait,sleep,slowpaste,sorendition,startup_message
+aclchg joosa -x suspend,term,termcap,terminfo,termcapinfo,time,title
+aclchg joosa -x unsetenv,vbell,vbell_msg,vbellwait,version,wall,width
+aclchg joosa -x windows,wrap,writebuf,writelock,xoff,xon,zombie,aclchg

@@ -13,6 +13,10 @@ module Menu
     @user = ""
   end
 
+  def self.menuwindow
+    @menuwindow
+  end
+
   def self.login
     @menuwindow.clear
     UI.echo
@@ -94,7 +98,7 @@ module Menu
       unless Games.games == [] then
         for i in offset..offset + pagesize - 1 do
           if i < Games.games.length then
-            socketmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")"]
+            socketmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(#{Games.games[i].size.cols}x#{Games.games[i].size.rows})".ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")" + (Games.games[i].attached ? "" : " Detached")]
           end
         end
       end
@@ -103,7 +107,8 @@ module Menu
       "> - Next page",
       "< - Previous page",
       "q - Quit",
-      "Press any key to refresh. While watching, press q to return to the menu."]
+      "Press any key to refresh. While watching, press q to return to the menu.",
+      "Use uppercase to try to change size."]
       case sel
       when "<"[0]: 
         offset -= pagesize
@@ -115,12 +120,12 @@ module Menu
         end
       when "A"[0].."P"[0]:
         if offset+sel-65 < Games.games.length then
-          #puts "\033[8;#{Games.games[offset+sel-65].rows};#{Games.games[offset+sel-65].cols}t"
-          Games.watchgame "socket/" + Games.games[offset+sel-65].socket
+          puts "\033[8;#{Games.games[offset+sel-65].size.rows};#{Games.games[offset+sel-65].size.cols}t"
+          if Games.games[offset+sel-65].attached then Games.watchgame Games.games[offset+sel-65].socket end
         end
       when "a"[0].."p"[0]:
         if offset+sel-97 < Games.games.length then
-          Games.watchgame "socket/" + Games.games[offset+sel-97].socket
+          if Games.games[offset+sel-97].attached then Games.watchgame Games.games[offset+sel-97].socket end
         end
       when "q"[0], "Q"[0]: quit = true
       end
@@ -149,7 +154,7 @@ module Menu
         #if Games.index(@user, "Angband") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
         #end
-        UI.endwin
+        #UI.endwin
         Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]:
@@ -171,7 +176,7 @@ module Menu
         #if Games.index(@user, "NetHack") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
         #end
-        UI.endwin
+        #UI.endwin
         Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "nethack"
@@ -193,10 +198,8 @@ module Menu
         #if Games.index(@user, "Crawl") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         #end
-        UI.endwin
-        if not Games.attachgame Games.index(@user, "Crawl") then
-          Games.launchgame @user, "/usr/games/crawl", "Crawl", "-name \"" + @user + "\" -rc \"rcfiles/" + @user + ".crawl\" -morgue crawl", [["SHELL", "/bin/sh"]]
-        end
+        #UI.endwin
+        Games.launchgame @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl"
         Thread.new do
           Scores.updatecrawl
         end
