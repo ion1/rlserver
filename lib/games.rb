@@ -43,11 +43,13 @@ module Games
 
   def self.populate
     @games = []
-    Dir.foreach("/var/run/screen/S-" + Server::SERVER_USER) do |f|
-      unless f == "." or f == ".." then
-        pidremoved = f.sub /\A\d*\./, ""
-        if File.exists? "inprogress/" + pidremoved then
-          @games += [Game.new(f)]
+    if File.exists? "/var/run/screen/S-" + Server::SERVER_USER then
+      Dir.foreach("/var/run/screen/S-" + Server::SERVER_USER) do |f|
+        unless f == "." or f == ".." then
+          pidremoved = f.sub /\A\d*\./, ""
+          if File.exists? "inprogress/" + pidremoved then
+            @games += [Game.new(f)]
+          end
         end
       end
     end
