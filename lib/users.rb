@@ -4,6 +4,7 @@
 require 'digest'
 require 'yaml'
 require 'server'
+require 'fileutils'
 
 module Users
   USERS = 'user'
@@ -26,6 +27,10 @@ module Users
   def self.save
     File.open USERS, 'w' do |out|
       YAML.dump @users, out
+    end
+    @users.each do |user|
+      Fileutils.mkdir_p "crawl/macro/" + user.name
+      Fileutils.mkdir_p "crawl/morgue/" + user.name
     end
   end
 

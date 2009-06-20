@@ -199,7 +199,7 @@ module Menu
         #  Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         #end
         #UI.endwin
-        Games.launchgame @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl"
+        Games.launchgame @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/"
         Thread.new do
           Scores.updatecrawl
         end
