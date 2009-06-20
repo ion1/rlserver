@@ -29,8 +29,8 @@ module Users
       YAML.dump @users, out
     end
     @users.each do |user|
-      Fileutils.mkdir_p "crawl/macro/" + user.name
-      Fileutils.mkdir_p "crawl/morgue/" + user.name
+      FileUtils.mkdir_p "crawl/macro/" + user.name
+      FileUtils.mkdir_p "crawl/morgue/" + user.name
     end
   end
 
