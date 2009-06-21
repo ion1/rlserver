@@ -19,10 +19,10 @@ begin
     end
     Process.exit(1)
   end
-  pid = fork do
-    until UI.stdout_dead? do sleep 1 end
-    Process.kill "HUP", Process.ppid
-  end
+  #pid = fork do
+  #  until UI.stdout_dead? do sleep 1 end
+  #  Process.kill "HUP", Process.ppid
+  #end
   Menu.mainmenu
 ensure
   Menu.destroy

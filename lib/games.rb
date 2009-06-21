@@ -76,15 +76,20 @@ module Games
     if i >= 0 then
       @socket = @games[i].socket
       puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
-      system "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+      @pid = fork do
+        exec"dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+      end
     else
       size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
       @socket = user + "." + gamename + "." + size.cols.to_s + "x" + size.rows.to_s + "." + DateTime.now.to_s
       env.each do |e|
         ENV[e[0]] = e[1]
       end
-      system "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
+      @pid = fork do
+        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
+      end
     end
+    Process.wait @pid
     populate
     i = index user, gamename
     if i < 0 then
@@ -93,17 +98,19 @@ module Games
         system "gzip", "-q", "inprogress/" + @socket + ".ttyrec"
         FileUtils.mv "inprogress/" + @socket + ".ttyrec.gz", "ttyrec/"
       end
-    #else
-    #  system "screen", "-D", @socket
     end
   end
 
   def self.watchgame(socket)
-    system "dtach", "-a", "socket/" + socket, "-e", "\q", "-R", "-s", "-r", "screen", "-z"
+    @pid = fork do
+      exec "dtach", "-a", "socket/" + socket, "-e", "\q", "-R", "-s", "-r", "screen", "-z"
+    end
   end
 
   def self.editrc(user, game)
-    system "nano", "-R", "rcfiles/" + user + "." + game
+    @pid = fork do
+      exec "nano", "-R", "rcfiles/" + user + "." + game
+    end
   end
 
 end
