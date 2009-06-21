@@ -151,7 +151,7 @@ module Menu
       case menu [
       "Logged in as " + @user,
       "p - Play Angband",
-      "e - Edit rc file",
+      "e - Edit configuration file",
       "q - Quit"]
       when "p"[0], "P"[0]:
         Games.populate
@@ -173,7 +173,7 @@ module Menu
       case menu [
       "Logged in as " + @user,
       "p - Play NetHack",
-      "e - Edit rc file",
+      "e - Edit configuration file",
       "q - Quit"]
       when "p"[0], "P"[0]:
         Games.populate
@@ -195,7 +195,7 @@ module Menu
       case menu [
       "Logged in as " + @user,
       "p - Play Crawl",
-      "e - Edit rc file",
+      "e - Edit configuration file",
       "q - Quit"]
       when "p"[0], "P"[0]:
         Games.populate
@@ -220,8 +220,9 @@ module Menu
       case menu [
       "Logged in as " + @user, 
       "a - Angband (coming soon)", 
-      "c - Crawl SS 0.5", 
-      "n - NetHack (coming soon)", "q - Quit"]
+      "c - Crawl Stone Soup 0.5", 
+      "n - NetHack (coming soon)",
+      "q - Quit"]
       when "c"[0], "C"[0]: crawlmenu
       when "a"[0], "A"[0]: #angbandmenu
       when "n"[0], "N"[0]: #nethackmenu
