@@ -4,23 +4,22 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
 require "menu"
 require "server"
+require "games"
 
 begin
   Dir.chdir Server::SERVER_DIR
   Server.initialize
   Menu.initialize
   Signal.trap "HUP" do
-    puts "Caught HUP"
-    Games.populate
-    i = Games.index Menu.user
-    unless Games.index i < 0 then
-      system "screen", "-D", Games.games[i].socket
-    end
     Menu.destroy
-    exit
+    puts "Caught HUP"
+    if Games.socket != nil then
+      system "screen", "-D", Games.socket
+      puts "Detaching game " + Games.socket
+    end
+    Process.exit!(1)
   end
   Menu.mainmenu
 ensure
   Menu.destroy
 end
-

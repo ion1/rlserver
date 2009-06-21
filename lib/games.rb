@@ -17,6 +17,10 @@ module Games
     @games
   end
 
+  def self.socket
+    @socket
+  end
+
   class Game
     attr_reader :socket, :idle, :player, :game, :time, :size, :attached
     def initialize(name)
@@ -70,27 +74,27 @@ module Games
     populate
     i = index user, gamename
     if i >= 0 then
-      socket = @games[i].socket
+      @socket = @games[i].socket
       puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
-      system "dtach", "-A", "socket/" + socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", socket
+      system "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
     else
       size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
-      socket = user + "." + gamename + "." + size.cols.to_s + "x" + size.rows.to_s + "." + DateTime.now.to_s
+      @socket = user + "." + gamename + "." + size.cols.to_s + "x" + size.rows.to_s + "." + DateTime.now.to_s
       env.each do |e|
         ENV[e[0]] = e[1]
       end
-      system "dtach", "-A", "socket/" + socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + socket , "-e", executable + " " + options.join(" ")
+      system "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
     end
     populate
     i = index user, gamename
     if i < 0 then
       Thread.new do
-        FileUtils.mv "inprogress/" + socket, "inprogress/" + socket + ".ttyrec"
-        system "gzip", "-q", "inprogress/" + socket + ".ttyrec"
-        FileUtils.mv "inprogress/" + socket + ".ttyrec.gz", "ttyrec/"
+        FileUtils.mv "inprogress/" + @socket, "inprogress/" + @socket + ".ttyrec"
+        system "gzip", "-q", "inprogress/" + @socket + ".ttyrec"
+        FileUtils.mv "inprogress/" + @socket + ".ttyrec.gz", "ttyrec/"
       end
-    else
-      system "screen", "-D", socket
+    #else
+    #  system "screen", "-D", @socket
     end
   end
 
