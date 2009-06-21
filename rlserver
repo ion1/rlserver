@@ -10,6 +10,7 @@ begin
   Dir.chdir Server::SERVER_DIR
   Server.initialize
   Menu.initialize
+  Process.detach Process.pid
   Signal.trap "HUP" do
     Menu.destroy
     puts "Caught HUP"
@@ -17,7 +18,7 @@ begin
       system "screen", "-D", Games.socket
       puts "Detaching game " + Games.socket
     end
-    Process.exit!(1)
+    Process.exit(1)
   end
   Menu.mainmenu
 ensure
