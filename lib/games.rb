@@ -105,12 +105,14 @@ module Games
     @pid = fork do
       exec "dtach", "-a", "socket/" + socket, "-e", "\q", "-R", "-s", "-r", "screen", "-z"
     end
+    Process.wait @pid
   end
 
   def self.editrc(user, game)
     @pid = fork do
       exec "nano", "-R", "rcfiles/" + user + "." + game
     end
+    Process.wait @pid
   end
 
 end
