@@ -27,7 +27,7 @@ module Games
       pidremoved = name.sub /\A\d*\./, ""
       @socket = pidremoved
       now = Time.new
-      @idle = now - File.new("inprogress/" + pidremoved).mtime
+      @idle = now - File.stat("inprogress/" + pidremoved + ".ttyrec.bz2").mtime
       @attached = File.executable? "/var/run/screen/S-" + Server::SERVER_USER + "/" + name
       split = pidremoved.split(".")
       @player = split[0]
@@ -51,7 +51,7 @@ module Games
       Dir.foreach("/var/run/screen/S-" + Server::SERVER_USER) do |f|
         unless f == "." or f == ".." then
           pidremoved = f.sub /\A\d*\./, ""
-          if File.exists? "inprogress/" + pidremoved then
+          if File.exists? "inprogress/" + pidremoved + ".ttyrec.bz2" then
             @games += [Game.new(f)]
           end
         end
@@ -77,8 +77,8 @@ module Games
       @socket = @games[i].socket
       puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
       @pid = fork do
-        #exec "screen", "-D", "-r", @socket
         exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        #exec "screen", "-D", "-r", @socket
       end
     else
       size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
@@ -87,26 +87,23 @@ module Games
         ENV[e[0]] = e[1]
       end
       @pid = fork do
-        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
-        #exec "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
+        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "inprogress/" + @socket + ".ttyrec.bz2", "-e", executable + " " + options.join(" ")
+        #exec "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "inprogress/" + @socket + ".ttyrec.bz2" , "-e", executable + " " + options.join(" ")
       end
     end
     Process.wait @pid
     populate
     i = index user, gamename
     if i < 0 then
-      Thread.new do
-        FileUtils.mv "inprogress/" + @socket, "inprogress/" + @socket + ".ttyrec"
-        system "gzip", "-q", "inprogress/" + @socket + ".ttyrec"
-        FileUtils.mv "inprogress/" + @socket + ".ttyrec.gz", "ttyrec/"
-      end
+      FileUtils.mv "inprogress/" + @socket + ".ttyrec.bz2", "ttyrec/"
     end
   end
 
   def self.watchgame(socket)
     @pid = fork do
       #dtach -A socket -R -s -e q -z -r screen screen -x socket
-      exec "dtach", "-A", "socket/" + socket, "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s", "screen", "-x", socket
+      #exec "dtach", "-A", "socket/" + socket, "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "screen", "-x", socket
+      exec "dtach", "-a", "socket/" + socket, "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
     end
     Process.wait @pid
   end

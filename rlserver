@@ -13,10 +13,7 @@ begin
   Signal.trap "HUP" do
     Menu.destroy
     puts "Caught HUP"
-    if Games.socket != nil then
-      puts "Detaching game " + Games.socket
-      system "screen", "-D", Games.socket
-    end
+    system "screen", "-D", Games.socket
     Process.exit(1)
   end
   #pid = fork do
