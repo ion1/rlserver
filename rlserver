@@ -8,7 +8,6 @@ require "games"
 
 begin
   Dir.chdir Server::SERVER_DIR
-  Server.initialize
   Menu.initialize
   Process.detach Process.pid
   Signal.trap "HUP" do
