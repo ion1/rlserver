@@ -1,5 +1,6 @@
 multiuser on
 defwritelock on
+escape ^\\
 aclchg joosa +x meta,stuff,redisplay
 aclchg joosa -x acldel,activity,allpartial,at,autodetach,autonuke,bell_msg
 aclchg joosa -x bind,bindkey,break,bufferfile,c1,charset,chdir,clear,colon
