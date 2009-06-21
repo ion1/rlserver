@@ -13,6 +13,10 @@ module Menu
     @user = ""
   end
 
+  def self.user
+    @user
+  end
+
   def self.menuwindow
     @menuwindow
   end
