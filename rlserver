@@ -8,10 +8,11 @@ require "games"
 require "ui"
 
 begin
+  Process.detach Process.ppid
   Dir.chdir Server::SERVER_DIR
   Menu.initialize
   Signal.trap "HUP" do
-    UI.endwin
+    Menu.destroy
     puts "Caught HUP"
     if Games.socket != nil then
       puts "Detaching game " + Games.socket
