@@ -5,17 +5,17 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "menu"
 require "server"
 require "games"
+require "ui"
 
 begin
   Dir.chdir Server::SERVER_DIR
   Menu.initialize
-  Process.detach Process.pid
   Signal.trap "HUP" do
-    Menu.destroy
+    UI.endwin
     puts "Caught HUP"
     if Games.socket != nil then
-      system "screen", "-D", Games.socket
       puts "Detaching game " + Games.socket
+      system "screen", "-D", Games.socket
     end
     Process.exit(1)
   end
