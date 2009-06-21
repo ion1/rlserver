@@ -16,6 +16,7 @@ begin
     unless Games.index i < 0 then
       system "screen", "-D", Games.games[i].socket
     end
+    Menu.destroy
     exit
   end
   Menu.mainmenu
