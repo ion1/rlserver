@@ -85,6 +85,18 @@ module UI
     #def attr_on
     #end
   end
+
+  def self.stdin_dead?
+    File.stat("/dev/fd/0").nlink == 0
+  end
+  
+  def self.stdout_dead?
+    File.stat("/dev/fd/1").nlink == 0
+  end
+  
+  def self.stderr_dead?
+    File.stat("/dev/fd/2").nlink == 0
+  end
   
   def self.initialize
     Ncurses.initscr

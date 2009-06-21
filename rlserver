@@ -8,7 +8,6 @@ require "games"
 require "ui"
 
 begin
-  Process.detach Process.ppid
   Dir.chdir Server::SERVER_DIR
   Menu.initialize
   Signal.trap "HUP" do
@@ -19,6 +18,10 @@ begin
       system "screen", "-D", Games.socket
     end
     Process.exit(1)
+  end
+  pid = fork do
+    until UI.stdout_dead? do sleep 1 end
+    Process.kill "HUP", Process.ppid
   end
   Menu.mainmenu
 ensure
