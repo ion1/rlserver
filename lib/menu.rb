@@ -124,12 +124,18 @@ module Menu
         end
       when "A"[0].."P"[0]:
         if offset+sel-65 < Games.games.length then
-          puts "\033[8;#{Games.games[offset+sel-65].size.rows};#{Games.games[offset+sel-65].size.cols}t"
-          if Games.games[offset+sel-65].attached then Games.watchgame Games.games[offset+sel-65].socket end
+          if Games.games[offset+sel-65].attached then
+            UI.endwin
+            puts "\033[8;#{Games.games[offset+sel-65].size.rows};#{Games.games[offset+sel-65].size.cols}t"
+            Games.watchgame Games.games[offset+sel-65].socket
+          end
         end
       when "a"[0].."p"[0]:
         if offset+sel-97 < Games.games.length then
-          if Games.games[offset+sel-97].attached then Games.watchgame Games.games[offset+sel-97].socket end
+          if Games.games[offset+sel-97].attached then
+            UI.endwin
+            Games.watchgame Games.games[offset+sel-97].socket
+          end
         end
       when "q"[0], "Q"[0]: quit = true
       end
@@ -158,7 +164,7 @@ module Menu
         #if Games.index(@user, "Angband") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
         #end
-        #UI.endwin
+        UI.endwin
         Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]:
@@ -180,7 +186,7 @@ module Menu
         #if Games.index(@user, "NetHack") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
         #end
-        #UI.endwin
+        UI.endwin
         Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
         #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "nethack"
@@ -202,7 +208,7 @@ module Menu
         #if Games.index(@user, "Crawl") >= 0 then
         #  Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         #end
-        #UI.endwin
+        UI.endwin
         Games.launchgame @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
         Thread.new do
           Scores.updatecrawl

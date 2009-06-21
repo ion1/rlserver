@@ -77,7 +77,8 @@ module Games
       @socket = @games[i].socket
       puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
       @pid = fork do
-        exec"dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        #exec "screen", "-D", "-r", @socket
+        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
       end
     else
       size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
@@ -87,6 +88,7 @@ module Games
       end
       @pid = fork do
         exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
+        #exec "screen", "-S", @socket, "-c", "player.screenrc", "ttyrec", "inprogress/" + @socket , "-e", executable + " " + options.join(" ")
       end
     end
     Process.wait @pid
@@ -103,7 +105,8 @@ module Games
 
   def self.watchgame(socket)
     @pid = fork do
-      exec "dtach", "-a", "socket/" + socket, "-e", "\q", "-R", "-s", "-r", "screen", "-z"
+      #dtach -A socket -R -s -e q -z -r screen screen -x socket
+      exec "dtach", "-A", "socket/" + socket, "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s", "screen", "-x", socket
     end
     Process.wait @pid
   end
