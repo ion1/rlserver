@@ -16,7 +16,7 @@ begin
     if Games.socket != nil then
       system "screen", "-D", Games.socket
     end
-    #Process.exit(1)
+    exit 1
   end
   #pid = fork do
   #  until UI.stdout_dead? do sleep 1 end
