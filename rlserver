@@ -11,12 +11,12 @@ begin
   Dir.chdir Server::SERVER_DIR
   Menu.initialize
   Signal.trap "HUP" do
-    Menu.destroy
-    puts "Caught HUP"
+    #Menu.destroy
+    #puts "Caught HUP"
     if Games.socket != nil then
       system "screen", "-D", Games.socket
     end
-    Process.exit(1)
+    #Process.exit(1)
   end
   #pid = fork do
   #  until UI.stdout_dead? do sleep 1 end

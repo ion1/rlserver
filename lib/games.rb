@@ -83,10 +83,12 @@ module Games
       end
     end
     Process.wait @pid
-    populate
-    i = index user, gamename
-    if i < 0 then
-      FileUtils.mv "inprogress/" + @socket + ".ttyrec.bz2", "ttyrec/"
+    pid.fork do
+      populate
+      i = index user, gamename
+      if i < 0 then
+        FileUtils.mv "inprogress/" + @socket + ".ttyrec.bz2", "ttyrec/"
+      end
     end
   end
 
@@ -105,5 +107,4 @@ module Games
     end
     Process.wait @pid
   end
-
 end
