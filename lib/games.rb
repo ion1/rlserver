@@ -1,8 +1,6 @@
 require "date"
 require "server"
 require "fileutils"
-require "menu"
-require "ui"
 
 module Games
   def self.initialize
@@ -22,7 +20,7 @@ module Games
   end
 
   class Game
-    attr_reader :socket, :idle, :player, :game, :time, :size, :attached
+    attr_reader :socket, :idle, :player, :game, :time, :cols, :rows, :attached
     def initialize(name)
       pidremoved = name.sub /\A\d*\./, ""
       @socket = pidremoved
@@ -32,16 +30,9 @@ module Games
       split = pidremoved.split(".")
       @player = split[0]
       @game = split[1]
-      @size = Termsize.new split[2].split("x")[0].to_i, split[2].split("x")[1].to_i
+      @cols = split[2].split("x")[0].to_i
+      @rows = split[2].split("x")[1].to_i
       @time = split[3]
-    end
-  end
-
-  class Termsize
-    attr_reader :cols, :rows
-    def initialize(cols, rows)
-      @rows = rows
-      @cols = cols
     end
   end
 
@@ -70,19 +61,19 @@ module Games
     index
   end
   
-  def self.launchgame(user, executable, gamename, env, *options)
+  def self.launchgame(cols, rows, user, executable, gamename, env, *options)
     populate
     i = index user, gamename
     if i >= 0 then
       @socket = @games[i].socket
-      puts "\033[8;#{Games.games[i].size.rows};#{Games.games[i].size.cols}t"
+      puts "\033[8;#{Games.games[i].rows};#{Games.games[i].cols}t"
       @pid = fork do
         exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
         #exec "screen", "-D", "-r", @socket
       end
     else
-      size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
-      @socket = user + "." + gamename + "." + size.cols.to_s + "x" + size.rows.to_s + "." + DateTime.now.to_s
+      #size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
+      @socket = user + "." + gamename + "." + cols.to_s + "x" + rows.to_s + "." + DateTime.now.to_s
       env.each do |e|
         ENV[e[0]] = e[1]
       end

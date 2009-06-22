@@ -102,7 +102,7 @@ module Menu
       unless Games.games == [] then
         for i in offset..offset + pagesize - 1 do
           if i < Games.games.length then
-            socketmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(#{Games.games[i].size.cols}x#{Games.games[i].size.rows})".ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")" + (Games.games[i].attached ? "" : " Detached")]
+            socketmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(#{Games.games[i].cols}x#{Games.games[i].rows})".ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")" + (Games.games[i].attached ? "" : "   Detached")]
           end
         end
       end
@@ -126,7 +126,7 @@ module Menu
         if offset+sel-65 < Games.games.length then
           if Games.games[offset+sel-65].attached then
             UI.endwin
-            puts "\033[8;#{Games.games[offset+sel-65].size.rows};#{Games.games[offset+sel-65].size.cols}t"
+            puts "\033[8;#{Games.games[offset+sel-65].rows};#{Games.games[offset+sel-65].cols}t"
             Games.watchgame Games.games[offset+sel-65].socket
           end
         end
@@ -209,7 +209,7 @@ module Menu
         #  Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
         #end
         UI.endwin
-        Games.launchgame @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
+        Games.launchgame @menuwindow.columns, @menuwindow.rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
         Thread.new do
           Scores.updatecrawl
         end
