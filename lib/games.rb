@@ -83,7 +83,7 @@ module Games
       end
     end
     Process.wait @pid
-    pid.fork do
+    pid = fork do
       populate
       i = index user, gamename
       if i < 0 then
