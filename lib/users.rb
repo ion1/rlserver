@@ -44,8 +44,8 @@ module Users
     exists
   end
 
-  def self.adduser(name, password, password2)
-    if (name != "") and (password != "") and (password == password2)
+  def self.adduser(name, password)
+    if (name != "") and (password != "")
       unless exists name 
         @users = @users + [User.new(name, password)]
         save
@@ -68,7 +68,7 @@ module Users
 
   def self.checkname(name)
     valid = true
-    name.each_byte do |b|
+    name.chomp.each_byte do |b|
       case b 
       when " "[0], "-"[0], "0"[0].."9"[0], "A"[0].."Z"[0], "_"[0], "a"[0].."z"[0]:
       else 
@@ -79,8 +79,8 @@ module Users
     valid
   end
 
-  def self.changepass(name, password, password2)
-    if (name != "") and (password != "") and (password == password2)
+  def self.changepass(name, password)
+    if (name != "") and (password != "")
       @users[getid(name.chomp)].password = Digest::SHA256.digest(password.chomp)
       save
       true

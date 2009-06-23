@@ -68,11 +68,11 @@ module Games
       @socket = @games[i].socket
       puts "\033[8;#{Games.games[i].rows};#{Games.games[i].cols}t"
       @pid = fork do
+        system "screen", "-D", @socket
         exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
         #exec "screen", "-D", "-r", @socket
       end
     else
-      #size = Termsize.new(Menu.menuwindow.columns, Menu.menuwindow.rows)
       @socket = user + "." + gamename + "." + cols.to_s + "x" + rows.to_s + "." + DateTime.now.to_s
       env.each do |e|
         ENV[e[0]] = e[1]
