@@ -340,6 +340,7 @@ module Menu
         destroy
         Games.editrc @user, "crawl"
         initncurses
+        resize
       when "q"[0], "Q"[0]: quit = true
       end
     end
