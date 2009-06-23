@@ -336,7 +336,10 @@ module Menu
           Scores.updatecrawl
         end
         #UI.initialize
-      when "e"[0], "E"[0]: Games.editrc @user, "crawl"
+      when "e"[0], "E"[0]:
+        destroy
+        Games.editrc @user, "crawl"
+        initncurses
       when "q"[0], "Q"[0]: quit = true
       end
     end
