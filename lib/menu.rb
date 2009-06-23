@@ -36,7 +36,7 @@ module Menu
     footer = Ncurses::WINDOW.new 1, 0, @rows-1, 0
     header.attrset Ncurses.COLOR_PAIR(1) | Ncurses::A_BOLD
     footer.attrset Ncurses.COLOR_PAIR(1)
-    Ncurses.scrollok @menu, true
+    Ncurses.scrollok menu, true
     @header_panel = Ncurses::Panel.new_panel header
     @footer_panel = Ncurses::Panel.new_panel footer
     @menu_panel = Ncurses::Panel.new_panel menu
