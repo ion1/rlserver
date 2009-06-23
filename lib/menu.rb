@@ -332,6 +332,7 @@ module Menu
         Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
         #Ncurses.reset_prog_mode
         initncurses
+        resize
         Thread.new do
           Scores.updatecrawl
         end
