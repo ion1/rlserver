@@ -170,9 +170,9 @@ module Scores
 <html>
   <head>
     <title>Crawl Scores</title>
-    <script type="text/javascript" src="sortabletable/js/sortabletable.js"></script>
+    <script type="text/javascript" src=".sortabletable/js/sortabletable.js"></script>
     <link rel="stylesheet" type="text/css" href="sortabletable/css/sortabletable.css"/>
-    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="stylesheet" type="text/css" href=".style.css"/>
   </head>
   <body>
     <p>
