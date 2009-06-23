@@ -177,7 +177,7 @@ module Menu
           win.getstr pass2
           if pass2 == "" then break end
           if pass == pass2
-            changed = Users.changepass name, pass
+            changed = Users.changepass @user, pass
           else
             win.printw "Sorry, passwords do not match.\n"
             Ncurses.flushinp

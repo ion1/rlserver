@@ -19,8 +19,8 @@ module Users
   class User
     attr_accessor :name, :password
     def initialize(name, password)
-      @name = name.chomp
-      @password = Digest::SHA256.digest password.chomp
+      @name = name
+      @password = Digest::SHA256.digest password
     end
   end
   
@@ -60,15 +60,17 @@ module Users
     id = -1
     if exists(name) then
       for i in 0..@users.length-1 do
-        if @users[i].name == name then id = i end
-     end
+        if @users[i].name == name then
+          id = i
+        end
+      end
     end
     id
   end
 
   def self.checkname(name)
     valid = true
-    name.chomp.each_byte do |b|
+    name.each_byte do |b|
       case b 
       when " "[0], "-"[0], "0"[0].."9"[0], "A"[0].."Z"[0], "_"[0], "a"[0].."z"[0]:
       else 
@@ -81,7 +83,7 @@ module Users
 
   def self.changepass(name, password)
     if (name != "") and (password != "")
-      @users[getid(name.chomp)].password = Digest::SHA256.digest(password.chomp)
+      @users[getid(name)].password = Digest::SHA256.digest(password)
       save
       true
     else
@@ -93,7 +95,7 @@ module Users
     login = ""
     @users.each do |user|
       if login == ""
-        if (user.name == name.chomp) and (user.password == Digest::SHA256.digest(password.chomp))
+        if (user.name == name) and (user.password == Digest::SHA256.digest(password))
           login = user.name
         end
       end
