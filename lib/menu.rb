@@ -6,6 +6,9 @@ require "scores"
 
 module Menu
   def self.initncurses
+    Signal.trap "WINCH" do
+      resize
+    end
     Ncurses.nonl
     Ncurses.cbreak
     Ncurses.stdscr.intrflush(false)
@@ -15,11 +18,8 @@ module Menu
     Ncurses.start_color
     Ncurses.init_pair 1, Ncurses::COLOR_WHITE, Ncurses::COLOR_BLUE
   end
-  
+
   def self.initialize
-    Signal.trap "WINCH" do
-      resize
-    end
     Ncurses.initscr
     initncurses
     initwindows
@@ -245,6 +245,7 @@ module Menu
             Games.watchgame Games.games[offset+sel-65].socket
             Ncurses.reset_prog_mode
             initncurses
+            resize
           end
         end
       when "a"[0].."p"[0]:
@@ -326,16 +327,10 @@ module Menu
       "q - Quit")
       when "p"[0], "P"[0]:
         Games.populate
-        #if Games.index(@user, "Crawl") >= 0 then
-        #  Process.kill("HUP", Games.games[Games.index(@user, "Crawl")].pid)
-        #end
-        #UI.endwin
-        cols = Ncurses.getmaxx Ncurses.stdscr
-        rows = Ncurses.getmaxy Ncurses.stdscr
-        Ncurses.def_prog_mode
+        #Ncurses.def_prog_mode
         destroy
-        Games.launchgame cols, rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
-        Ncurses.reset_prog_mode
+        Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
+        #Ncurses.reset_prog_mode
         initncurses
         Thread.new do
           Scores.updatecrawl
@@ -396,6 +391,7 @@ module Menu
   end
     
   def self.destroy
+    Signal.trap "WINCH" do end
     Ncurses.echo
     Ncurses.nocbreak
     Ncurses.nl
