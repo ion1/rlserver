@@ -125,35 +125,36 @@ module Menu
       win.getstr getname
       name = getname
     end
-    if name == "" then break end
-    until created do
-      unless Users.exists name then
-        Ncurses.noecho
-        win.printw "Password: "
-        pass = ""
-        win.getstr pass
-        if pass == "" then
-          name = ""
-          break
-        end
-        win.printw "Retype password: "
-        pass2 = ""
-        win.getstr pass2
-        if pass2 == "" then
-          name = ""
-          break
-        end
-        if pass == pass2
-          Users.adduser name, pass
-          Users.login name, pass
-          created = true
+    unless name == "" then
+      until created do
+        unless Users.exists name then
+          Ncurses.noecho
+          win.printw "Password: "
+          pass = ""
+          win.getstr pass
+          if pass == "" then
+            name = ""
+            break
+          end
+          win.printw "Retype password: "
+          pass2 = ""
+          win.getstr pass2
+          if pass2 == "" then
+            name = ""
+            break
+          end
+          if pass == pass2
+            Users.adduser name, pass
+            Users.login name, pass
+            created = true
+          else
+            name = ""
+            win.printw "Sorry, passwords do not match.\n"
+            Ncurses.flushinp
+          end
         else
-          name = ""
-          win.printw "Sorry, passwords do not match.\n"
-          Ncurses.flushinp
+          win.printw "The player already exists.\n"
         end
-      else
-        win.printw "The player already exists.\n"
       end
     end
     if created then status "Logged in as " + name end
