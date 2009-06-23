@@ -17,6 +17,7 @@ module Menu
     Ncurses.start_color
     Ncurses.init_pair 1, Ncurses::COLOR_WHITE, Ncurses::COLOR_BLUE
     Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
+    @saved_curs = Ncurses.curs_set 0
   end
 
   def self.initialize
@@ -85,6 +86,7 @@ module Menu
     loggedin = false
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
+    Ncurses.curs_set @saved_curs
     until loggedin do
       Ncurses.echo
       win.printw "Name: "
@@ -104,6 +106,7 @@ module Menu
       end
     end
     if loggedin then status "Logged in as " + name end
+    Ncurses.curs_set 0
     name
   end
 
@@ -112,6 +115,7 @@ module Menu
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
     created = false
+    Ncurses.curs_set @saved_curs
     name = "????"
     Ncurses.echo
     until Users.checkname name do
@@ -153,6 +157,7 @@ module Menu
       end
     end
     if created then status "Logged in as " + name end
+    Ncurses.curs_set 0
     name
   end
 
@@ -162,6 +167,7 @@ module Menu
     Ncurses.noecho
     win.clear
     changed = false
+    Ncurses.curs_set @saved_curs
     until changed do
       win.printw "Blank entry aborts.\n"
       win.printw "Current password: "
@@ -193,6 +199,7 @@ module Menu
       end
     end
     if changed then status "Password updated successfully" end
+    Ncurses.curs_set 0
   end
 
   def self.mktime(time)
@@ -236,8 +243,8 @@ module Menu
       "",
       ((active > 0) ? "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active} " : "") + ((detached > 0) ? "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)" : ""),
       "Use uppercase to try to resize the terminal (recommended).",
-      "While watching, press q to return to the menu.",
-      "Press any key to refresh. Auto refresh every five seconds."])
+      "Press any key to refresh. Auto refresh every five seconds.",
+      "While watching, press q to return to the menu."])
       case sel
       when "<"[0], Ncurses::KEY_PPAGE: 
         offset -= pagesize
@@ -369,7 +376,7 @@ module Menu
     parsed = []
     i = 1
     scores.data.each do |score|
-      parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{score["tmsg"].chomp} (#{score["place"]})"]
+      parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{(score.has_key?("vmsg") ? score["vmsg"].chomp : score["tmsg"].chomp)} (#{score["place"]})"]
       i += 1
     end
     offset = 0
@@ -391,10 +398,10 @@ module Menu
       Ncurses::Panel.update_panels
       Ncurses.doupdate
       case win.getch
-      when Ncurses::KEY_PPAGE:
+      when "<"[0], Ncurses::KEY_PPAGE:
         offset -= win.getmaxy
         if offset < 0 then offset = 0 end
-      when Ncurses::KEY_NPAGE:
+      when ">"[0], Ncurses::KEY_NPAGE:
         offset += win.getmaxy
         if offset > parsed.length - win.getmaxy - 1 then offset -= win.getmaxy end
       when "q"[0], "Q"[0]: quit = true

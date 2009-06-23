@@ -20,7 +20,7 @@ module Scores
         end
       end
     end
-      
+
     def calculate_bonus
       @player_points = {}
       @data.each do |dat|
