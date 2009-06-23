@@ -222,8 +222,10 @@ module Menu
       Games.populate
       total = Games.games.length
       parsed = []
+      active_games = []
       Games.games.each do |game|
         if game.attached then
+          active_games += [game]
           parsed += [game.player.ljust(15) + game.game.ljust(15) + "(#{game.cols}x#{game.rows})".ljust(15) + "(idle " + mktime(game.idle.round) + ")"]
         end
       end
@@ -250,31 +252,27 @@ module Menu
         offset -= pagesize
         if offset < 0 then offset = 0 end
       when ">"[0], Ncurses::KEY_NPAGE:
-        if Games.games.length > pagesize and offset+pagesize < Games.games.length then
+        if active > pagesize and offset+pagesize < active then
           offset += pagesize
-          if offset > Games.games.length-1 then offset -= pagesize end
+          if offset > active-1 then offset -= pagesize end
         end
       when "A"[0].."P"[0]:
-        if offset+sel-65 < Games.games.length then
-          if Games.games[offset+sel-65].attached then
-            Ncurses.def_prog_mode
-            destroy
-            puts "\033[8;#{Games.games[offset+sel-65].rows};#{Games.games[offset+sel-65].cols}t"
-            Games.watchgame Games.games[offset+sel-65].socket
-            Ncurses.reset_prog_mode
-            initncurses
-            resize
-          end
+        if offset+sel-65 < active then
+          Ncurses.def_prog_mode
+          destroy
+          puts "\033[8;#{active_games[offset+sel-65].rows};#{active_games[offset+sel-65].cols}t"
+          Games.watchgame active_games[offset+sel-65].socket
+          Ncurses.reset_prog_mode
+          initncurses
+          resize
         end
       when "a"[0].."p"[0]:
-        if offset+sel-97 < Games.games.length then
-          if Games.games[offset+sel-97].attached then
-            Ncurses.def_prog_mode
-            destroy
-            Games.watchgame Games.games[offset+sel-97].socket
-            Ncurses.reset_prog_mode
-            initncurses
-          end
+        if offset+sel-97 < active then
+          Ncurses.def_prog_mode
+          destroy
+          Games.watchgame active_games[offset+sel-97].socket
+          Ncurses.reset_prog_mode
+          initncurses
         end
       when "q"[0], "Q"[0]: quit = true
       end
