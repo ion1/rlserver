@@ -11,12 +11,12 @@ module Menu
     end
     Ncurses.nonl
     Ncurses.cbreak
-    Ncurses.stdscr.intrflush(false)
-    Ncurses.stdscr.keypad(true)
+    Ncurses.stdscr.intrflush false
     Ncurses.noecho
     Ncurses.clear
     Ncurses.start_color
     Ncurses.init_pair 1, Ncurses::COLOR_WHITE, Ncurses::COLOR_BLUE
+    Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
   end
 
   def self.initialize
@@ -33,6 +33,7 @@ module Menu
     @cols = Ncurses.getmaxx Ncurses.stdscr
     header = Ncurses::WINDOW.new 1, 0, 0, 0
     menu = Ncurses::WINDOW.new @rows-4, @cols-2, 2, 1
+    menu.keypad true
     footer = Ncurses::WINDOW.new 1, 0, @rows-1, 0
     header.attrset Ncurses.COLOR_PAIR(1) | Ncurses::A_BOLD
     footer.attrset Ncurses.COLOR_PAIR(1)
@@ -208,33 +209,43 @@ module Menu
     #pagesize = @menu.rows - 4 # we're limited to 16 lines for now
     pagesize = 16
     chars = "abcdefghijklmnop"
+    Ncurses.halfdelay 50
     while !quit do
       title "Watch games"
       Games.populate
-      socketmenu = []
-      unless Games.games == [] then
-        for i in offset..offset + pagesize - 1 do
-          if i < Games.games.length then
-            socketmenu += [chars[i % pagesize,1] + " - " + Games.games[i].player.ljust(15) + Games.games[i].game.ljust(15) + "(#{Games.games[i].cols}x#{Games.games[i].rows})".ljust(15) + "(idle " + mktime(Games.games[i].idle.round) + ")" + (Games.games[i].attached ? "" : "   Detached")]
-          end
+      total = Games.games.length
+      parsed = []
+      Games.games.each do |game|
+        if game.attached then
+          parsed += [game.player.ljust(15) + game.game.ljust(15) + "(#{game.cols}x#{game.rows})".ljust(15) + "(idle " + mktime(game.idle.round) + ")"]
         end
       end
-      if socketmenu.empty? then socketmenu = ["There are no games running."] end
+      active = parsed.length
+      detached = total - active
+      socketmenu = []
+      if parsed.length > 0 then
+        for i in offset..offset + pagesize - 1 do
+          if i < active then
+            socketmenu += [chars[i % pagesize,1] + " - " + parsed[i]]
+          end
+        end
+      else
+        socketmenu = ["There are no active games."]
+      end
       sel = menu *(socketmenu + [
       "",
-      "> - Next page",
-      "< - Previous page",
-      "q - Quit",
-      "Press any key to refresh. While watching, press q to return to the menu.",
-      "Use uppercase to try to change size (recommended)."])
+      ((active > 0) ? "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active} " : "") + ((detached > 0) ? "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)" : ""),
+      "Use uppercase to try to resize the terminal (recommended).",
+      "While watching, press q to return to the menu.",
+      "Press any key to refresh. Auto refresh every five seconds."])
       case sel
-      when "<"[0]: 
+      when "<"[0], Ncurses::KEY_PPAGE: 
         offset -= pagesize
         if offset < 0 then offset = 0 end
-      when ">"[0]:
+      when ">"[0], Ncurses::KEY_NPAGE:
         if Games.games.length > pagesize and offset+pagesize < Games.games.length then
           offset += pagesize
-          if offset > Games.games.length-1 then offset = Games.games.length-1 end
+          if offset > Games.games.length-1 then offset -= pagesize end
         end
       when "A"[0].."P"[0]:
         if offset+sel-65 < Games.games.length then
@@ -261,6 +272,7 @@ module Menu
       when "q"[0], "Q"[0]: quit = true
       end
     end
+    Ncurses.cbreak
   end
 
   def self.menu(*lines)
@@ -324,6 +336,7 @@ module Menu
       case menu(
       "p - Play Crawl",
       "e - Edit configuration file",
+      "s - View scores",
       "q - Quit")
       when "p"[0], "P"[0]:
         Games.populate
@@ -342,6 +355,48 @@ module Menu
         Games.editrc @user, "crawl"
         initncurses
         resize
+      when "s"[0], "S"[0]: crawlscores
+      when "q"[0], "Q"[0]: quit = true
+      end
+    end
+  end
+
+  def self.crawlscores
+    win = Ncurses::Panel.panel_window @menu_panel
+    win.clear
+    scores = Scores::CrawlScores.new Scores::CRAWL_FILENAME
+    quit = false
+    parsed = []
+    i = 1
+    scores.data.each do |score|
+      parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{score["tmsg"].chomp} (#{score["place"]})"]
+      i += 1
+    end
+    offset = 0
+    while !quit do
+      title "Crawl scores"
+      win.clear
+      row = 0
+      for i in offset..offset + win.getmaxy - 1 do
+        if i < parsed.length then
+          win.move row, 0
+          if scores.data[i]["name"] == @user then
+            win.attron Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
+          end
+          win.printw parsed[i] + (row < win.getmaxy - 1 ? "\n" : "")
+          win.attroff Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
+          row += 1
+        end
+      end
+      Ncurses::Panel.update_panels
+      Ncurses.doupdate
+      case win.getch
+      when Ncurses::KEY_PPAGE:
+        offset -= win.getmaxy
+        if offset < 0 then offset = 0 end
+      when Ncurses::KEY_NPAGE:
+        offset += win.getmaxy
+        if offset > parsed.length - win.getmaxy - 1 then offset -= win.getmaxy end
       when "q"[0], "Q"[0]: quit = true
       end
     end

@@ -1,8 +1,8 @@
-CRAWL_FILENAME = "/var/games/crawl/saves/scores"
-CRAWL_HTML = "crawl/scores.html"
-COLORS = ["odd", "even"]
-
 module Scores
+  CRAWL_FILENAME = "/var/games/crawl/saves/scores"
+  CRAWL_HTML = "crawl/scores.html"
+  COLORS = ["odd", "even"]
+
   class CrawlScores
     attr_reader :player_points, :bonus_points, :total_points, :bonus_mult, :data, :bonuses
     def initialize(filename)
@@ -10,18 +10,22 @@ module Scores
       File.open(filename) do |file|
         file.read.each_line do |line|
           dataset = {}
-          line.split(":").each do |pair|
-            key, value = pair.split("=")
+          newline = line.sub /::/, "#"
+          newline.split(":").each do |pair|
+            newpair = pair.sub /#/, ":"
+            key, value = newpair.split("=")
             dataset[key] = value
           end
           @data << dataset
         end
       end
+    end
+      
+    def calculate_bonus
       @player_points = {}
       @data.each do |dat|
         @player_points[dat["name"]] = @player_points[dat["name"]].to_i + dat["sc"].to_i
       end
-      
       race = []
       cls  = []
       @bonus_points = {}
@@ -49,18 +53,19 @@ module Scores
         @total_points[key] = @total_points[key].to_f + val * @bonus_mult
       end
     end
+
     def range_type_verb(score)
       case score["kaux"][0,4]
-      when "Shot": return "Shot"
-      when "Hit ", "voll": return "Hit from afar"
-      else return "Blasted"
+      when "Shot": return "shot"
+      when "Hit ", "voll": return "hit from afar"
+      else return "blasted"
       end
     end
     def damage_verb(score)
-      if score["hp"].to_i > -6 then return "Slain"
-      elsif score["hp"].to_i > -14 then return "Mangled"
-      elsif score["hp"].to_i > -22 then return "Demolished"
-      else return "Annihilated"
+      if score["hp"].to_i > -6 then return "slain"
+      elsif score["hp"].to_i > -14 then return "mangled"
+      elsif score["hp"].to_i > -22 then return "demolished"
+      else return "annihilated"
       end
     end
     def strip_article_a(s)
@@ -84,77 +89,77 @@ module Scores
       when "mon": 
         desc += damage_verb(score) + " by " + death_source_desc(score)
         #if score["kaux"] != nil then desc += " with " + score["kaux"] end
-      when "pois": desc += "Succumbed to poison"
-      when "cloud": desc += "Engulfed by a cloud of #{score["kaux"]}"
+      when "pois": desc += "succumbed to poison"
+      when "cloud": desc += "engulfed by a cloud of #{score["kaux"]}"
       when "beam": 
         desc += range_type_verb(score) + " by " + death_source_desc(score)
       when "lava":
         if score["race"] == "Mummy" then
-          desc += "Turned to ash by lava"
+          desc += "turned to ash by lava"
         else
-          desc += "Took a swim in molten lava"
+          desc += "took a swim in molten lava"
         end
       when "water":
         if score["race"] == "Mummy" then
-          desc += "Soaked and fell apart"
+          desc += "soaked and fell apart"
         else
-          desc += "Drowned"
+          desc += "drowned"
         end
       when "trap":
-        desc += "Killed by triggering " + score["kaux"] + " trap"
+        desc += "killed by triggering " + score["kaux"] + " trap"
       when "leaving":
         if score["nrune"].to_i > 0 then
-          desc += "Got out of the dungeon"
+          desc += "got out of the dungeon"
         else
-          desc += "Got out of the dungeon alive"
+          desc += "got out of the dungeon alive"
         end
       when "winning":
-        desc += "Escaped with the Orb"
+        desc += "escaped with the Orb"
         if score["nrune"].to_i < 1 then desc += "!" end
       when "quitting":
-        desc += "Quit"
+        desc += "quit the game"
       when "draining":
-        desc += "Was drained of all life"
+        desc += "was drained of all life"
       when "starvation":
-        desc += "Starved to death"
+        desc += "starved to death"
       when "freezing":
-        desc += "Froze to death"
+        desc += "froze to death"
       when "burning":
-        desc += "Burnt to a crisp"
+        desc += "burnt to a crisp"
       when "wild_magic":
         if score["kaux"]["by "] == "by " then
-          desc =+ "Killed " + score["kaux"]
+          desc =+ "killed " + score["kaux"]
         else
-          desc += "Killed by " + score["kaux"]
+          desc += "killed by " + score["kaux"]
         end
       when "statue":
-        desc += "Killed by a statue"
+        desc += "killed by a statue"
       when "rotting":
-        desc += "Rotted away"
+        desc += "rotted away"
       when "targeting":
-        desc += "Killed themselves with bad targetting"
+        desc += "killed themselves with bad targetting"
       when "spore":
-        desc += "Killed by an exploding spore"
+        desc += "killed by an exploding spore"
       when "tso_smiting":
-        desc += "Smote by The Shining One"
+        desc += "smote by The Shining One"
       when "petrification":
-        desc += "Turned to stone"
+        desc += "turned to stone"
       when "unknown":
-        desc += "Died"
+        desc += "died"
       when "falling_down_stairs":
-        desc += "Fell down a flight of stairs"
+        desc += "fell down a flight of stairs"
       when "acid":
-        desc += "Splashed by acid"
+        desc += "splashed by acid"
       when "curare":
-        desc += "Asphyxiated"
+        desc += "asphyxiated"
       when "melting":
-        desc += "Melted into a puddle"
+        desc += "melted into a puddle"
       when "bleeding":
-        desc += "Bled to death"
+        desc += "bled to death"
       when "something":
-        desc += "Nibbled to death by software bugs"
+        desc += "nibbled to death by software bugs"
       when "stupidity":
-        desc += "Forgot to breathe"
+        desc += "forgot to breathe"
       end
       if score["nrune"].to_i > 0 then
         desc += " (with #{score["nrune"]} rune#{if score["nrune"].to_i > 1 then "s" end})"
@@ -165,6 +170,7 @@ module Scores
 
   def self.updatecrawl
     score = CrawlScores.new(CRAWL_FILENAME)
+    score.calculate_bonus
     html = <<HTML_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
