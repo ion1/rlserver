@@ -217,8 +217,8 @@ module Menu
     #pagesize = @menu.rows - 4 # we're limited to 16 lines for now
     pagesize = 16
     chars = "abcdefghijklmnop"
-    Ncurses.halfdelay 50
     while !quit do
+      Ncurses.halfdelay 50
       title "Watch games"
       Games.populate
       total = Games.games.length
