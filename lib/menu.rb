@@ -418,12 +418,14 @@ module Menu
 
   def self.count_games
     Games.populate
-    if Games.by_user.key? @user then
-      @count = Games.by_user[@user].length
-    else
-      @count = 0
+    unless @user == "" then
+      if Games.by_user.key? @user then
+        @count = Games.by_user[@user].length
+      else
+        @count = 0
+      end
+      status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
     end
-    status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
   end
 
   def self.mainmenu
@@ -443,7 +445,6 @@ module Menu
         when "q"[0], "Q"[0]: quit = true
         end
       else
-        Games.populate
         count_games
         case menu(
         "g - Games",
