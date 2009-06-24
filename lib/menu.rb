@@ -127,7 +127,7 @@ module Menu
     end
     unless name == "" then
       until created do
-        unless Users.exists name then
+        unless Users.exists? name then
           Ncurses.noecho
           win.printw "Password: "
           pass = ""
@@ -185,7 +185,8 @@ module Menu
           win.getstr pass2
           if pass2 == "" then break end
           if pass == pass2
-            changed = Users.changepass @user, pass
+            changed = true
+            Users.adduser @user, pass
           else
             win.printw "Sorry, passwords do not match.\n"
             Ncurses.flushinp

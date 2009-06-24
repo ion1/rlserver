@@ -7,15 +7,20 @@ require 'server'
 require 'fileutils'
 
 module Users
-  USERS = 'user'
+  USERS = 'users'
   def self.load
     if File.exists? USERS then
       @users = YAML.load_file USERS
     else
-      @users = []
+      @users = {}
       save
     end
   end
+
+  def self.load_old
+    @users = YAML.load_file "user"
+  end
+  
   class User
     attr_accessor :name, :password
     def initialize(name, password)
@@ -23,56 +28,35 @@ module Users
       @password = Digest::SHA256.digest password
     end
   end
+
+  def self.users
+    @users
+  end
   
   def self.save
     File.open USERS, 'w' do |out|
       YAML.dump @users, out
     end
-    @users.each do |user|
-      FileUtils.mkdir_p "crawl/macro/" + user.name
-      FileUtils.mkdir_p "crawl/morgue/" + user.name
+    @users.each_key do |user|
+      FileUtils.mkdir_p "crawl/macro/" + user
+      FileUtils.mkdir_p "crawl/morgue/" + user
     end
   end
 
-  def self.exists(username)
-    exists = false
-    @users.each do |user|
-      unless exists
-        exists = user.name == username
-      end
-    end
-    exists
+  def self.exists?(username)
+    @users.has_key? username
   end
 
   def self.adduser(name, password)
-    if (name != "") and (password != "")
-      unless exists name 
-        @users = @users + [User.new(name, password)]
-        save
-      end
-      true
-    else
-      false
-    end
-  end
-
-  def self.getid(name)
-    id = -1
-    if exists(name) then
-      for i in 0..@users.length-1 do
-        if @users[i].name == name then
-          id = i
-        end
-      end
-    end
-    id
+    @users[name] = Digest::SHA256.digest password
+    save
   end
 
   def self.checkname(name)
     valid = true
-    name.each_byte do |b|
+    name.each_char do |b|
       case b 
-      when " "[0], "-"[0], "0"[0].."9"[0], "A"[0].."Z"[0], "_"[0], "a"[0].."z"[0]:
+      when " ", "-", "0".."9", "A".."Z", "_", "a".."z":
       else 
         valid = false
         break
@@ -81,26 +65,8 @@ module Users
     valid
   end
 
-  def self.changepass(name, password)
-    if (name != "") and (password != "")
-      @users[getid(name)].password = Digest::SHA256.digest(password)
-      save
-      true
-    else
-      false
-    end
-  end
-  
   def self.login(name, password)
-    login = ""
-    @users.each do |user|
-      if login == ""
-        if (user.name == name) and (user.password == Digest::SHA256.digest(password))
-          login = user.name
-        end
-      end
-    end
-    login
+    @users[name] == Digest::SHA256.digest(password) ? name : ""
   end
 end
 
