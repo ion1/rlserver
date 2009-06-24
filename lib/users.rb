@@ -44,7 +44,7 @@ module Users
   end
 
   def self.exists?(username)
-    @users.has_key? username
+    username != "" and @users.has_key? username
   end
 
   def self.adduser(name, password)

@@ -117,42 +117,44 @@ module Menu
     Ncurses.curs_set 1
     name = "????"
     Ncurses.echo
+    win.printw "Alphanumerics, spaces, dashes and underscores only.\n"
+    win.printw "Blank entry aborts.\n"
     until Users.checkname name do
-      win.printw "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
       win.printw "Name: "
       getname = ""
       win.getstr getname
       name = getname
+      if Users.exists? name then
+        win.printw "The player already exists.\n"
+        name = "????"
+      elsif !Users.checkname name
+        win.printw "Alphanumerics, spaces, dashes and underscores only.\n"
+      end
     end
     unless name == "" then
       until created do
-        unless Users.exists? name then
-          Ncurses.noecho
-          win.printw "Password: "
-          pass = ""
-          win.getstr pass
-          if pass == "" then
-            name = ""
-            break
-          end
-          win.printw "Retype password: "
-          pass2 = ""
-          win.getstr pass2
-          if pass2 == "" then
-            name = ""
-            break
-          end
-          if pass == pass2
-            Users.adduser name, pass
-            Users.login name, pass
-            created = true
-          else
-            name = ""
-            win.printw "Sorry, passwords do not match.\n"
-            Ncurses.flushinp
-          end
+        Ncurses.noecho
+        win.printw "Password: "
+        pass = ""
+        win.getstr pass
+        if pass == "" then
+          name = ""
+          break
+        end
+        win.printw "Retype password: "
+        pass2 = ""
+        win.getstr pass2
+        if pass2 == "" then
+          name = ""
+          break
+        end
+        if pass == pass2
+          Users.adduser name, pass
+          Users.login name, pass
+          created = true
         else
-          win.printw "The player already exists.\n"
+          win.printw "Sorry, passwords do not match.\n"
+          Ncurses.flushinp
         end
       end
     end
@@ -202,6 +204,82 @@ module Menu
     if changed then status "Password updated successfully" end
     Ncurses.curs_set 0
   end
+  
+  def self.menu(clear, *choices)
+    Ncurses.noecho
+    win = Ncurses::Panel.panel_window @menu_panel
+    if clear then win.clear end
+    choices.each do |s|
+      unless s[1] == nil then
+        win.printw "#{s[0][0, 1]} - #{s[1]}\n"
+      end
+    end
+    Ncurses::Panel.update_panels
+    Ncurses.doupdate
+    ch = win.getch
+    case ch when 0..255 then
+      ch.chr
+    else
+      ch
+    end
+  end
+
+  def self.crawlscores
+    win = Ncurses::Panel.panel_window @menu_panel
+    win.clear
+    scores = Scores::CrawlScores.new Scores::CRAWL_FILENAME
+    quit = false
+    parsed = []
+    i = 1
+    scores.data.each do |score|
+      #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{(score.has_key?("vmsg") ? score["vmsg"].chomp : score["tmsg"].chomp)} (#{score["place"]})"]
+      #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{"(#{score["place"]})".ljust(9)} #{score["tmsg"].chomp}"]
+      parsed += ["%4u. %8s %-10s %s%02s %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"]]]
+      i += 1
+    end
+    offset = 0
+    while !quit do
+      title "Crawl scores"
+      status "Press page up, page down, <, > to scroll, q to go back"
+      win.clear
+      row = 0
+      offset.upto(offset + win.getmaxy - 1) do |i|
+        if i < parsed.length then
+          win.move row, 0
+          if scores.data[i]["name"] == @user then
+            win.attron Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
+          end
+          win.printw parsed[i] + (row < win.getmaxy - 1 ? "\n" : "")
+          win.attroff Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
+          row += 1
+        end
+      end
+      Ncurses::Panel.update_panels
+      Ncurses.doupdate
+      case win.getch
+      when "<"[0], Ncurses::KEY_PPAGE:
+        offset -= win.getmaxy
+        if offset < 0 then offset = 0 end
+      when ">"[0], Ncurses::KEY_NPAGE:
+        offset += win.getmaxy
+        if offset >= parsed.length - win.getmaxy then offset -= win.getmaxy end
+      when "q"[0], "Q"[0]: quit = true
+      end
+    end
+  end
+
+  def self.count_games
+    @count = 0
+    unless @user == "" then
+      Games.populate
+      if Games.by_user.key? @user then
+        @count = Games.by_user[@user].length
+      end
+      status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
+    else
+      status "Not logged in" 
+    end
+  end
 
   def self.mktime(time)
     hour = time / 3600
@@ -221,7 +299,8 @@ module Menu
     while !quit do
       Ncurses.halfdelay 50
       title "Watch games"
-      count_games
+      status "Press page up, page down, <, > to scroll, q to go back"
+      Games.populate
       total = Games.games.length
       parsed = []
       active_games = []
@@ -294,25 +373,6 @@ module Menu
     Ncurses.cbreak
   end
 
-  def self.menu(clear, *choices)
-    Ncurses.noecho
-    win = Ncurses::Panel.panel_window @menu_panel
-    if clear then win.clear end
-    choices.each do |s|
-      unless s[1] == nil then
-        win.printw "#{s[0][0, 1]} - #{s[1]}\n"
-      end
-    end
-    Ncurses::Panel.update_panels
-    Ncurses.doupdate
-    ch = win.getch
-    case ch when 0..255 then
-      ch.chr
-    else
-      ch
-    end
-  end
-
 #  def self.angbandmenu
 #    quit = false
 #    while !quit do
@@ -350,73 +410,39 @@ module Menu
     while !quit do
       count_games
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
-      case menu(true,
-                ["p", "Play Crawl"],
-                ["e", "Edit configuration file"],
-                ["s", "View scores"],
-                ["q", "Quit"])
+      choices = []
+      unless @user == "" then
+        choices += [
+          ["p", "Play Crawl"],
+          ["e", "Edit configuration file"]]
+      end
+      choices +=[
+        ["s", "View scores"],
+        ["q", "Back"]]
+      case menu(true, *choices)
       when "P", "p":
-        Ncurses.def_prog_mode
-        destroy
-        Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
-        initncurses
-        Ncurses.reset_prog_mode
-        resize
-        Thread.new do
-          Scores.updatecrawl
+        unless @user == "" then
+          Ncurses.def_prog_mode
+          destroy
+          Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
+          initncurses
+          Ncurses.reset_prog_mode
+          resize
+          Thread.new do
+            Scores.updatecrawl
+          end
         end
       when "E", "e":
-        Ncurses.def_prog_mode
-        destroy
-        Games.editrc @user, "crawl"
-        initncurses
-        Ncurses.reset_prog_mode
-        resize
+        unless @user == "" then
+          Ncurses.def_prog_mode
+          destroy
+          Games.editrc @user, "crawl"
+          initncurses
+          Ncurses.reset_prog_mode
+          resize
+        end
       when "S", "s": crawlscores
       when "Q", "q": quit = true
-      end
-    end
-  end
-
-  def self.crawlscores
-    win = Ncurses::Panel.panel_window @menu_panel
-    win.clear
-    scores = Scores::CrawlScores.new Scores::CRAWL_FILENAME
-    quit = false
-    parsed = []
-    i = 1
-    scores.data.each do |score|
-      #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{(score.has_key?("vmsg") ? score["vmsg"].chomp : score["tmsg"].chomp)} (#{score["place"]})"]
-      #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{"(#{score["place"]})".ljust(9)} #{score["tmsg"].chomp}"]
-      parsed += ["%4u. %8s %-10s %s%02s %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"]]]
-      i += 1
-    end
-    offset = 0
-    while !quit do
-      title "Crawl scores"
-      win.clear
-      row = 0
-      offset.upto(offset + win.getmaxy - 1) do |i|
-        if i < parsed.length then
-          win.move row, 0
-          if scores.data[i]["name"] == @user then
-            win.attron Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
-          end
-          win.printw parsed[i] + (row < win.getmaxy - 1 ? "\n" : "")
-          win.attroff Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
-          row += 1
-        end
-      end
-      Ncurses::Panel.update_panels
-      Ncurses.doupdate
-      case win.getch
-      when "<"[0], Ncurses::KEY_PPAGE:
-        offset -= win.getmaxy
-        if offset < 0 then offset = 0 end
-      when ">"[0], Ncurses::KEY_NPAGE:
-        offset += win.getmaxy
-        if offset >= parsed.length - win.getmaxy then offset -= win.getmaxy end
-      when "q"[0], "Q"[0]: quit = true
       end
     end
   end
@@ -430,7 +456,7 @@ module Menu
                 ["a", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
                 ["c", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
                 ["n", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
-                ["q", "Quit"])
+                ["q", "Back"])
       when "A", "a": #angbandmenu
       when "C", "c": crawlmenu
       when "N", "n": #nethackmenu
@@ -439,39 +465,28 @@ module Menu
     end
   end
 
-  def self.count_games
-    Games.populate
-    unless @user == "" then
-      if Games.by_user.key? @user then
-        @count = Games.by_user[@user].length
-      else
-        @count = 0
-      end
-      status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
-    end
-  end
-
   def self.mainmenu
     quit = false
     while !quit do
       title "rlserver main menu"
+      count_games
       if @user == "" then
-        status "Not logged in"
         case menu(true,
                   ["l", "Login"],
                   ["n", "New player"],
+                  ["g", "Games"],
                   ["w", "Watch"],
                   ["q", "Quit"])
         when "L", "l": @user = login
         when "N", "n": @user = newuser
+        when "G", "g": gamesmenu
         when "W", "w": watchmenu
         when "Q", "q": quit = true
         end
       else
-        count_games
         case menu(true,
-                  ["g", "Games"],
                   ["p", "Change password"],
+                  ["g", "Games"],
                   ["w", "Watch"],
                   ["q", "Quit"])
         when "G", "g": gamesmenu
