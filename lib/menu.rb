@@ -250,7 +250,7 @@ module Menu
       end
       if total > 0 then
         if active > 0 then
-          win.printw "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active}"
+          win.printw "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active} "
         end
         if detached > 0 then
           win.printw "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)"
