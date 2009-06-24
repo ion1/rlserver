@@ -54,7 +54,7 @@ module Games
       puts "\033[8;#{@by_user[user][gamename].rows};#{@by_user[user][gamename].cols}t"
       @pid = fork do
         system "screen", "-D", @socket
-        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-U", "-D", "-r", @socket
       end
     else
       @socket = user + "." + gamename + "." + cols.to_s + "x" + rows.to_s + "." + DateTime.now.to_s
@@ -62,7 +62,7 @@ module Games
         ENV[e[0]] = e[1]
       end
       @pid = fork do
-        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "inprogress/" + @socket + ".ttyrec.bz2", "-e", executable + " " + options.join(" ")
+        exec "dtach", "-A", "socket/" + @socket, "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-U", "-S", @socket, "-c", "player.screenrc", "termrec", "inprogress/" + @socket + ".ttyrec.bz2", "-e", executable + " " + options.join(" ")
       end
     end
     Process.wait @pid
