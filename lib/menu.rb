@@ -207,7 +207,7 @@ module Menu
     hour = time / 3600
     min = time % 3600 / 60
     sec = time % 60
-    hour.to_s.rjust(2,"0") + ":" + min.to_s.rjust(2,"0") + ":" + sec.to_s.rjust(2,"0")
+    "%02d:%02d:%02d" % [hour, min, sec]
   end
 
   def self.watchmenu
@@ -228,7 +228,7 @@ module Menu
       Games.games.each do |game|
         if game.attached then
           active_games += [game]
-          parsed += [game.player.ljust(15) + game.game.ljust(15) + "(#{game.cols}x#{game.rows})".ljust(15) + "(idle " + mktime(game.idle.round) + ")"]
+          parsed += ["%-15s%-15s%-15s(idle %s)" % [game.player, game.game, "(%ux%u)" % [game.cols, game.rows], mktime(game.idle.round)]]
         end
       end
       win.clear
@@ -306,7 +306,7 @@ module Menu
     Ncurses::Panel.update_panels
     Ncurses.doupdate
     ch = win.getch
-    if ch >= 0 and ch <= 255 then
+    case ch when 0..255 then
       ch.chr
     else
       ch
@@ -387,7 +387,8 @@ module Menu
     i = 1
     scores.data.each do |score|
       #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{(score.has_key?("vmsg") ? score["vmsg"].chomp : score["tmsg"].chomp)} (#{score["place"]})"]
-      parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{"(#{score["place"]})".ljust(9)} #{score["tmsg"].chomp}"]
+      #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{"(#{score["place"]})".ljust(9)} #{score["tmsg"].chomp}"]
+      parsed += ["%4u. %8s %-10s %s%02s %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"]]]
       i += 1
     end
     offset = 0
@@ -395,7 +396,7 @@ module Menu
       title "Crawl scores"
       win.clear
       row = 0
-      for i in offset..offset + win.getmaxy - 1 do
+      offset.upto(offset + win.getmaxy - 1) do |i|
         if i < parsed.length then
           win.move row, 0
           if scores.data[i]["name"] == @user then
