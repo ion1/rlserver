@@ -17,7 +17,7 @@ module Menu
     Ncurses.start_color
     Ncurses.init_pair 1, Ncurses::COLOR_WHITE, Ncurses::COLOR_BLUE
     Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
-    @saved_curs = Ncurses.curs_set 0
+    Ncurses.curs_set 0
   end
 
   def self.initialize
@@ -86,7 +86,7 @@ module Menu
     loggedin = false
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
-    Ncurses.curs_set @saved_curs
+    Ncurses.curs_set 1
     until loggedin do
       Ncurses.echo
       win.printw "Name: "
@@ -115,7 +115,7 @@ module Menu
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
     created = false
-    Ncurses.curs_set @saved_curs
+    Ncurses.curs_set 1
     name = "????"
     Ncurses.echo
     until Users.checkname name do
@@ -168,7 +168,7 @@ module Menu
     Ncurses.noecho
     win.clear
     changed = false
-    Ncurses.curs_set @saved_curs
+    Ncurses.curs_set 1
     until changed do
       win.printw "Blank entry aborts.\n"
       win.printw "Current password: "
