@@ -234,7 +234,7 @@ module Menu
     scores.data.each do |score|
       #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{(score.has_key?("vmsg") ? score["vmsg"].chomp : score["tmsg"].chomp)} (#{score["place"]})"]
       #parsed += ["#{(i).to_s.rjust(4)}. #{score["sc"].rjust(8)} #{score["name"].ljust(10)} #{score["char"]}-#{score["xl"].rjust(2, "0")} #{"(#{score["place"]})".ljust(9)} #{score["tmsg"].chomp}"]
-      parsed += ["%4u. %8s %-10s %s%02s %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"]]]
+      parsed += ["%4u. %8s %-10s %s%02s %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]]
       i += 1
     end
     offset = 0
