@@ -211,6 +211,7 @@ module Menu
   end
 
   def self.watchmenu
+    win = Ncurses::Panel.panel_window @menu_panel
     quit = false
     offset = 0
     sel = 0
@@ -230,128 +231,149 @@ module Menu
           parsed += [game.player.ljust(15) + game.game.ljust(15) + "(#{game.cols}x#{game.rows})".ljust(15) + "(idle " + mktime(game.idle.round) + ")"]
         end
       end
-      active = parsed.length
+      win.clear
+      win.printw "Use uppercase to try to resize the terminal (recommended).\n"
+      win.printw "Press any key to refresh. Auto refresh every five seconds.\n"
+      win.printw "While watching, press q to return to the menu.\n\n"
+      active = active_games.length
       detached = total - active
       socketmenu = []
-      if parsed.length > 0 then
-        for i in offset..offset + pagesize - 1 do
+      if active > 0 then
+        offset.upto(offset + pagesize - 1) do |i|
           if i < active then
-            socketmenu += [chars[i % pagesize,1] + " - " + parsed[i]]
+            socketmenu += [[chars[i % pagesize, 1].upcase, parsed[i]]]
           end
         end
+        items = socketmenu.length
       else
-        socketmenu = ["There are no active games."]
+        win.printw "There are no active games.\n\n"
       end
-      sel = menu *(socketmenu + [
-      "",
-      ((active > 0) ? "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active} " : "") + ((detached > 0) ? "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)" : ""),
-      "Use uppercase to try to resize the terminal (recommended).",
-      "Press any key to refresh. Auto refresh every five seconds.",
-      "While watching, press q to return to the menu."])
+      if total > 0 then
+        if active > 0 then
+          win.printw "Showing games #{offset+1}-#{(((offset+pagesize+1) > active) ? active : offset+pagesize+1)} of #{active}"
+        end
+        if detached > 0 then
+          win.printw "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)"
+        end
+        win.printw "\n\n"
+      end
+      sel = menu false, *socketmenu + [["Qq", nil]]
       case sel
-      when "<"[0], Ncurses::KEY_PPAGE: 
+      when "<", Ncurses::KEY_PPAGE: 
         offset -= pagesize
         if offset < 0 then offset = 0 end
-      when ">"[0], Ncurses::KEY_NPAGE:
+      when ">", Ncurses::KEY_NPAGE:
         if active > pagesize and offset+pagesize < active then
           offset += pagesize
-          if offset > active-1 then offset -= pagesize end
+          if offset >= active then offset -= pagesize end
         end
-      when "A"[0].."P"[0]:
-        if offset+sel-65 < active then
+      when "a".."p":
+        sel = offset + sel[0]-97
+        if sel < active then
           Ncurses.def_prog_mode
           destroy
-          puts "\033[8;#{active_games[offset+sel-65].rows};#{active_games[offset+sel-65].cols}t"
-          Games.watchgame active_games[offset+sel-65].socket
-          Ncurses.reset_prog_mode
+          Games.watchgame active_games[sel].socket
           initncurses
+          Ncurses.reset_prog_mode
           resize
         end
-      when "a"[0].."p"[0]:
-        if offset+sel-97 < active then
+      when "A".."P":
+        sel = offset + sel[0] - 65
+        if sel < active then
           Ncurses.def_prog_mode
           destroy
-          Games.watchgame active_games[offset+sel-97].socket
-          Ncurses.reset_prog_mode
+          puts "\033[8;#{active_games[sel].rows};#{active_games[sel].cols}t"
+          Games.watchgame active_games[sel].socket
           initncurses
+          Ncurses.reset_prog_mode
+          resize
         end
-      when "q"[0], "Q"[0]: quit = true
+      when "q", "Q": quit = true
       end
     end
     Ncurses.cbreak
   end
 
-  def self.menu(*lines)
+  def self.menu(clear, *choices)
     Ncurses.noecho
     win = Ncurses::Panel.panel_window @menu_panel
-    win.clear
-    lines.each do |option|
-      win.printw option + "\n"
+    if clear then win.clear end
+    choices.each do |s|
+      unless s[1] == nil then
+        win.printw "#{s[0][0, 1]} - #{s[1]}\n"
+      end
     end
     Ncurses::Panel.update_panels
     Ncurses.doupdate
-    win.getch
-  end
-
-  def self.angbandmenu
-    quit = false
-    while !quit do
-      case menu(
-      "p - Play Angband",
-      "e - Edit configuration file",
-      "q - Quit")
-      when "p"[0], "P"[0]:
-        Games.populate
-        Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
-      when "e"[0], "E"[0]:
-      when "q"[0], "Q"[0]: quit = true
-      end
+    ch = win.getch
+    if ch >= 0 and ch <= 255 then
+      ch.chr
+    else
+      ch
     end
   end
 
-  def self.nethackmenu
-    quit = false
-    while !quit do
-      case menu(
-      "p - Play NetHack",
-      "e - Edit configuration file",
-      "q - Quit")
-      when "p"[0], "P"[0]:
-        Games.populate
-        Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
-      when "e"[0], "E"[0]: Games.editrc @user, "nethack"
-      when "q"[0], "Q"[0]: quit = true
-      end
-    end
-  end
+#  def self.angbandmenu
+#    quit = false
+#    while !quit do
+#      case menu(
+#      "p - Play Angband",
+#      "e - Edit configuration file",
+#      "q - Quit")
+#      when "p"[0], "P"[0]:
+#        Games.populate
+#        Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
+#      when "e"[0], "E"[0]:
+#      when "q"[0], "Q"[0]: quit = true
+#      end
+#    end
+#  end
+#
+#  def self.nethackmenu
+#    quit = false
+#    while !quit do
+#      case menu(
+#      "p - Play NetHack",
+#      "e - Edit configuration file",
+#      "q - Quit")
+#      when "p"[0], "P"[0]:
+#        Games.populate
+#        Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
+#      when "e"[0], "E"[0]: Games.editrc @user, "nethack"
+#      when "q"[0], "Q"[0]: quit = true
+#      end
+#    end
+#  end
 
   def self.crawlmenu
     quit = false
     while !quit do
       count_games
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
-      case menu(
-      "p - Play Crawl",
-      "e - Edit configuration file",
-      "s - View scores",
-      "q - Quit")
-      when "p"[0], "P"[0]:
-        #Ncurses.def_prog_mode
+      case menu(true,
+                ["P", "Play Crawl"],
+                ["E", "Edit configuration file"],
+                ["S", "View scores"],
+                ["Q", "Quit"])
+      when "P", "p":
+        Ncurses.def_prog_mode
         destroy
         Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
-        #Ncurses.reset_prog_mode
         initncurses
+        Ncurses.reset_prog_mode
         resize
         Thread.new do
           Scores.updatecrawl
         end
-      when "e"[0], "E"[0]:
+      when "E", "e":
+        Ncurses.def_prog_mode
         destroy
         Games.editrc @user, "crawl"
         initncurses
+        Ncurses.reset_prog_mode
         resize
-      when "s"[0], "S"[0]: crawlscores
-      when "q"[0], "Q"[0]: quit = true
+      when "S", "s": crawlscores
+      when "Q", "q": quit = true
       end
     end
   end
@@ -392,7 +414,7 @@ module Menu
         if offset < 0 then offset = 0 end
       when ">"[0], Ncurses::KEY_NPAGE:
         offset += win.getmaxy
-        if offset > parsed.length - win.getmaxy - 1 then offset -= win.getmaxy end
+        if offset >= parsed.length - win.getmaxy then offset -= win.getmaxy end
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -403,15 +425,15 @@ module Menu
     while !quit do
       title "Games"
       count_games
-      case menu(
-      "a - Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""} ",
-      "c - Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} ", 
-      "n - NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""} ",
-      "q - Quit")
-      when "c"[0], "C"[0]: crawlmenu
-      when "a"[0], "A"[0]: #angbandmenu
-      when "n"[0], "N"[0]: #nethackmenu
-      when "q"[0], "Q"[0]: quit = true
+      case menu(true,
+                ["A", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
+                ["C", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
+                ["N", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
+                ["Q", "Quit"])
+      when "A", "a": #angbandmenu
+      when "C", "c": crawlmenu
+      when "N", "n": #nethackmenu
+      when "Q", "q": quit = true
       end
     end
   end
@@ -434,27 +456,27 @@ module Menu
       title "rlserver main menu"
       if @user == "" then
         status "Not logged in"
-        case menu(
-        "l - Login",
-        "n - New player",
-        "w - Watch",
-        "q - Quit")
-        when "l"[0], "L"[0]: @user = login
-        when "n"[0], "N"[0]: @user = newuser
-        when "w"[0], "W"[0]: watchmenu
-        when "q"[0], "Q"[0]: quit = true
+        case menu(true,
+                  ["L", "Login"],
+                  ["N", "New player"],
+                  ["W", "Watch"],
+                  ["Q", "Quit"])
+        when "L", "l": @user = login
+        when "N", "n": @user = newuser
+        when "W", "w": watchmenu
+        when "Q", "q": quit = true
         end
       else
         count_games
-        case menu(
-        "g - Games",
-        "w - Watch",
-        "p - Change password",
-        "q - Quit")
-        when "p"[0], "P"[0]: change_password
-        when "g"[0], "G"[0]: gamesmenu
-        when "w"[0], "W"[0]: watchmenu
-        when "q"[0], "Q"[0]: quit = true
+        case menu(true,
+                  ["G", "Games"],
+                  ["P", "Change password"],
+                  ["W", "Watch"],
+                  ["Q", "Quit"])
+        when "G", "g": gamesmenu
+        when "P", "p": change_password
+        when "W", "w": watchmenu
+        when "Q", "q": quit = true
         end
       end
     end
