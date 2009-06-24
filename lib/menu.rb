@@ -241,7 +241,7 @@ module Menu
       if active > 0 then
         offset.upto(offset + pagesize - 1) do |i|
           if i < active then
-            socketmenu += [[chars[i % pagesize, 1].upcase, parsed[i]]]
+            socketmenu += [[chars[i % pagesize, 1], parsed[i]]]
           end
         end
         items = socketmenu.length
@@ -351,10 +351,10 @@ module Menu
       count_games
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
       case menu(true,
-                ["P", "Play Crawl"],
-                ["E", "Edit configuration file"],
-                ["S", "View scores"],
-                ["Q", "Quit"])
+                ["p", "Play Crawl"],
+                ["e", "Edit configuration file"],
+                ["s", "View scores"],
+                ["q", "Quit"])
       when "P", "p":
         Ncurses.def_prog_mode
         destroy
@@ -426,10 +426,10 @@ module Menu
       title "Games"
       count_games
       case menu(true,
-                ["A", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
-                ["C", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
-                ["N", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
-                ["Q", "Quit"])
+                ["a", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
+                ["c", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
+                ["n", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
+                ["q", "Quit"])
       when "A", "a": #angbandmenu
       when "C", "c": crawlmenu
       when "N", "n": #nethackmenu
@@ -457,10 +457,10 @@ module Menu
       if @user == "" then
         status "Not logged in"
         case menu(true,
-                  ["L", "Login"],
-                  ["N", "New player"],
-                  ["W", "Watch"],
-                  ["Q", "Quit"])
+                  ["l", "Login"],
+                  ["n", "New player"],
+                  ["w", "Watch"],
+                  ["q", "Quit"])
         when "L", "l": @user = login
         when "N", "n": @user = newuser
         when "W", "w": watchmenu
@@ -469,10 +469,10 @@ module Menu
       else
         count_games
         case menu(true,
-                  ["G", "Games"],
-                  ["P", "Change password"],
-                  ["W", "Watch"],
-                  ["Q", "Quit"])
+                  ["g", "Games"],
+                  ["p", "Change password"],
+                  ["w", "Watch"],
+                  ["q", "Quit"])
         when "G", "g": gamesmenu
         when "P", "p": change_password
         when "W", "w": watchmenu

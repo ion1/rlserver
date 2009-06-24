@@ -7,6 +7,12 @@ require "server"
 require "games"
 
 begin
+  ENV.each_key do |k|
+    case k
+    when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
+    end
+    ENV["LANG"] = "en_US.UTF-8"
+  end
   Dir.chdir Server::SERVER_DIR
   Menu.initialize
   Signal.trap "HUP" do
