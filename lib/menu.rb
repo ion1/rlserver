@@ -24,7 +24,6 @@ module Menu
     Ncurses.initscr
     initncurses
     initwindows
-    Games.initialize
     Users.load
     @user = ""
   end
@@ -221,7 +220,7 @@ module Menu
     while !quit do
       Ncurses.halfdelay 50
       title "Watch games"
-      Games.populate
+      count_games
       total = Games.games.length
       parsed = []
       active_games = []
@@ -303,12 +302,7 @@ module Menu
       "q - Quit")
       when "p"[0], "P"[0]:
         Games.populate
-        #if Games.index(@user, "Angband") >= 0 then
-        #  Process.kill("HUP", Games.games[Games.index(@user, "Angband")].pid)
-        #end
-        #Ncurses.endwin
         Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
-        #UI.initialize
       when "e"[0], "E"[0]:
       when "q"[0], "Q"[0]: quit = true
       end
@@ -324,12 +318,7 @@ module Menu
       "q - Quit")
       when "p"[0], "P"[0]:
         Games.populate
-        #if Games.index(@user, "NetHack") >= 0 then
-        #  Process.kill("HUP", Games.games[Games.index(@user, "Nethack")].pid)
-        #end
-        #UI.endwin
         Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
-        #UI.initialize
       when "e"[0], "E"[0]: Games.editrc @user, "nethack"
       when "q"[0], "Q"[0]: quit = true
       end
@@ -339,14 +328,14 @@ module Menu
   def self.crawlmenu
     quit = false
     while !quit do
-      title "Crawl"
+      count_games
+      title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
       case menu(
       "p - Play Crawl",
       "e - Edit configuration file",
       "s - View scores",
       "q - Quit")
       when "p"[0], "P"[0]:
-        Games.populate
         #Ncurses.def_prog_mode
         destroy
         Games.launchgame @cols, @rows, @user, "/usr/games/crawl", "Crawl", [["SHELL", "/bin/sh"]], "-name", @user , "-rc", "rcfiles/" + @user + ".crawl", "-morgue", "crawl/morgue/#{@user}", "-macro", "crawl/macro/#{@user}/macro.txt"
@@ -356,7 +345,6 @@ module Menu
         Thread.new do
           Scores.updatecrawl
         end
-        #UI.initialize
       when "e"[0], "E"[0]:
         destroy
         Games.editrc @user, "crawl"
@@ -414,10 +402,11 @@ module Menu
     quit = false
     while !quit do
       title "Games"
+      count_games
       case menu(
-      "a - Angband (coming soon)", 
-      "c - Crawl Stone Soup 0.5.0", 
-      "n - NetHack (coming soon)",
+      "a - Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""} ",
+      "c - Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} ", 
+      "n - NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""} ",
       "q - Quit")
       when "c"[0], "C"[0]: crawlmenu
       when "a"[0], "A"[0]: #angbandmenu
@@ -427,12 +416,22 @@ module Menu
     end
   end
 
+  def self.count_games
+    Games.populate
+    if Games.by_user.key? @user then
+      @count = Games.by_user[@user].length
+    else
+      @count = 0
+    end
+    status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
+  end
+
   def self.mainmenu
     quit = false
-    status "Not logged in"
     while !quit do
       title "rlserver main menu"
       if @user == "" then
+        status "Not logged in"
         case menu(
         "l - Login",
         "n - New player",
@@ -444,6 +443,8 @@ module Menu
         when "q"[0], "Q"[0]: quit = true
         end
       else
+        Games.populate
+        count_games
         case menu(
         "g - Games",
         "w - Watch",
