@@ -512,11 +512,20 @@ module Menu
 
   def self.mainmenu
     quit = false
+    win = Ncurses::Panel.panel_window @menu_panel
     while !quit do
-      title "rlserver main menu"
+      title "Main menu"
       status count_games
+      win.clear
+      win.move win.getmaxy - 1, 0
+      aputs win, "$3$bCopyleft 2008-2009 Joosa Riekkinen.$b$3"
+      win.move 0, 0
+      aputs win,
+        "rlserver - roguelike server in the spirit of dgamelaunch\n\n" +
+        "Games on this server are recorded for in-progress viewing and playback!\n" +
+        "http://cyc.dy.fi/rlserver/\n\n"
       if @user == "" then
-        case menu(true,
+        case menu(false,
                   ["l", "Login"],
                   ["n", "New player"],
                   ["g", "Games"],
