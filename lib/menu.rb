@@ -210,15 +210,18 @@ module Menu
     Ncurses.noecho
     win = Ncurses::Panel.panel_window @menu_panel
     if clear then win.clear end
+    row = win.getcury
     choices.each do |s|
+      win.move row, 0
       if s[0] == nil then
         win.attron Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
         win.printw "    "
       else
         win.printw "#{s[0][0, 1]} - "
       end
-      win.printw s[1] + "\n"
+      win.printw s[1]
       win.attroff Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
+      row += 1
     end
     Ncurses::Panel.update_panels
     Ncurses.doupdate
@@ -297,8 +300,8 @@ module Menu
     quit = false
     offset = 0
     sel = 0
-    #pagesize = @menu.rows - 4 # we're limited to 16 lines for now
-    pagesize = 16
+    pagesize = win.getmaxy - 10
+    if pagesize > 16 then pagesize = 16 end
     chars = "abcdefghijklmnop"
     while !quit do
       Ncurses.halfdelay 50
