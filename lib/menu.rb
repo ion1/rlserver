@@ -538,7 +538,7 @@ module Menu
         when "Q", "q": quit = true
         end
       else
-        case menu(true,
+        case menu(false,
                   ["p", "Change password"],
                   ["g", "Games"],
                   ["w", "Watch"],
