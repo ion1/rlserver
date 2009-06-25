@@ -265,10 +265,10 @@ module Menu
       Ncurses::Panel.update_panels
       Ncurses.doupdate
       case win.getch
-      when "<"[0], Ncurses::KEY_PPAGE:
+      when Ncurses::KEY_PPAGE:
         offset -= win.getmaxy
         if offset < 0 then offset = 0 end
-      when ">"[0], Ncurses::KEY_NPAGE:
+      when Ncurses::KEY_NPAGE:
         offset += win.getmaxy
         if offset >= parsed.length then offset -= win.getmaxy end
       when "q"[0], "Q"[0]: quit = true
@@ -351,10 +351,8 @@ module Menu
         offset -= pagesize
         if offset < 0 then offset = 0 end
       when Ncurses::KEY_NPAGE:
-        if active > pagesize and offset+pagesize < active then
-          offset += pagesize
-          if offset >= active then offset -= pagesize end
-        end
+        offset += pagesize
+        if offset >= total.length then offset -= pagesize end
       when "a".."p":
         sel = offset + sel[0]-97
         if sel < active then
