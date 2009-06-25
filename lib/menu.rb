@@ -50,6 +50,7 @@ module Menu
     @rows = Ncurses.getmaxy Ncurses.stdscr
     @cols = Ncurses.getmaxx Ncurses.stdscr
     Ncurses.resizeterm @rows, @cols
+    Ncurses.stdscr.clear
     win = Ncurses::Panel.panel_window @header_panel
     Ncurses.wresize win, 1, @cols
     win.chgat -1, 0, 1, nil
