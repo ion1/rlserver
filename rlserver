@@ -13,8 +13,6 @@ begin
     end
     ENV["LANG"] = "en_US.UTF-8"
   end
-  Dir.chdir Server::SERVER_DIR
-  Menu.initialize
   Signal.trap "HUP" do
     Menu.destroy
     if Games.socket != nil then
@@ -22,6 +20,8 @@ begin
     end
     exit 1
   end
+  Dir.chdir Server::DIR
+  Menu.initialize
   Menu.mainmenu
 ensure
   Menu.destroy

@@ -53,119 +53,6 @@ module Scores
         @total_points[key] = @total_points[key].to_f + val * @bonus_mult
       end
     end
-
-    def range_type_verb(score)
-      case score["kaux"][0,4]
-      when "Shot": return "shot"
-      when "Hit ", "voll": return "hit from afar"
-      else return "blasted"
-      end
-    end
-    def damage_verb(score)
-      if score["hp"].to_i > -6 then return "slain"
-      elsif score["hp"].to_i > -14 then return "mangled"
-      elsif score["hp"].to_i > -22 then return "demolished"
-      else return "annihilated"
-      end
-    end
-    def strip_article_a(s)
-      if s["a "] == " a"
-        return s.delete("a ")
-      elsif s["an "] == "an "
-        return s.delete("an ")
-      else return s
-      end
-    end
-    def death_source_desc(score)
-      if score["ktyp"] != "beam" and score["ktyp"] != "mon" then return "" end
-      if score["killer"] == "" then return "" else return score["killer"] end
-    end
-    def death_description(score)
-      needs_beam_cause_line = false
-      needs_called_by_monster_line = false
-      #needs_damage = false
-      desc=""
-      case score["ktyp"]
-      when "mon": 
-        desc += damage_verb(score) + " by " + death_source_desc(score)
-        #if score["kaux"] != nil then desc += " with " + score["kaux"] end
-      when "pois": desc += "succumbed to poison"
-      when "cloud": desc += "engulfed by a cloud of #{score["kaux"]}"
-      when "beam": 
-        desc += range_type_verb(score) + " by " + death_source_desc(score)
-      when "lava":
-        if score["race"] == "Mummy" then
-          desc += "turned to ash by lava"
-        else
-          desc += "took a swim in molten lava"
-        end
-      when "water":
-        if score["race"] == "Mummy" then
-          desc += "soaked and fell apart"
-        else
-          desc += "drowned"
-        end
-      when "trap":
-        desc += "killed by triggering " + score["kaux"] + " trap"
-      when "leaving":
-        if score["nrune"].to_i > 0 then
-          desc += "got out of the dungeon"
-        else
-          desc += "got out of the dungeon alive"
-        end
-      when "winning":
-        desc += "escaped with the Orb"
-        if score["nrune"].to_i < 1 then desc += "!" end
-      when "quitting":
-        desc += "quit the game"
-      when "draining":
-        desc += "was drained of all life"
-      when "starvation":
-        desc += "starved to death"
-      when "freezing":
-        desc += "froze to death"
-      when "burning":
-        desc += "burnt to a crisp"
-      when "wild_magic":
-        if score["kaux"]["by "] == "by " then
-          desc =+ "killed " + score["kaux"]
-        else
-          desc += "killed by " + score["kaux"]
-        end
-      when "statue":
-        desc += "killed by a statue"
-      when "rotting":
-        desc += "rotted away"
-      when "targeting":
-        desc += "killed themselves with bad targetting"
-      when "spore":
-        desc += "killed by an exploding spore"
-      when "tso_smiting":
-        desc += "smote by The Shining One"
-      when "petrification":
-        desc += "turned to stone"
-      when "unknown":
-        desc += "died"
-      when "falling_down_stairs":
-        desc += "fell down a flight of stairs"
-      when "acid":
-        desc += "splashed by acid"
-      when "curare":
-        desc += "asphyxiated"
-      when "melting":
-        desc += "melted into a puddle"
-      when "bleeding":
-        desc += "bled to death"
-      when "something":
-        desc += "nibbled to death by software bugs"
-      when "stupidity":
-        desc += "forgot to breathe"
-      end
-      if score["nrune"].to_i > 0 then
-        desc += " (with #{score["nrune"]} rune#{if score["nrune"].to_i > 1 then "s" end})"
-      end
-      return desc
-    end
   end
 
   def self.updatecrawl
@@ -177,7 +64,7 @@ module Scores
   <head>
     <title>Crawl Scores</title>
     <script type="text/javascript" src=".sortabletable/js/sortabletable.js"></script>
-    <link rel="stylesheet" type="text/css" href="sortabletable/css/sortabletable.css"/>
+    <link rel="stylesheet" type="text/css" href=".sortabletable/css/sortabletable.css"/>
     <link rel="stylesheet" type="text/css" href=".style.css"/>
   </head>
   <body>
@@ -189,50 +76,10 @@ module Scores
     </p>
     <p>
     <table class="sort-table" id="scores">
-      <thead><tr align="left"><th>#</th><th>Name</th><th>Race/Class</th><th>HP</th><th>Dungeon</th><th>Score</th><th>Turns</th><th>Quit reason</th></tr></thead>
-      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl:#{points["xl"]})</td><td>#{points["hp"]}/#{points["mhp"]}</td><td>#{points["br"]}:#{points["lvl"]}<td>#{points["sc"]}</td><td>#{points["turn"]}<td>#{score.death_description(points)}</td></tr>"}.join("\n")}</tbody>
+      <thead><tr align="left"><th>#</th><th>Score</th><th>Name</th><th>Character</th><th>Dungeon</th><th>Turns</th><th>Quit reason</th></tr></thead>
+      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td align=\"right\">#{points["sc"]}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl: #{points["xl"]})</td><td align=\"right\">#{points["place"]}</td><td align=\"right\">#{points["turn"]}</td><td>#{points["tmsg"]}</td></tr>"}.join("\n")}</tbody>
     </table>
     </p>
-    <script type="text/javascript">
-    function addClassName(el, sClassName)
-    {
-        var s = el.className;
-        var p = s.split(" ");
-        var l = p.length;
-        for (var i = 0; i < l; i++)
-        {
-            if (p[i] == sClassName)
-            return;
-        }
-        p[p.length] = sClassName;
-        el.className = p.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
-    }
-    function removeClassName(el, sClassName)
-    {
-        var s = el.className;
-        var p = s.split(" ");
-        var np = [];
-        var l = p.length;
-        var j = 0;
-        for (var i = 0; i < l; i++)
-        {
-            if (p[i] != sClassName)
-            np[j++] = p[i];
-        }
-        el.className = np.join(" ").replace( /(^\\s+)|(\\s+\$)/g, "" );
-    }
-    var st1 = new SortableTable(document.getElementById("player-ranking"),["Number", "CaseInsensitiveString", "Number", "Number", "Number", "CaseInsensitiveString"]);
-    st1.onsort = function ()
-    {
-        var rows = st1.tBody.rows;
-        var l = rows.length;
-        for (var i = 0; i < l; i++)
-        {
-            removeClassName(rows[i], i % 2 ? "odd" : "even");
-            addClassName(rows[i], i % 2 ? "even" : "odd");
-        }
-    };
-    </script>
   </body>
 </html>
 HTML_END

@@ -20,7 +20,7 @@ module Games
     def initialize(data)
       @screen_pid = data[0].to_i
       @socket = data[1,4].join "."
-      @attached = File.executable? "/var/run/screen/S-#{Server::SERVER_USER}/#{@screen_pid}.#{@socket}"
+      @attached = File.executable? "/var/run/screen/S-#{Server::USER}/#{@screen_pid}.#{@socket}"
       @player = data[1]
       @game = data[2]
       @cols = data[3].split("x")[0].to_i
@@ -38,8 +38,8 @@ module Games
     @games = []
     @by_user = {}
     @by_socket = {}
-    if File.exists? "/var/run/screen/S-#{Server::SERVER_USER}" then
-      Dir.foreach "/var/run/screen/S-#{Server::SERVER_USER}" do |f|
+    if File.exists? "/var/run/screen/S-#{Server::USER}" then
+      Dir.foreach "/var/run/screen/S-#{Server::USER}" do |f|
         if f.match /(\d+)\.([\w\d\s\-_ ]+)\.(\w+)\.(\d+x\d+)\.(\d+-\d\d-\d\dT\d\d:\d\d:\d\d\+\d\d:\d\d)/ then
           @games += [game = Game.new($~[1,6])]
           @by_user[game.player] = {game.game => game}

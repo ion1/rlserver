@@ -3,20 +3,16 @@ require "users"
 require "games"
 require "fileutils"
 require "scores"
+require "server"
 
 module Menu
-  ATTRIB = {
-    "b" => Ncurses::A_BOLD,
-    "r" => Ncurses::A_REVERSE,
-    "n" => Ncurses::A_NORMAL,
-    "s" => Ncurses::A_STANDOUT}
+  ATTRIB = {"b" => Ncurses::A_BOLD, "r" => Ncurses::A_REVERSE, "n" => Ncurses::A_NORMAL, "s" => Ncurses::A_STANDOUT}
 
   def self.initncurses
     Signal.trap "WINCH" do
       resize
     end
     Ncurses.nonl
-    Ncurses.cbreak
     Ncurses.stdscr.intrflush false
     Ncurses.noecho
     Ncurses.clear
@@ -25,9 +21,16 @@ module Menu
     Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
     Ncurses.init_pair 3, Ncurses::COLOR_CYAN, Ncurses::COLOR_BLACK
     Ncurses.curs_set 0
+    Ncurses.halfdelay 100
   end
 
   def self.initialize
+    @banner = ""
+    File.open Server::BANNER do |banner|
+      banner.read.each_line do |line|
+        @banner += line
+      end
+    end
     Ncurses.initscr
     initncurses
     initwindows
@@ -120,6 +123,7 @@ module Menu
   end
 
   def self.login
+    Ncurses.cbreak
     title "Login"
     loggedin = false
     win = Ncurses::Panel.panel_window @menu_panel
@@ -145,10 +149,12 @@ module Menu
     end
     if loggedin then status "Logged in as " + name end
     Ncurses.curs_set 0
+    Ncurses.halfdelay 100
     name
   end
 
   def self.newuser
+    Ncurses.cbreak
     title "New player"
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
@@ -199,10 +205,12 @@ module Menu
     end
     if created then status "Logged in as " + name end
     Ncurses.curs_set 0
+    Ncurses.halfdelay 100
     name
   end
 
   def self.change_password
+    Ncurses.cbreak
     title "Change password"
     win = Ncurses::Panel.panel_window @menu_panel
     Ncurses.noecho
@@ -240,12 +248,13 @@ module Menu
         Ncurses.flushinp
       end
     end
-    if changed then status "Password updated successfully" end
+    Ncurses.halfdelay 100
     Ncurses.curs_set 0
   end
   
   def self.menu(clear, *choices)
     Ncurses.noecho
+    Ncurses.halfdelay 100
     win = Ncurses::Panel.panel_window @menu_panel
     if clear then win.clear end
     row = win.getcury
@@ -262,6 +271,7 @@ module Menu
     Ncurses::Panel.update_panels
     Ncurses.doupdate
     ch = win.getch
+    Ncurses.cbreak
     case ch when 0..255 then
       ch.chr
     else
@@ -308,7 +318,7 @@ module Menu
     end
   end
 
-  def self.count_games
+  def self.gen_status
     @count = 0
     unless @user == "" then
       Games.populate
@@ -337,9 +347,8 @@ module Menu
     while !quit do
       pagesize = win.getmaxy - 6
       if pagesize > 16 then pagesize = 16 end
-      Ncurses.halfdelay 100
       title "Watch games"
-      status "Press $bPage Up$b and $bPage Down$b to scroll, $bq$b to go back"
+      status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       Games.populate
       pretty = []
       active_games = []
@@ -361,9 +370,8 @@ module Menu
       end
       win.clear
       aputs win,
-        "Use uppercase to try to resize the terminal (recommended).\n" +
-        "Press any key to refresh. Auto refresh every ten seconds.\n" +
-        "While watching, press q to return to the menu.\n\n"
+        "Use $buppercase$b to try to resize the terminal (recommended).\n" +
+        "While watching, press $bq$b to return to the menu.\n"
       if total.length > 0 then
         aputs win, "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length} ("
         if active > 0 then
@@ -415,7 +423,6 @@ module Menu
       when "q", "Q": quit = true
       end
     end
-    Ncurses.cbreak
   end
 
 #  def self.angbandmenu
@@ -453,7 +460,7 @@ module Menu
   def self.crawlmenu
     quit = false
     while !quit do
-      status count_games
+      status gen_status
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
       unless @user == "" then
         choices = [
@@ -498,7 +505,7 @@ module Menu
     quit = false
     while !quit do
       title "Games"
-      status count_games
+      status gen_status
       case menu(true,
                 ["$ba$b", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
                 ["$bc$b", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
@@ -517,15 +524,9 @@ module Menu
     win = Ncurses::Panel.panel_window @menu_panel
     while !quit do
       title "Main menu"
-      status count_games
+      status gen_status
       win.clear
-      win.move win.getmaxy - 1, 0
-      aputs win, "Copyleft 2008-2009 Joosa Riekkinen."
-      win.move 0, 0
-      aputs win,
-        "rlserver - roguelike server in the spirit of dgamelaunch\n\n" +
-        "Games on this server are recorded for in-progress viewing and playback!\n" +
-        "#{Server::SERVER_URL}\n\n"
+      aputs win, @banner + Server::URL + "\n\n"
       if @user == "" then
         case menu(false,
                   ["$bl$b", "Login"],
