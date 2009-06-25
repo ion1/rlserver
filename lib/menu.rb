@@ -331,6 +331,13 @@ module Menu
     end
   end
 
+  def self.mktime(s)
+    h = s / 3600
+    m = s % 3600 / 60
+    s = s % 60
+    "%02d:%02d:%02d" % [h, m, s]
+  end
+
   def self.watchmenu
     win = Ncurses::Panel.panel_window @menu_panel
     quit = false
@@ -358,8 +365,8 @@ module Menu
       detached = detached_games.length
       total = active_games + detached_games
       total.each do |game|
-        a = game.attached ? "$b$3" : "$3" 
-        pretty += ["%s%-14s%-14s%-14s(idle %s)%s" % [a, game.player, game.game, "#{game.cols}x#{game.rows}", game.idle, a]]
+        a = game.attached ? "$b$3" : "$3"
+        pretty += ["%s%-14s%-14s(%-14s)(idle %s%s)" % [a, game.player, game.game, "%3ux%3u" % [game.cols, game.rows], mktime(game.idle), a]]
       end
       win.clear
       aputs win,

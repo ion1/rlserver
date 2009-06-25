@@ -27,9 +27,9 @@ module Games
       @rows = data[3].split("x")[1].to_i
       @time = data[4]
       if File.exists? "crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
-        @idle = Time.at(Time.now.utc - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).utc.strftime "%H:%M:%S"
-      else
-        @idle = "??:??:??"
+        @idle = (Time.now - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).to_i
+      elsif File.exists? "inprogress/#{@socket}.ttyrec.bz2" then
+        @idle = (Time.now - File.stat("inprogress/#{@socket}.ttyrec.bz2").mtime).to_i
       end
     end
   end
@@ -64,7 +64,7 @@ module Games
         ENV[e[0]] = e[1]
       end
       @pid = fork do
-        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "crawl/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{executable} #{options.join(" ")}"
+        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "crawl/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{executable} #{options.join(" ")}"
       end
     end
     Process.wait @pid
