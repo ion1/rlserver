@@ -64,18 +64,54 @@ module Menu
     Ncurses.doupdate
   end
 
+  def self.aputs(win, s)
+    codes = {
+      "b" => Ncurses::A_BOLD,
+      "r" => Ncurses::A_REVERSE,
+      "n" => Ncurses::A_NORMAL,
+      "s" => Ncurses::A_STANDOUT}
+      control = false
+      attrs = ""
+      s.each_char do |c|
+        if control then
+          control = false
+          if codes.key? c then
+            if attrs.include? c
+              win.attroff codes[c]
+              attrs.delete! c
+            else
+              win.attron codes[c]
+              attrs += c
+            end
+          elsif
+            case c when "0".."9":
+              if attrs.include? c
+                win.attroff Ncurses.COLOR_PAIR c.to_i
+                attrs.delete! c
+              else
+                win.attron Ncurses.COLOR_PAIR c.to_i
+                attrs += c
+              end
+            end
+          end
+      else
+        (control = (c == "$")) ? () : (win.addch c[0])
+      end
+    end
+  end
+
   def self.title(s)
     win = Ncurses::Panel.panel_window @header_panel
     win.clear
-    win.printw " " + s
     win.chgat -1, 0, 1, nil
+    aputs win, " " + s
   end
 
   def self.status(s)
     win = Ncurses::Panel.panel_window @footer_panel
     win.clear
-    win.printw " " + s
     win.chgat -1, 0, 1, nil
+    aputs win, " " + s
   end
 
   def self.user
@@ -215,13 +251,11 @@ module Menu
     choices.each do |s|
       win.move row, 0
       if s[0] == nil then
-        win.attron Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
-        win.printw "    "
+        aputs win, "    "
       else
-        win.printw "#{s[0][0, 1]} - "
+        aputs win, "#{s[0][0, 1]} - "
       end
-      win.printw s[1]
-      win.attroff Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
+      aputs win, s[1]
       row += 1
     end
     Ncurses::Panel.update_panels
@@ -239,26 +273,23 @@ module Menu
     win.clear
     scores = Scores::CrawlScores.new Scores::CRAWL_FILENAME
     quit = false
-    parsed = []
+    pretty = []
     i = 1
     scores.data.each do |score|
-      parsed += ["%4u. %8s %-10s %s-%02u %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"].to_i, "(#{score["place"]})", score["tmsg"].chomp]]
+      pretty += ["%4u. %8s %-10s %s-%02u %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]]
       i += 1
     end
     offset = 0
     while !quit do
       title "Crawl scores"
-      status "Press Page Up and Page Down to scroll, q to go back"
+      status "Press $bPage Up$b and $bPage Down$b to scroll, $bq$b to go back"
       win.clear
       row = 0
       offset.upto(offset + win.getmaxy - 1) do |i|
-        if i < parsed.length then
+        if i < pretty.length then
           win.move row, 0
-          if scores.data[i]["name"] == @user then
-            win.attron Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
-          end
-          win.printw parsed[i] + (row < win.getmaxy - 1 ? "\n" : "")
-          win.attroff Ncurses.COLOR_PAIR(2) | Ncurses::A_BOLD
+          a = (scores.data[i]["name"] == @user) ? "$b$2" : ""
+          aputs win, a + pretty[i] + a
           row += 1
         end
       end
@@ -270,7 +301,7 @@ module Menu
         if offset < 0 then offset = 0 end
       when Ncurses::KEY_NPAGE:
         offset += win.getmaxy
-        if offset >= parsed.length then offset -= win.getmaxy end
+        if offset >= pretty.length then offset -= win.getmaxy end
       when "q"[0], "Q"[0]: quit = true
       end
     end
@@ -283,9 +314,9 @@ module Menu
       if Games.by_user.key? @user then
         @count = Games.by_user[@user].length
       end
-      status "Logged in as #{@user}#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
+      "Logged in as $b#{@user}$b#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
     else
-      status "Not logged in" 
+      "Not logged in" 
     end
   end
 
@@ -305,11 +336,11 @@ module Menu
     while !quit do
       pagesize = win.getmaxy - 6
       if pagesize > 16 then pagesize = 16 end
-      Ncurses.halfdelay 50
+      Ncurses.halfdelay 100
       title "Watch games"
-      status "Press Page Up and Page Down to scroll, q to go back"
+      status "Press $bPage Up$b and $bPage Down$b to scroll, $bq$b to go back"
       Games.populate
-      parsed = []
+      pretty = []
       active_games = []
       detached_games = []
       socketmenu = []
@@ -324,31 +355,30 @@ module Menu
       detached = detached_games.length
       total = active_games + detached_games
       total.each do |game|
-        parsed += ["%-14s%-14s%-14s(idle %s)" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round)]]
+        pretty += ["#{game.attached ? "" : "$b$3"}%-14s%-14s%-14s(idle %s)#{game.attached ? "" : "$b$3"}" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round)]]
       end
       win.clear
-      win.printw "Use uppercase to try to resize the terminal (recommended).\n"
-      win.printw "Press any key to refresh. Auto refresh every five seconds.\n"
-      win.printw "While watching, press q to return to the menu.\n\n"
+      aputs win,
+        "Use uppercase to try to resize the terminal (recommended).\n" +
+        "Press any key to refresh. Auto refresh every ten seconds.\n" +
+        "While watching, press q to return to the menu.\n\n"
       if total.length > 0 then
-        win.printw "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length} ("
+        aputs win, "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length} ("
         if active > 0 then
-          win.printw "#{active} active#{(detached > 0 ? ", " : "")}"
+          aputs win, "#{active} active#{(detached > 0 ? ", " : "")}"
         end
         if detached > 0 then
-          win.attron Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
-          win.printw "#{detached} detached"
-          win.attroff Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
+          aputs win, "$b$3#{detached} detached$3$b"
         end
-        win.printw ")."
+        aputs win, ")."
         offset.upto(offset + pagesize - 1) do |i|
           if i < total.length then
-            socketmenu += [[total[i].attached ? chars[i % pagesize, 1] : nil, parsed[i]]]
+            socketmenu += [[total[i].attached ? chars[i % pagesize, 1] : nil, pretty[i]]]
           end
         end
         items = socketmenu.length
       else
-        win.printw "There are no games running."
+        aputs win, "There are no games running."
       end
       win.printw "\n\n"
       sel = menu false, *socketmenu
@@ -421,13 +451,15 @@ module Menu
   def self.crawlmenu
     quit = false
     while !quit do
-      count_games
+      status count_games
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
-      choices = []
       unless @user == "" then
-        choices += [
+        choices = [
           ["p", "Play Crawl"],
           ["e", "Edit configuration file"]]
+      else
+        choices = [
+          [nil, "$b$3Please login to play!$3$b"]]
       end
       choices +=[
         ["s", "View scores"],
@@ -464,7 +496,7 @@ module Menu
     quit = false
     while !quit do
       title "Games"
-      count_games
+      status count_games
       case menu(true,
                 ["a", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
                 ["c", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
@@ -482,7 +514,7 @@ module Menu
     quit = false
     while !quit do
       title "rlserver main menu"
-      count_games
+      status count_games
       if @user == "" then
         case menu(true,
                   ["l", "Login"],
