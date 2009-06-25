@@ -315,15 +315,17 @@ module Menu
         else
           detached_games += [game]
         end
+      end
+      active = active_games.length
+      detached = detached_games.length
+      total = active_games + detached_games
+      total.each do |game|
         parsed += ["%-14s%-14s%-14s(idle %s)%14s" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round), game.attached ? "" : "Detached"]]
       end
       win.clear
       win.printw "Use uppercase to try to resize the terminal (recommended).\n"
       win.printw "Press any key to refresh. Auto refresh every five seconds.\n"
       win.printw "While watching, press q to return to the menu.\n\n"
-      active = active_games.length
-      detached = detached_games.length
-      total = active_games + detached_games
       if total.length > 0 then
         win.printw "Showing games #{offset+1}-#{(((offset+pagesize+1) > total.length) ? total.length : offset+pagesize+1)} of #{total.length}. "
         if detached > 0 then
