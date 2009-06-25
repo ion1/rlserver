@@ -293,7 +293,7 @@ module Menu
     offset = 0
     while !quit do
       title "Crawl scores"
-      status "Press $bPage Up$b and $bPage Down$b to scroll, $bq$b to go back"
+      status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
       row = 0
       offset.upto(offset + win.getmaxy - 1) do |i|
@@ -331,13 +331,6 @@ module Menu
     end
   end
 
-  def self.mktime(time)
-    hour = time / 3600
-    min = time % 3600 / 60
-    sec = time % 60
-    "%02d:%02d:%02d" % [hour, min, sec]
-  end
-
   def self.watchmenu
     win = Ncurses::Panel.panel_window @menu_panel
     quit = false
@@ -366,7 +359,7 @@ module Menu
       total = active_games + detached_games
       total.each do |game|
         a = game.attached ? "$b$3" : "$3" 
-        pretty += ["%s%-14s%-14s%-14s(idle %s)%s" % [a, game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round), a]]
+        pretty += ["%s%-14s%-14s%-14s(idle %s)%s" % [a, game.player, game.game, "#{game.cols}x#{game.rows}", game.idle, a]]
       end
       win.clear
       aputs win,
@@ -467,8 +460,7 @@ module Menu
           ["$bp$b", "Play Crawl"],
           ["$be$b", "Edit configuration file"]]
       else
-        choices = [
-          [nil, "Please login to play!"]]
+        choices = [[nil, "Please login to play!"]]
       end
       choices +=[
         ["$bs$b", "View scores"],

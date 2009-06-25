@@ -26,10 +26,10 @@ module Games
       @cols = data[3].split("x")[0].to_i
       @rows = data[3].split("x")[1].to_i
       @time = data[4]
-      if File.exists? "inprogress/#{@socket}.ttyrec.bz2" then
-        @idle = Time.now - File.stat("inprogress/#{@socket}.ttyrec.bz2").mtime
-      elsif File.exists? "crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
-        @idle = Time.now - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime
+      if File.exists? "crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
+        @idle = (Time.now - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).round.strftime("%H:%M:%S")
+      else
+        @idle = "??:??:??"
       end
     end
   end
