@@ -324,17 +324,23 @@ module Menu
       detached = detached_games.length
       total = active_games + detached_games
       total.each do |game|
-        parsed += ["%-14s%-14s%-14s(idle %s)%14s" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round), game.attached ? "" : "Detached"]]
+        parsed += ["%-14s%-14s%-14s(idle %s)" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round)]]
       end
       win.clear
       win.printw "Use uppercase to try to resize the terminal (recommended).\n"
       win.printw "Press any key to refresh. Auto refresh every five seconds.\n"
       win.printw "While watching, press q to return to the menu.\n\n"
       if total.length > 0 then
-        win.printw "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length}. "
-        if detached > 0 then
-          win.printw "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)"
+        win.printw "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length} ("
+        if active > 0 then
+          win.printw "#{active} active#{(detached > 0 ? ", " : "")}"
         end
+        if detached > 0 then
+          win.attron Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
+          win.printw "#{detached} detached"
+          win.attroff Ncurses.COLOR_PAIR(3) | Ncurses::A_BOLD
+        end
+        win.printw ")."
         offset.upto(offset + pagesize - 1) do |i|
           if i < total.length then
             socketmenu += [[total[i].attached ? chars[i % pagesize, 1] : nil, parsed[i]]]
