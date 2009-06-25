@@ -27,7 +27,7 @@ module Games
       @rows = data[3].split("x")[1].to_i
       @time = data[4]
       if File.exists? "crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
-        @idle = (Time.now - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).round.strftime("%H:%M:%S")
+        @idle = Time.at(Time.now.utc - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).utc.strftime "%H:%M:%S"
       else
         @idle = "??:??:??"
       end
