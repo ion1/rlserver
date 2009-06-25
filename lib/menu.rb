@@ -366,7 +366,7 @@ module Menu
       total = active_games + detached_games
       total.each do |game|
         a = game.attached ? "$b$3" : "$3"
-        pretty += ["%s%-14s%-14s(%-14s)(idle %s%s)" % [a, game.player, game.game, "%3ux%3u" % [game.cols, game.rows], mktime(game.idle), a]]
+        pretty += ["%s%-14s%-14s%-14s(idle %s%s)" % [a, game.player, game.game, "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), a]]
       end
       win.clear
       aputs win,
