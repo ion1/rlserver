@@ -331,7 +331,7 @@ module Menu
       win.printw "Press any key to refresh. Auto refresh every five seconds.\n"
       win.printw "While watching, press q to return to the menu.\n\n"
       if total.length > 0 then
-        win.printw "Showing games #{offset+1}-#{(((offset+pagesize+1) > total.length) ? total.length : offset+pagesize+1)} of #{total.length}. "
+        win.printw "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length}. "
         if detached > 0 then
           win.printw "(#{detached} game#{detached > 1 ? "s" : ""} currently detached)"
         end
