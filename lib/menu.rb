@@ -74,30 +74,32 @@ module Menu
   end
 
   def self.aputs(win, s)
-      control = false
-      attrs = ""
-      s.each_char do |c|
-        if control then
-          control = false
-          if ATTRIB.key? c then
+    control = false
+    attrs = ""
+    s.each_char do |c|
+      if control then
+        control = false
+        if ATTRIB.key? c then
+          if attrs.include? c
+            win.attroff ATTRIB[c]
+            attrs.delete! c
+          else
+            win.attron ATTRIB[c]
+            attrs += c
+          end
+        elsif
+          case c when "0".."9":
             if attrs.include? c
-              win.attroff ATTRIB[c]
+              win.attroff Ncurses.COLOR_PAIR c.to_i
               attrs.delete! c
             else
-              win.attron ATTRIB[c]
+              win.attron Ncurses.COLOR_PAIR c.to_i
               attrs += c
             end
-          elsif
-            case c when "0".."9":
-              if attrs.include? c
-                win.attroff Ncurses.COLOR_PAIR c.to_i
-                attrs.delete! c
-              else
-                win.attron Ncurses.COLOR_PAIR c.to_i
-                attrs += c
-              end
-            end
           end
+        else
+          win.addch c[0]
+        end
       else
         (control = (c == "$")) ? () : (win.addch c[0])
       end
@@ -287,7 +289,9 @@ module Menu
     pretty = []
     i = 1
     scores.data.each do |score|
-      pretty += ["%4u. %8s %-10s %s-%02u %-7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]]
+      str = "%4u. %8s %-10s %s-%02u %7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]
+      pretty += [str]
+      str.sub! /\$/, "$$"
       i += 1
     end
     offset = 0

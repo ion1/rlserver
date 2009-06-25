@@ -10,10 +10,10 @@ module Scores
       File.open(filename) do |file|
         file.read.each_line do |line|
           dataset = {}
-          newline = line.sub /::/, "#"
-          newline.split(":").each do |pair|
-            newpair = pair.sub /#/, ":"
-            key, value = newpair.split("=")
+          line.sub! /::/, "##"
+          line.split(":").each do |pair|
+            pair.sub! /##/, ":"
+            key, value = pair.split("=")
             dataset[key] = value
           end
           @data << dataset
