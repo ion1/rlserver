@@ -17,7 +17,7 @@ module Menu
     Ncurses.start_color
     Ncurses.init_pair 1, Ncurses::COLOR_WHITE, Ncurses::COLOR_BLUE
     Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
-    Ncurses.init_pair 3, Ncurses::COLOR_BLACK, Ncurses::COLOR_BLACK
+    Ncurses.init_pair 3, Ncurses::COLOR_CYAN, Ncurses::COLOR_BLACK
     Ncurses.curs_set 0
   end
 
@@ -253,7 +253,7 @@ module Menu
       if s[0] == nil then
         aputs win, "    "
       else
-        aputs win, "#{s[0][0, 1]} - "
+        aputs win, "#{s[0]} - "
       end
       aputs win, s[1]
       row += 1
@@ -355,7 +355,8 @@ module Menu
       detached = detached_games.length
       total = active_games + detached_games
       total.each do |game|
-        pretty += ["#{game.attached ? "" : "$b$3"}%-14s%-14s%-14s(idle %s)#{game.attached ? "" : "$b$3"}" % [game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round)]]
+        a = game.attached ? "$b$3" : "$3" 
+        pretty += ["%s%-14s%-14s%-14s(idle %s)%s" % [a, game.player, game.game, "#{game.cols}x#{game.rows}", mktime(game.idle.round), a]]
       end
       win.clear
       aputs win,
@@ -365,15 +366,15 @@ module Menu
       if total.length > 0 then
         aputs win, "Showing games #{offset+1}-#{(((offset+pagesize) > total.length) ? total.length : offset+pagesize)} of #{total.length} ("
         if active > 0 then
-          aputs win, "#{active} active#{(detached > 0 ? ", " : "")}"
+          aputs win, "$b$3#{active} active$b$3#{(detached > 0 ? ", " : "")}"
         end
         if detached > 0 then
-          aputs win, "$b$3#{detached} detached$3$b"
+          aputs win, "$3#{detached} detached$3"
         end
         aputs win, ")."
         offset.upto(offset + pagesize - 1) do |i|
           if i < total.length then
-            socketmenu += [[total[i].attached ? chars[i % pagesize, 1] : nil, pretty[i]]]
+            socketmenu += [[total[i].attached ? "$b#{chars[i % pagesize, 1]}$b" : nil, pretty[i]]]
           end
         end
         items = socketmenu.length
@@ -455,15 +456,15 @@ module Menu
       title "Crawl#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""} "
       unless @user == "" then
         choices = [
-          ["p", "Play Crawl"],
-          ["e", "Edit configuration file"]]
+          ["$bp$b", "Play Crawl"],
+          ["$be$b", "Edit configuration file"]]
       else
         choices = [
-          [nil, "$b$3Please login to play!$3$b"]]
+          [nil, "Please login to play!"]]
       end
       choices +=[
-        ["s", "View scores"],
-        ["q", "Back"]]
+        ["$bs$b", "View scores"],
+        ["$bq$b", "Back"]]
       case menu(true, *choices)
       when "P", "p":
         unless @user == "" then
@@ -498,10 +499,10 @@ module Menu
       title "Games"
       status count_games
       case menu(true,
-                ["a", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
-                ["c", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
-                ["n", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
-                ["q", "Back"])
+                ["$ba$b", "Angband (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "Angband") ? " (running)" : "") : ""}"],
+                ["$bc$b", "Crawl Stone Soup 0.5.0#{(@count > 0) ? ((Games.by_user[@user].key? "Crawl") ? " (running)" : "") : ""}"], 
+                ["$bn$b", "NetHack (coming soon)#{(@count > 0) ? ((Games.by_user[@user].key? "NetHack") ? " (running)" : "") : ""}"],
+                ["$bq$b", "Back"])
       when "A", "a": #angbandmenu
       when "C", "c": crawlmenu
       when "N", "n": #nethackmenu
@@ -518,7 +519,7 @@ module Menu
       status count_games
       win.clear
       win.move win.getmaxy - 1, 0
-      aputs win, "$3$bCopyleft 2008-2009 Joosa Riekkinen.$b$3"
+      aputs win, "Copyleft 2008-2009 Joosa Riekkinen."
       win.move 0, 0
       aputs win,
         "rlserver - roguelike server in the spirit of dgamelaunch\n\n" +
@@ -526,11 +527,11 @@ module Menu
         "http://cyc.dy.fi/rlserver/\n\n"
       if @user == "" then
         case menu(false,
-                  ["l", "Login"],
-                  ["n", "New player"],
-                  ["g", "Games"],
-                  ["w", "Watch"],
-                  ["q", "Quit"])
+                  ["$bl$b", "Login"],
+                  ["$bn$b", "New player"],
+                  ["$bg$b", "Games"],
+                  ["$bw$b", "Watch"],
+                  ["$bq$b", "Quit"])
         when "L", "l": @user = login
         when "N", "n": @user = newuser
         when "G", "g": gamesmenu
@@ -539,10 +540,10 @@ module Menu
         end
       else
         case menu(false,
-                  ["p", "Change password"],
-                  ["g", "Games"],
-                  ["w", "Watch"],
-                  ["q", "Quit"])
+                  ["$bp$b", "Change password"],
+                  ["$bg$b", "Games"],
+                  ["$bw$b", "Watch"],
+                  ["$bq$b", "Quit"])
         when "G", "g": gamesmenu
         when "P", "p": change_password
         when "W", "w": watchmenu
