@@ -37,10 +37,6 @@ module Users
     File.open USERS, 'w' do |out|
       YAML.dump @users, out
     end
-    @users.each_key do |user|
-      FileUtils.mkdir_p "crawl/macro/" + user
-      FileUtils.mkdir_p "crawl/morgue/" + user
-    end
   end
 
   def self.exists?(username)
@@ -66,7 +62,12 @@ module Users
   end
 
   def self.login(name, password)
-    @users[name] == Digest::SHA256.digest(password) ? name : ""
+    if @users[name] == Digest::SHA256.digest(password) then
+      FileUtils.mkdir_p "crawl/macro/#{name}"
+      FileUtils.mkdir_p "crawl/morgue/#{name}"
+      FileUtils.mkdir_p "crawl/ttyrec/#{name}"
+      name
+    else "" end
   end
 end
 

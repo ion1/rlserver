@@ -16,32 +16,34 @@ module Games
   end
 
   class Game
-    attr_reader :idle, :player, :game, :time, :cols, :rows, :attached, :socket
-    def initialize(socket)
-      pidremoved = socket.sub /\A\d*\./, ""
-      @socket = pidremoved
-      @idle = Time.now - File.stat("inprogress/#{pidremoved}.ttyrec.bz2").mtime
-      @attached = File.executable? "/var/run/screen/S-#{Server::SERVER_USER}/#{socket}"
-      split = pidremoved.split(".")
-      @player = split[0]
-      @game = split[1]
-      @cols = split[2].split("x")[0].to_i
-      @rows = split[2].split("x")[1].to_i
-      @time = split[3]
+    attr_reader :idle, :player, :game, :time, :cols, :rows, :attached, :socket, :screen_pid
+    def initialize(data)
+      @screen_pid = data[0].to_i
+      @socket = data[1,4].join "."
+      @attached = File.executable? "/var/run/screen/S-#{Server::SERVER_USER}/#{@screen_pid}.#{@socket}"
+      @player = data[1]
+      @game = data[2]
+      @cols = data[3].split("x")[0].to_i
+      @rows = data[3].split("x")[1].to_i
+      @time = data[4]
+      if File.exists? "inprogress/#{@socket}.ttyrec.bz2" then
+        @idle = Time.now - File.stat("inprogress/#{@socket}.ttyrec.bz2").mtime
+      elsif File.exists? "crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
+        @idle = Time.now - File.stat("crawl/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime
+      end
     end
   end
 
   def self.populate
     @games = []
     @by_user = {}
+    @by_socket = {}
     if File.exists? "/var/run/screen/S-#{Server::SERVER_USER}" then
       Dir.foreach "/var/run/screen/S-#{Server::SERVER_USER}" do |f|
-        unless f == "." or f == ".." then
-          pidremoved = f.sub /\A\d*\./, ""
-          if File.exists? "inprogress/#{pidremoved}.ttyrec.bz2" then
-            @games += [game = Game.new(f)]
-            @by_user[game.player] = {game.game => game}
-          end
+        if f.match /(\d+)\.([\w\d\s\-_ ]+)\.(\w+)\.(\d+x\d+)\.(\d+-\d\d-\d\dT\d\d:\d\d:\d\d\+\d\d:\d\d)/ then
+          @games += [game = Game.new($~[1,6])]
+          @by_user[game.player] = {game.game => game}
+          @by_socket[game.socket] = game
         end
       end
     end
@@ -62,16 +64,10 @@ module Games
         ENV[e[0]] = e[1]
       end
       @pid = fork do
-        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "inprogress/#{@socket}.ttyrec.bz2", "-e", "#{executable} #{options.join(" ")}"
+        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "player.screenrc", "termrec", "crawl/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{executable} #{options.join(" ")}"
       end
     end
     Process.wait @pid
-    populate
-    unless @by_user.key? user and @by_user[user].key? gamename then
-      if File.exists? "inprogress/#{@socket}.ttyrec.bz2" then
-        FileUtils.mv "inprogress/#{@socket}.ttyrec.bz2", "ttyrec/"
-      end
-    end
   end
 
   def self.watchgame(socket)

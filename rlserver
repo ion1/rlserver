@@ -17,16 +17,11 @@ begin
   Menu.initialize
   Signal.trap "HUP" do
     Menu.destroy
-    #puts "Caught HUP"
     if Games.socket != nil then
       system "screen", "-D", Games.socket
     end
     exit 1
   end
-  #pid = fork do
-  #  until UI.stdout_dead? do sleep 1 end
-  #  Process.kill "HUP", Process.ppid
-  #end
   Menu.mainmenu
 ensure
   Menu.destroy

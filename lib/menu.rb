@@ -5,6 +5,12 @@ require "fileutils"
 require "scores"
 
 module Menu
+  ATTRIB = {
+    "b" => Ncurses::A_BOLD,
+    "r" => Ncurses::A_REVERSE,
+    "n" => Ncurses::A_NORMAL,
+    "s" => Ncurses::A_STANDOUT}
+
   def self.initncurses
     Signal.trap "WINCH" do
       resize
@@ -65,22 +71,17 @@ module Menu
   end
 
   def self.aputs(win, s)
-    codes = {
-      "b" => Ncurses::A_BOLD,
-      "r" => Ncurses::A_REVERSE,
-      "n" => Ncurses::A_NORMAL,
-      "s" => Ncurses::A_STANDOUT}
       control = false
       attrs = ""
       s.each_char do |c|
         if control then
           control = false
-          if codes.key? c then
+          if ATTRIB.key? c then
             if attrs.include? c
-              win.attroff codes[c]
+              win.attroff ATTRIB[c]
               attrs.delete! c
             else
-              win.attron codes[c]
+              win.attron ATTRIB[c]
               attrs += c
             end
           elsif
@@ -138,7 +139,7 @@ module Menu
       unless loggedin then
         name = ""
         sleep 3
-        win.printw "Login incorrect.\n"
+        win.printw "\nLogin incorrect.\n\n"
         Ncurses.flushinp
       end
     end
@@ -524,7 +525,7 @@ module Menu
       aputs win,
         "rlserver - roguelike server in the spirit of dgamelaunch\n\n" +
         "Games on this server are recorded for in-progress viewing and playback!\n" +
-        "http://cyc.dy.fi/rlserver/\n\n"
+        "#{Server::SERVER_URL}\n\n"
       if @user == "" then
         case menu(false,
                   ["$bl$b", "Login"],
