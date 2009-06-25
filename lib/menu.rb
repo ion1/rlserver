@@ -290,8 +290,8 @@ module Menu
     i = 1
     scores.data.each do |score|
       str = "%4u. %8s %-10s %s-%02u %7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]
-      pretty += [str]
       str.sub! /\$/, "$$"
+      pretty += [str]
       i += 1
     end
     offset = 0
