@@ -345,7 +345,7 @@ module Menu
     sel = 0
     chars = "abcdefghijklmnop"
     while !quit do
-      pagesize = win.getmaxy - 6
+      pagesize = win.getmaxy - 4
       if pagesize > 16 then pagesize = 16 end
       title "Watch games"
       status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
@@ -366,7 +366,7 @@ module Menu
       total = active_games + detached_games
       total.each do |game|
         a = game.attached ? "$b$3" : "$3"
-        pretty += ["%s%-14s%-14s%-14s(idle %s%s)" % [a, game.player, game.game, "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), a]]
+        pretty += ["%s%-14s%-14s%-14s(idle %s)%s" % [a, game.player, game.game, "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), a]]
       end
       win.clear
       aputs win,
