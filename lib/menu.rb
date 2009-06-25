@@ -300,7 +300,7 @@ module Menu
     quit = false
     offset = 0
     sel = 0
-    pagesize = win.getmaxy - 10
+    pagesize = win.getmaxy - 6
     if pagesize > 16 then pagesize = 16 end
     chars = "abcdefghijklmnop"
     while !quit do
