@@ -300,10 +300,10 @@ module Menu
     quit = false
     offset = 0
     sel = 0
-    pagesize = win.getmaxy - 6
-    if pagesize > 16 then pagesize = 16 end
     chars = "abcdefghijklmnop"
     while !quit do
+      pagesize = win.getmaxy - 6
+      if pagesize > 16 then pagesize = 16 end
       Ncurses.halfdelay 50
       title "Watch games"
       status "Press Page Up and Page Down to scroll, q to go back"
