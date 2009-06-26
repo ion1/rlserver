@@ -54,7 +54,7 @@ module Games
     if @by_user.key? user and @by_user[user].key? gamename then
       @socket = @by_user[user][gamename].socket
       puts "\033[8;#{@by_user[user][gamename].rows};#{@by_user[user][gamename].cols}t"
-      @pid = fork do
+      pid = fork do
         system "screen", "-D", @socket
         exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
       end
@@ -63,24 +63,30 @@ module Games
       env.each do |e|
         ENV[e[0]] = e[1]
       end
-      @pid = fork do
+      pid = fork do
         exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "crawl/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{executable} #{options.join(" ")}"
       end
     end
-    Process.wait @pid
+    Process.wait pid
   end
 
   def self.watchgame(socket)
-    @pid = fork do
+    pid = fork do
       exec "dtach", "-a", "socket/#{socket}", "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
     end
-    Process.wait @pid
+    Process.wait pid
   end
 
   def self.editrc(user, game)
-    @pid = fork do
+    pid = fork do
       exec "nano", "-R", "rcfiles/#{user}.#{game}"
     end
-    Process.wait @pid
+    Process.wait pid
+    pid = fork do
+      tmp = %[mktemp]
+      system "diff -EbBu rcfiles/init.txt rcfiles/#{user}.#{game} > #{tmp}"
+      system "./vim-highlight", tmp, "rcfiles/diff/#{user}.#{game}.diff.html", "#{user}.#{game}.diff"
+      FileUtils.rm tmp
+    end
   end
 end

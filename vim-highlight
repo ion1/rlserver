@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# vim-highlight – Output syntax-highlighted HTML version of input using Vim
+# Copyright © 2009 Johan Kiviniemi
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+set -e
+
+tempdir="$(mktemp -dt vim-highlight.XXXXXXXXXX)"
+trap 'rm -fr "$tempdir"' 0 1 2 13 15
+
+if [ -z "$1" ]; then
+  >&2 printf "USAGE: %s infile [outfile.html] [title] [colorscheme]\n" "$0"
+  exit 1
+fi
+
+export infile="$1"
+export outfile="${2:-$infile.html}"
+export title="${3:-$infile}"
+export colorscheme="$4"
+
+script="$tempdir/script.vim"
+cat >>"$script" <<E
+  try
+    function HTMLEscape (str)
+      let str = a:str
+
+      for [pat, sub] in [['&', '\&amp;'], ['<', '\&lt;'], ['>', '\&gt;']]
+        let str = substitute(str, pat, sub, 'g')
+      endfor
+
+      return str
+    endfunction
+
+    if strlen(\$colorscheme)
+      execute "colorscheme" fnameescape(\$colorscheme)
+    endif
+
+    syntax enable
+
+    execute "edit" fnameescape(\$infile)
+
+    let g:html_use_css = 1
+    runtime! syntax/2html.vim
+    global/<title>/execute "normal S<title>".HTMLEscape(\$title)."</title>"
+
+    execute "write!" fnameescape(\$outfile)
+
+  finally
+    quitall!
+  endtry
+E
+
+</dev/null >/dev/null 2>&1 \
+  vim -E -f -i NONE -n -s -T builtin_xterm -u NONE -U NONE -X -S "$script"
+
+# vim:set et sw=2 sts=2:
