@@ -3,11 +3,26 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
 require "menu"
-require "server"
-require "games"
-require "fileutils"
+require "config"
+require "users"
 
 begin
+  Config.initialize
+  Dir.chdir Config.config["server"]["path"]
+  Users.load
+  ENV.each_key do |k|
+    case k
+    when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
+    end
+    ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
+  end
+  Signal.trap "HUP" do
+    Menu.destroy
+    if Games.socket then
+      system "screen", "-D", Games.socket
+    end
+    exit 1
+  end
   Menu.initialize
   Menu.mainmenu
 ensure

@@ -1,0 +1,3 @@
+[submodule "vim-highlight"]
+	path = vim-highlight
+	url = git://github.com/ion1/vim-highlight.git

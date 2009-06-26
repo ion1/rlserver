@@ -1,10 +1,12 @@
+require 'config'
 require 'digest'
 require 'yaml'
-require 'config'
 require 'fileutils'
 
 module Users
+  def self.users;@users end
   USERS = 'users'
+
   def self.load
     if File.exists? USERS then
       @users = YAML.load_file USERS
@@ -26,10 +28,6 @@ module Users
     end
   end
 
-  def self.users
-    @users
-  end
-  
   def self.save
     File.open USERS, 'w' do |out|
       YAML.dump @users, out
@@ -60,11 +58,16 @@ module Users
 
   def self.login(name, password)
     if @users[name] == Digest::SHA256.digest(password) then
-      FileUtils.mkdir_p "crawl/macro/#{name}"
-      FileUtils.mkdir_p "crawl/morgue/#{name}"
-      FileUtils.mkdir_p "crawl/ttyrec/#{name}"
+      Config.config["games"].each_pair do |game, config|
+        if config.key? "directories" then
+          config["directories"].split(" ").each do |dir|
+            dir.gsub! /%user%/, name
+            dir.gsub! /%game%/, game
+            FileUtils.mkdir_p "#{game}/#{dir.strip}"
+          end
+        end
+      end
       name
     else "" end
   end
 end
-

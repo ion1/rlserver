@@ -1,8 +1,6 @@
 require "config"
 
 module Scores
-  CRAWL_FILENAME = "/var/games/crawl/saves/scores"
-  CRAWL_HTML = "crawl/scores.html"
   COLORS = ["odd", "even"]
 
   class CrawlScores
@@ -58,7 +56,7 @@ module Scores
   end
 
   def self.updatecrawl
-    score = CrawlScores.new(CRAWL_FILENAME)
+    score = CrawlScores.new(Config.config["games"]["crawl"]["scores"])
     score.calculate_bonus
     html = <<HTML_END
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -85,6 +83,6 @@ module Scores
   </body>
 </html>
 HTML_END
-    File.open(CRAWL_HTML, "w") {|file| file.write(html)}
+    File.open("crawl/scores.html" , "w") {|file| file.write(html)}
   end
 end

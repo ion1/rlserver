@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+
+require "config"
+
+conf = Config.load_config_dir "config"
+
+
+puts conf.to_yaml

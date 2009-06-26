@@ -4,6 +4,7 @@ require "games"
 
 module Config
   CONFIG = "config"
+  def self.config;@config end
 
   def self.load_config_file(file)
     config = {}
@@ -33,19 +34,10 @@ module Config
 
   def self.initialize
     @config = load_config_dir CONFIG
-    ENV.each_key do |k|
-      case k
-      when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
-      end
-      ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
+    @config["games"].each_key do |game|
+      FileUtils.mkdir_p "#{game}/ttyrec"
+      FileUtils.mkdir_p "#{game}/rcfiles/diff"
+      FileUtils.cp_r "#{Config.config["games"][game]["rcfiles"]}/.", "#{game}/rcfiles"
     end
-    Signal.trap "HUP" do
-      Menu.destroy
-      if Games.socket then
-        system "screen", "-D", Games.socket
-      end
-      exit 1
-    end
-    Dir.chdir @config["dir"]
   end
 end
