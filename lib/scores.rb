@@ -1,3 +1,5 @@
+require "config"
+
 module Scores
   CRAWL_FILENAME = "/var/games/crawl/saves/scores"
   CRAWL_HTML = "crawl/scores.html"

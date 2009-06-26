@@ -1,5 +1,5 @@
 require "date"
-require "server"
+require "config"
 require "fileutils"
 
 module Games
@@ -79,13 +79,13 @@ module Games
 
   def self.editrc(user, game)
     pid = fork do
-      exec "nano", "-R", "rcfiles/#{user}.#{game}"
+      exec "nano", "-R", "#{game}/rcfiles/#{user}.txt"
     end
     Process.wait pid
     pid = fork do
       tmp = %[mktemp]
-      system "diff -EbBu rcfiles/init.txt rcfiles/#{user}.#{game} > #{tmp}"
-      system "./vim-highlight", tmp, "rcfiles/diff/#{user}.#{game}.diff.html", "#{user}.#{game}.diff"
+      system "diff -EbBu #{game}/rcfiles/init.txt \"#{game}/rcfiles/#{user}.txt\" > #{tmp}"
+      system "./vim-highlight", tmp, "#{game}/rcfiles/diff/#{user}.txt.diff.html", "#{user}.txt.diff"
       FileUtils.rm tmp
     end
   end

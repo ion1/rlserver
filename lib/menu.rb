@@ -3,7 +3,7 @@ require "users"
 require "games"
 require "fileutils"
 require "scores"
-require "server"
+require "config"
 
 module Menu
   ATTRIB = {"b" => Ncurses::A_BOLD, "r" => Ncurses::A_REVERSE, "n" => Ncurses::A_NORMAL, "s" => Ncurses::A_STANDOUT}

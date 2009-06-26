@@ -1,9 +1,6 @@
-#!/usr/bin/env ruby
-#Module Users
-
 require 'digest'
 require 'yaml'
-require 'server'
+require 'config'
 require 'fileutils'
 
 module Users

@@ -5,22 +5,9 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "menu"
 require "server"
 require "games"
+require "fileutils"
 
 begin
-  ENV.each_key do |k|
-    case k
-    when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
-    end
-    ENV["LANG"] = "en_US.UTF-8"
-  end
-  Signal.trap "HUP" do
-    Menu.destroy
-    if Games.socket != nil then
-      system "screen", "-D", Games.socket
-    end
-    exit 1
-  end
-  Dir.chdir Server::DIR
   Menu.initialize
   Menu.mainmenu
 ensure
