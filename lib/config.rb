@@ -59,10 +59,10 @@ module Config
   end
 
   def self.initialize (*file)
-    if file then
-      @config = load_config_dir *file
-    else
+    if file = [] then
       @config = load_config_dir CONFIG
+    else
+      @config = load_config_dir *file
     end
   end
 end
