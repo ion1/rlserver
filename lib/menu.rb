@@ -263,7 +263,7 @@ module Menu
     choices.each do |key, choice, block|
       if key.class == Fixnum then
         keys[key] = block
-      else
+      elsif key.class == String then
         key.each_byte do |k|
           keys[k] = block
         end

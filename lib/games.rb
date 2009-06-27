@@ -5,6 +5,10 @@ require "fileutils"
 module Games
   def self.socket; @socket end;def self.games; @games end; def self.by_user; @by_user end
 
+  def self.cmd_safe(cmd, *args)
+    (%W{sh -c #{cmd} --} + args)
+  end
+  
   class Game
     attr_reader :idle, :player, :game, :time, :cols, :rows, :attached, :socket, :screen_pid
     def initialize(data)
@@ -69,7 +73,7 @@ module Games
         end
       end
       pid = fork do
-        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}"
+        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
@@ -88,10 +92,11 @@ module Games
     end
     Process.wait pid
     pid = fork do
-      tmp = %[mktemp]
-      system "diff -EbBu #{game}/rcfiles/#{Config.config["games"][game]["defaultrc"]} \"#{game}/rcfiles/#{user}\" > #{tmp}"
-      system "vim-highlight/vim-highlight", "--title", "#{user}.diff", tmp, "#{game}/rcfiles/diff/#{user}.diff.html"
-      FileUtils.rm tmp
+      #tmp = %[mktemp]
+      #system "diff -EbBu #{game}/rcfiles/#{Config.config["games"][game]["defaultrc"]} \"#{game}/rcfiles/#{user}\" > #{tmp}"
+      #system "vim-highlight/vim-highlight", "--title", "#{user}.diff", tmp, "#{game}/rcfiles/diff/#{user}.diff.html"
+      #FileUtils.rm tmp
+      system *cmd_safe('diff -EbBu "$1" "$2" | vim-highlight/vim-highlight --title "$3" - "$4"', "#{game}/rcfiles/#{Config.config["games"][game]["defaultrc"]}", "#{game}/rcfiles/#{user}", "#{user}.diff", "#{game}/rcfiles/diff/#{user}.diff.html")
     end
     Process.detach pid
   end
