@@ -170,6 +170,10 @@ module Menu
       getname = ""
       win.getstr getname
       name = getname
+      if name == "" then
+        name = nil
+        break
+      end
       if Users.exists? name then
         win.printw "The player already exists.\n"
         name = nil
