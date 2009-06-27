@@ -81,7 +81,7 @@ module Menu
   def self.aputs(win, s)
     control = false
     attrs = ""
-    if s.length > win.getmaxx then s = wrap_text(s, win.getmaxx) end
+    if s.gsub(/\$[0-9brns]/, "").length > win.getmaxx then s = wrap_text(s, win.getmaxx-1) end
     s.each_char do |c|
       if control then
         control = false
