@@ -4,7 +4,7 @@ require "games"
 require "users"
 
 module Config
-  CONFIG = "config"
+  CONFIG = "/etc/rlserver"
   def self.config;@config end
 
   def self.load_config_file(file)
@@ -58,7 +58,11 @@ module Config
     end
   end
 
-  def self.initialize
-    @config = load_config_dir CONFIG
+  def self.initialize (*file)
+    if file then
+      @config = load_config_dir *file
+    else
+      @config = load_config_dir CONFIG
+    end
   end
 end

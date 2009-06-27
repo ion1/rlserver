@@ -9,6 +9,14 @@ module Games
     (%W{sh -c #{cmd} --} + args)
   end
   
+  def self.exec_or_die *args
+    begin
+      exec *args
+    ensure
+      exit 1
+    end
+  end 
+  
   class Game
     attr_reader :idle, :player, :game, :time, :cols, :rows, :attached, :socket, :screen_pid
     def initialize(data)
@@ -51,7 +59,7 @@ module Games
       puts "\033[8;#{@by_user[user][game].rows};#{@by_user[user][game].cols}t"
       pid = fork do
         system "screen", "-D", @socket
-        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
       end
     else
       @socket = "#{user}.#{game}.#{cols}x#{rows}.#{DateTime.now}"
@@ -73,7 +81,7 @@ module Games
         end
       end
       pid = fork do
-        exec "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
@@ -81,14 +89,14 @@ module Games
 
   def self.watchgame(socket)
     pid = fork do
-      exec "dtach", "-a", "socket/#{socket}", "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
+      exec_or_die "dtach", "-a", "socket/#{socket}", "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
     end
     Process.wait pid
   end
 
   def self.editrc(user, game)
     pid = fork do
-      exec "nano", "-R", "#{game}/rcfiles/#{user}"
+      exec_or_die "nano", "-R", "#{game}/rcfiles/#{user}"
     end
     Process.wait pid
     pid = fork do

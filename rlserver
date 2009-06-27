@@ -7,7 +7,7 @@ require "config"
 require "users"
 
 begin
-  Config.initialize
+  Config.initialize ARGV[0]
   Dir.chdir Config.config["server"]["path"]
   Users.load
   ENV.each_key do |k|
