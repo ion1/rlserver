@@ -3,6 +3,9 @@ require "config"
 module Scores
   COLORS = ["odd", "even"]
 
+  class Score
+  end
+  
   class CrawlScores
     attr_reader :player_points, :bonus_points, :total_points, :bonus_mult, :data, :bonuses
     def initialize(filename)

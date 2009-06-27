@@ -44,16 +44,16 @@ module Users
   end
 
   def self.checkname(name)
-    valid = true
-    name.each_char do |b|
-      case b 
-      when " ", "-", "0".."9", "A".."Z", "_", "a".."z":
-      else 
-        valid = false
-        break
+    if name then
+      name.each_char do |b|
+        case b 
+        when " ", "-", "0".."9", "A".."Z", "_", "a".."z": true
+        else 
+          false
+          break
+        end
       end
     end
-    valid
   end
 
   def self.login(name, password)
@@ -68,6 +68,6 @@ module Users
         end
       end
       name
-    else "" end
+    else nil end
   end
 end

@@ -23,6 +23,11 @@ begin
     end
     exit 1
   end
+  Signal.trap "USR1" do
+    Config.initialize
+    Users.load
+    Config.init_files
+  end
   Menu.initialize
   Menu.mainmenu
 ensure

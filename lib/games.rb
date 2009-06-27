@@ -93,5 +93,6 @@ module Games
       system "vim-highlight/vim-highlight", "--title", "#{user}.diff", tmp, "#{game}/rcfiles/diff/#{user}.diff.html"
       FileUtils.rm tmp
     end
+    Process.detach pid
   end
 end
