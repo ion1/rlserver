@@ -4,27 +4,14 @@ require 'yaml'
 require 'fileutils'
 
 module Users
-  def self.users;@users end
   USERS = 'users'
 
-  def self.load
+  def self.loadusers
     if File.exists? USERS then
       @users = YAML.load_file USERS
     else
       @users = {}
       save
-    end
-  end
-
-  def self.load_old
-    @users = YAML.load_file "user"
-  end
-  
-  class User
-    attr_accessor :name, :password
-    def initialize(name, password)
-      @name = name
-      @password = Digest::SHA256.digest password
     end
   end
 
@@ -35,15 +22,18 @@ module Users
   end
 
   def self.exists?(username)
+    loadusers
     username != "" and @users.has_key? username
   end
 
   def self.adduser(name, password)
+    loadusers
     @users[name] = Digest::SHA256.digest password
     save
   end
 
   def self.checkname(name)
+    loadusers
     if name then
       name.each_char do |b|
         case b 
@@ -57,6 +47,7 @@ module Users
   end
 
   def self.login(name, password)
+    loadusers
     if @users[name] == Digest::SHA256.digest(password) then
       Config.config["games"].each_pair do |game, config|
         if config.key? "directories" then

@@ -9,7 +9,7 @@ require "users"
 begin
   Config.initialize ARGV[0]
   Dir.chdir Config.config["server"]["path"]
-  Users.load
+  #Users.load
   ENV.each_key do |k|
     case k
     when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
