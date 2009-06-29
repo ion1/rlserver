@@ -43,9 +43,10 @@ module Games
     @by_socket = {}
     if File.exists? "/var/run/screen/S-#{Config.config["server"]["user"]}" then
       Dir.foreach "/var/run/screen/S-#{Config.config["server"]["user"]}" do |f|
-        if f.match /(\d+)\.([\w\d\s\-_ ]+)\.(\w+)\.(\d+x\d+)\.(\d+-\d\d-\d\dT\d\d:\d\d:\d\d\+\d\d:\d\d)/ then
+        if f.match /(\d+)\.(.+)\.(\w+)\.(\d+x\d+)\.(\d+-\d\d-\d\dT\d\d:\d\d:\d\d[+-]\d\d:\d\d)/ then
           @games += [game = Game.new($~[1,6])]
-          @by_user[game.player] = {game.game => game}
+          if @by_user[game.player] then @by_user[game.player][game.game] = game
+          else @by_user[game.player] = {}; @by_user[game.player][game.game] = game end
           @by_socket[game.socket] = game
         end
       end

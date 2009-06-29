@@ -337,12 +337,16 @@ module Menu
 
   def self.gen_status
     @count = 0
+    running = []
     if @user then
       Games.populate
       if Games.by_user.key? @user then
-        @count = Games.by_user[@user].length
+        @count = Games.by_user[@user].size
+        Games.by_user[@user].each_key do |game|
+          running += ["$b#{Config.config["games"][game]["name"]}$b"]
+        end
       end
-      "Logged in as $b#{@user}$b#{(@count > 0) ? " - You have #{(@count == 1) ? "one" : @count} game#{@count > 1 ? "s" : ""} running" : ""}"
+      "Logged in as $b#{@user}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
     else
       "Not logged in" 
     end
