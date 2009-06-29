@@ -64,17 +64,18 @@ module Games
     else
       @socket = "#{user}.#{game}.#{cols}x#{rows}.#{DateTime.now}"
       if Config.config["games"][game].key? "env" then
-        envs = Config.config["games"][game]["env"].split " "
-        envs.each do |env|
+        Config.config["games"][game]["env"].split(" ").each do |env|
+          env.gsub! /%path%/, Config.config["server"]["path"]
+          env.gsub! /%user%/, user
+          env.gsub! /%game%/, game
           var, set = env.split "="
-          var.gsub! /%user%/, user
-          var.gsub! /%game%/, game
           ENV[var.strip] = set.strip
         end
       end
       options = []
       if Config.config["games"][game].key? "parameters" then
         Config.config["games"][game]["parameters"].split(" ").each do |arg|
+          arg.gsub! /%path%/, Config.config["server"]["path"]
           arg.gsub! /%user%/, user
           arg.gsub! /%game%/, game
           options += [arg.strip]

@@ -72,45 +72,44 @@ module Menu
 
   #stuff is beginning to weep through to places it shouldn't be
   #refactoring ensues in the future
-  ATTRIB = {"b" => Ncurses::A_BOLD, "r" => Ncurses::A_REVERSE, "n" => Ncurses::A_NORMAL, "s" => Ncurses::A_STANDOUT}
+  ATTRIB = {
+    "b" => lambda { Ncurses::A_BOLD },
+    "r" => lambda { Ncurses::A_REVERSE },
+    "n" => lambda { Ncurses::A_NORMAL },
+    "s" => lambda { Ncurses::A_STANDOUT },
+    "1" => lambda { Ncurses.COLOR_PAIR(1) },
+    "2" => lambda { Ncurses.COLOR_PAIR(2) },
+    "3" => lambda { Ncurses.COLOR_PAIR(3) }
+  }
+  ATTRONOFF = {
+    false => lambda { |win, a| win.attroff(ATTRIB[a].call) },
+    true => lambda { |win, a| win.attron(ATTRIB[a].call) }
+  }
 
-  def self.wrap_text(txt, col = 80)
-    txt.gsub /(.{1,#{col}})( +|$\n?)|(.{1,#{col}})/, "\\1\\3\n"
+  def self.wrap_text(txt, width = 80, tag = /(?:\$[0-9a-z])/)
+    if txt.gsub(tag, "").length > width then
+      txt.gsub(/((?:#{tag}.|.){0,#{width-1}})(?:\s|$\n)/, "\\1\n")
+    else txt end
   end
-
-  def self.aputs(win, s)
-    control = false
-    attrs = ""
-    if s.gsub(/\$[0-9brns]/, "").length > win.getmaxx then s = wrap_text(s, win.getmaxx-1) end
-    s.each_char do |c|
-      if control then
-        control = false
-        if ATTRIB.key? c then
-          if attrs.include? c
-            win.attroff ATTRIB[c]
-            attrs.delete! c
-          else
-            win.attron ATTRIB[c]
-            attrs += c
-          end
-        elsif
-          case c when "0".."9":
-            if attrs.include? c
-              win.attroff Ncurses.COLOR_PAIR c.to_i
-              attrs.delete! c
-            else
-              win.attron Ncurses.COLOR_PAIR c.to_i
-              attrs += c
-            end
-          end
-        else
-          win.addch c[0]
-        end
+  
+  def self.aputs(win, s, wrap = true)
+    atton = {}
+    ATTRIB.each_key do |k|
+      atton[k] = false
+    end
+    tag = false
+    wrap_text(s, win.getmaxx).each_char do |char|
+      if char == "$" then
+        tag = true
+      elsif tag then
+        if ATTRIB.key? char then ATTRONOFF[atton[char] = !atton[char]].call win, char end
+        tag = false
       else
-        (control = (c == "$")) ? () : (win.addch c[0])
+        win.printw char
       end
     end
   end
+
 
   def self.title(s)
     win = Ncurses::Panel.panel_window @header_panel
