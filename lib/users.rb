@@ -57,6 +57,11 @@ module Users
             FileUtils.mkdir_p "#{game}/#{dir.strip}"
           end
         end
+        if config.key? "rcfiles" and config.key? "defaultrc" then
+          unless File.exists? "#{game}/rcfiles/#{name}" then
+            FileUtils.cp "#{config["rcfiles"]}/#{config["defaultrc"]}", "#{game}/rcfiles/#{name}"
+          end
+        end
       end
       name
     else nil end
