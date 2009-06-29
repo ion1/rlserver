@@ -489,7 +489,6 @@ module Menu
       status gen_status
       win.clear
       aputs win, Config.config["server"]["banner"] + "\n\n"
-      aputs win, "$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$blol lol lol lol lol lol lol lol lol $b$b$b\n\n"
       quit =
         if @user then
           menu([["pP", "Change password", lambda {change_password; false}],
