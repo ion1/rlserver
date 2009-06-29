@@ -1,4 +1,4 @@
-require "ncurses"
+require "ncurses" #should get rid of this poop and make a wrapper, especially user input is retarded
 require "users"
 require "games"
 require "fileutils"
@@ -70,8 +70,6 @@ module Menu
     Ncurses.doupdate
   end
 
-  #stuff is beginning to weep through to places it shouldn't be
-  #refactoring ensues in the future
   ATTRIB = {
     "b" => lambda { Ncurses::A_BOLD },
     "r" => lambda { Ncurses::A_REVERSE },
@@ -87,25 +85,38 @@ module Menu
   }
 
   def self.wrap_text(txt, width = 80, tag = /(?:\$[0-9a-z])/)
-    if txt.gsub(tag, "").length > width then
-      txt.gsub(/((?:#{tag}.|.){0,#{width-1}})(?:\s|$\n)/, "\\1\n")
+    if txt.gsub(/#{tag}|\n/, "").length > width then
+      txt.gsub(/((?:#{tag}+.|.){1,#{width}})(?: |(\n+))/) do
+        "#$1#{$2 ? $2 : "\n"}"
+      end
     else txt end
   end
-  
-  def self.aputs(win, s, wrap = true)
-    atton = {}
-    ATTRIB.each_key do |k|
-      atton[k] = false
-    end
+
+  @atton = {}
+  ATTRIB.each_key do |k|
+    @atton[k] = false
+  end
+
+  def self.aputs(win, s)
     tag = false
+    col = 0 #win.getcurx
     wrap_text(s, win.getmaxx).each_char do |char|
+      oldrow = win.getcury
       if char == "$" then
         tag = true
       elsif tag then
-        if ATTRIB.key? char then ATTRONOFF[atton[char] = !atton[char]].call win, char end
+        if ATTRIB.key? char then ATTRONOFF[@atton[char] = !@atton[char]].call win, char end
         tag = false
       else
-        win.printw char
+        if char == "\n" then
+          if col < win.getmaxx then
+            win.move win.getcury.succ, 0
+          end
+          col = 0 #win.getcurx
+        else
+          win.printw char
+          col += 1
+        end
       end
     end
   end
@@ -478,6 +489,7 @@ module Menu
       status gen_status
       win.clear
       aputs win, Config.config["server"]["banner"] + "\n\n"
+      aputs win, "$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$b$blol lol lol lol lol lol lol lol lol $b$b$b\n\n"
       quit =
         if @user then
           menu([["pP", "Change password", lambda {change_password; false}],
