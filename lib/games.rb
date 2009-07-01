@@ -59,8 +59,8 @@ module Games
       @socket = @by_user[user][game].socket
       puts "\033[8;#{@by_user[user][game].rows};#{@by_user[user][game].cols}t"
       pid = fork do
-        system "screen", "-D", @socket
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        system "screen.real", "-D", @socket
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen.real", "-D", "-r", @socket
       end
     else
       @socket = "#{user}.#{game}.#{cols}x#{rows}.#{DateTime.now}"
@@ -83,7 +83,7 @@ module Games
         end
       end
       pid = fork do
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen.real", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
