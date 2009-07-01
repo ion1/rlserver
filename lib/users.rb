@@ -62,6 +62,7 @@ module Users
             FileUtils.cp "#{config["rcfiles"]}/#{config["defaultrc"]}", "#{game}/rcfiles/#{name}"
           end
         end
+        FileUtils.mkdir -p "#{game}/ttyrec/#{name}"
       end
       name
     else nil end
