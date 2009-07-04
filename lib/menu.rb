@@ -10,6 +10,7 @@ module Menu
 
   def self.initncurses
     unless @ncurses then
+      puts "\033[8;#{@rows};#{@cols}t"
       Signal.trap "WINCH" do
         resize
       end
@@ -30,6 +31,8 @@ module Menu
 
   def self.initialize
     Ncurses.initscr
+    @cols = Ncurses.stdscr.getmaxx
+    @rows = Ncurses.stdscr.getmaxy
     initncurses
     initwindows
     @user = nil
@@ -511,6 +514,8 @@ module Menu
   def self.destroy
     Signal.trap "WINCH" do end
     if @ncurses then
+      @cols = Ncurses.stdscr.getmaxx
+      @rows = Ncurses.stdscr.getmaxy
       Ncurses.echo
       Ncurses.nocbreak
       Ncurses.nl
