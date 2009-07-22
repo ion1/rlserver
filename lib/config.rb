@@ -37,15 +37,15 @@ module Config
     @config["games"].each_key do |game|
       FileUtils.mkdir_p "#{game}/ttyrec"
       FileUtils.mkdir_p "#{game}/rcfiles/diff"
-      if Config.config["games"][game].key? "rcfiles" then
-        Dir.foreach Config.config["games"][game]["rcfiles"] do |file|
-          if file != ".." and file != "." then
-            unless File.exists? "#{game}/rcfiles/#{file}" then
-              FileUtils.cp "#{Config.config["games"][game]["rcfiles"]}/#{file}", "#{game}/rcfiles"
-            end
-          end
-        end
-      end
+      #if Config.config["games"][game].key? "rcfiles" then
+      #  Dir.foreach Config.config["games"][game]["rcfiles"] do |file|
+      #    if file != ".." and file != "." then
+      #      unless File.exists? "#{game}/rcfiles/#{file}" then
+      #        FileUtils.cp "#{Config.config["games"][game]["rcfiles"]}/#{file}", "#{game}/rcfiles"
+      #      end
+      #    end
+      #  end
+      #end
     end
 
     Users.users.each_key do |name|

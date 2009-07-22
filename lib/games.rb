@@ -101,15 +101,5 @@ module Games
       exec_or_die "nano", "-R", "#{game}/rcfiles/#{user}"
     end
     Process.wait pid
-    if Config.config["games"][game].key? "defaultrc" then
-      pid = fork do
-        #tmp = %[mktemp]
-        #system "diff -EbBu #{game}/rcfiles/#{Config.config["games"][game]["defaultrc"]} \"#{game}/rcfiles/#{user}\" > #{tmp}"
-        #system "vim-highlight/vim-highlight", "--title", "#{user}.diff", tmp, "#{game}/rcfiles/diff/#{user}.diff.html"
-        #FileUtils.rm tmp
-        system *cmd_safe('diff -EbBu "$1" "$2" | vim-highlight/vim-highlight --title "$3" - "$4"', "#{game}/rcfiles/#{Config.config["games"][game]["defaultrc"]}", "#{game}/rcfiles/#{user}", "#{user}.diff", "#{game}/rcfiles/diff/#{user}.diff.html")
-      end
-      Process.detach pid
-    end
   end
 end
