@@ -73,8 +73,8 @@ module Scores
   <body>
     <p>
     <table class="sort-table" id="scores">
-      <thead><tr align="left"><th>#</th><th>Score</th><th>Name</th><th>Character</th><th>Dungeon</th><th>Turns</th><th>Quit reason</th></tr></thead>
-      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td align=\"right\">#{points["sc"]}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl: #{points["xl"]})</td><td align=\"right\">#{points["place"]}</td><td align=\"right\">#{points["turn"]}</td><td>#{points["tmsg"]}</td></tr>"}.join("\n")}</tbody>
+      <thead><tr align="left"><th>#</th><th>Score</th><th>Name</th><th>Character</th><th>Place</th><th>Turns</th><th>Quit reason</th></tr></thead>
+      <tbody>#{i=0;score.data.map{|points| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td align=\"right\">#{points["sc"]}</td><td>#{points["name"]}</td><td>#{points["race"]} #{points["cls"]} (lvl: #{points["xl"]})</td><td>#{points["place"]}</td><td align=\"right\">#{points["turn"]}</td><td>#{points["tmsg"]}</td></tr>"}.join("\n")}</tbody>
     </table>
     </p>
   </body>
