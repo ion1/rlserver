@@ -49,10 +49,10 @@ module Scores
 
       @bonus_mult = @player_points.values.inject{|x,y|x+y}/100.0
       @total_points = {}
-      @player_points.each do |key, val|
+      @player_points.each_pair do |key, val|
         @total_points[key] = @total_points[key].to_i + val
       end
-      @bonus_points.each do |key, val|
+      @bonus_points.each_pair do |key, val|
         @total_points[key] = @total_points[key].to_f + val * @bonus_mult
       end
     end
@@ -71,12 +71,6 @@ module Scores
     <link rel="stylesheet" type="text/css" href=".style.css"/>
   </head>
   <body>
-    <p>
-    <table class="sort-table" id="player-ranking">
-      <thead><tr align="left"><th>#</th><th>Name</th><th>Player Points</th><th>Bonus Points</th><th>Total Score</th><th>Best</th></tr></thead>
-      <tbody>#{i=0;score.total_points.sort{|x,y|y[1] <=> x[1]}.map{|x| "<tr class=#{COLORS[i % 2]}><td>#{i+=1}</td><td>#{x[0]}</td><td>#{score.player_points[x[0]].to_i}</td><td>#{score.bonus_points[x[0]].to_i*score.bonus_mult}</td><td>#{x[1]}</td><td>#{score.bonuses[x[0]].join(", ")}</td></tr>"}.join("\n")}</tbody>
-    </table>
-    </p>
     <p>
     <table class="sort-table" id="scores">
       <thead><tr align="left"><th>#</th><th>Score</th><th>Name</th><th>Character</th><th>Dungeon</th><th>Turns</th><th>Quit reason</th></tr></thead>
