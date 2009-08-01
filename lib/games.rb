@@ -29,10 +29,8 @@ module Games
       @cols = cols.to_i
       @rows = rows.to_i
       @time = data[4]
-      if File.exists? "#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec.bz2" then
-        @idle = (Time.now - File.stat("#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec.bz2").mtime).to_i
-      elsif File.exists? "inprogress/#{@socket}.ttyrec.bz2" then
-        @idle = (Time.now - File.stat("inprogress/#{@socket}.ttyrec.bz2").mtime).to_i
+      if File.exists? "#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec" then
+        @idle = (Time.now - File.stat("#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec").mtime).to_i
       end
     end
   end
@@ -83,10 +81,13 @@ module Games
         end
       end
       pid = fork do
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
+    pid = fork do
+      exec_or_die "bzip2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec"
+    end
   end
 
   def self.watchgame(socket)
