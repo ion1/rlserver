@@ -2,7 +2,6 @@ require "ncurses" #should get rid of this poop and make a wrapper, especially us
 require "users"
 require "games"
 require "fileutils"
-require "scores"
 require "config"
 
 module Menu
