@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
-
-require "scores"
-
-Config.initialize
-Scores.updatecrawl
