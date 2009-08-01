@@ -356,10 +356,14 @@ module Menu
   end
 
   def self.mktime(s)
-    h = s / 3600
-    m = s % 3600 / 60
-    s = s % 60
-    "%02d:%02d:%02d" % [h, m, s]
+    if s then
+      h = s / 3600
+      m = s % 3600 / 60
+      s = s % 60
+      "%02d:%02d:%02d" % [h, m, s]
+    else
+      "unknown"
+    end
   end
 
   GAME_COLOR = { true => "$b$3", false => "$3" }
