@@ -88,6 +88,7 @@ module Games
     pid = fork do
       exec_or_die "bzip2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec"
     end
+    Process.detach pid
   end
 
   def self.watchgame(socket)
