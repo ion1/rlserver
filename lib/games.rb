@@ -85,8 +85,11 @@ module Games
       end
     end
     Process.wait pid
-    pid = fork do
-      exec_or_die "bzip2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec"
+    populate
+    unless @by_user.key? user and @by_user[user].key? game then
+      pid = fork do
+        exec_or_die "bzip2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec"
+      end
     end
     Process.detach pid
   end
