@@ -295,7 +295,7 @@ module Menu
     end
   end
   
-  #crawl-specific, fix this and scores.rb
+  # Deprecated
   def self.crawlscores
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
@@ -440,10 +440,6 @@ module Menu
     end
   end
 
-  # keeping these here just for the parameters
-  #        Games.launchgame @user, "/usr/games/angband", "Angband", "-mgcu -u\"" + @user + "\"", [["SHELL", "/bin/sh"]]
-  #        Games.launchgame @user, "/usr/games/nethack", "NetHack", "-u \"" + @user + "\"", [["NETHACKOPTIONS", File.expand_path("rcfiles/" + @user + ".nethack")],["SHELL", "/bin/sh"]]
-  #        
   def self.gamemenu(game)
     quit = false
     win = Ncurses::Panel.panel_window @menu_panel

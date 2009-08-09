@@ -29,8 +29,8 @@ module Games
       @cols = cols.to_i
       @rows = rows.to_i
       @time = data[4]
-      if File.exists? "#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec" then
-        @idle = (Time.now - File.stat("#{@game}/ttyrec/#{@player}/#{@socket}.ttyrec").mtime).to_i
+      if File.exists? "#{@game}/stuff/#{@player}/#{@socket}.ttyrec" then
+        @idle = (Time.now - File.stat("#{@game}/stuff/#{@player}/#{@socket}.ttyrec").mtime).to_i
       end
     end
   end
@@ -81,14 +81,14 @@ module Games
         end
       end
       pid = fork do
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
     populate
     unless @by_user.key? user and @by_user[user].key? game then
       pid = fork do
-        exec_or_die "bzip2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec.bz2", "#{game}/ttyrec/#{user}/#{@socket}.ttyrec"
+        exec_or_die "bzip2", "#{game}/stuff/#{user}/#{@socket}.ttyrec.bz2", "#{game}/stuff/#{user}/#{@socket}.ttyrec"
       end
     end
     Process.detach pid
@@ -103,7 +103,7 @@ module Games
 
   def self.editrc(user, game)
     pid = fork do
-      exec_or_die "nano", "-R", "#{game}/rcfiles/#{user}"
+      exec_or_die "nano", "-R", "#{game}/init/#{user}"
     end
     Process.wait pid
   end

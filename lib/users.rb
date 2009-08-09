@@ -50,7 +50,7 @@ module Users
     loadusers
     if @users[name] == Digest::SHA256.digest(password) then
       Config.config["games"].each_pair do |game, config|
-        FileUtils.mkdir_p "#{game}/ttyrec/#{name}"
+        FileUtils.mkdir_p "#{game}/stuff/#{name}"
         if config.key? "directories" then
           config["directories"].split(" ").each do |dir|
             dir.gsub! /%user%/, name
@@ -58,9 +58,9 @@ module Users
             FileUtils.mkdir_p "#{game}/#{dir.strip}"
           end
         end
-        if config.key? "rcfiles" and config.key? "defaultrc" then
-          unless File.exists? "#{game}/rcfiles/#{name}" then
-            FileUtils.cp "#{config["rcfiles"]}/#{config["defaultrc"]}", "#{game}/rcfiles/#{name}"
+        if config.key? "defaultrc" then
+          unless File.exists? "#{game}/init/#{name}" then
+            FileUtils.cp config["defaultrc"], "#{game}/init/#{name}"
           end
         end
       end
