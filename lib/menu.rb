@@ -393,7 +393,7 @@ module Menu
       detached = detached_games.length
       total = active_games + detached_games
       total.each do |game|
-        pretty += ["%s%-14s%-20s%-14s(idle %s)%s" % [GAME_COLOR[game.attached], game.player, Config.config["games"][game.game]["name"], "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), GAME_COLOR[game.attached]]]
+        pretty += ["%s%-14s%-20s%-14s(idle %s)%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), GAME_COLOR[game.attached]]]
       end
       if total.length > 0 then
         aputs win, "Currently running games ("
