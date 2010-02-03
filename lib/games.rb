@@ -57,8 +57,8 @@ module Games
       @socket = @by_user[user][game].socket
       puts "\033[8;#{@by_user[user][game].rows};#{@by_user[user][game].cols}t"
       pid = fork do
-        system "screen", "-D", @socket
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
+        #exec_or_die "screen", "-D", @socket
+        exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-D", "-r", @socket
       end
     else
       @socket = "#{user}.#{game}.#{cols}x#{rows}.#{DateTime.now}"
@@ -80,11 +80,18 @@ module Games
           options += [arg.strip]
         end
       end
+      if Config.config["games"][game].key? "chdir" then
+        pushd = Dir.pwd
+        Dir.chdir(Config.config["games"][game]["chdir"])
+      end
       pid = fork do
-        exec_or_die "dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-A", "socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "screenrc", "termrec", "#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
+    if Config.config["games"][game].key? "chdir" then
+      Dir.chdir(pushd)
+    end
     populate
     unless @by_user.key? user and @by_user[user].key? game then
       pid = fork do
@@ -96,7 +103,7 @@ module Games
 
   def self.watchgame(socket)
     pid = fork do
-      exec_or_die "dtach", "-a", "socket/#{socket}", "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
+      exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-a", "socket/#{socket}", "-R", "-e", "\q", "-r", "screen", "-C", "^\\", "-z", "-s"
     end
     Process.wait pid
   end

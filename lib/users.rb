@@ -51,13 +51,6 @@ module Users
     if @users[name] == Digest::SHA256.digest(password) then
       Config.config["games"].each_pair do |game, config|
         FileUtils.mkdir_p "#{game}/stuff/#{name}"
-        if config.key? "directories" then
-          config["directories"].split(" ").each do |dir|
-            dir.gsub! /%user%/, name
-            dir.gsub! /%game%/, game
-            FileUtils.mkdir_p "#{game}/#{dir.strip}"
-          end
-        end
         if config.key? "defaultrc" then
           unless File.exists? "#{game}/init/#{name}" then
             FileUtils.cp config["defaultrc"], "#{game}/init/#{name}"
