@@ -110,7 +110,7 @@ module Games
 
   def self.editrc(user, game)
     pid = fork do
-      exec_or_die "nano", "-R", "#{Config.config["server"]["path"]}/#{game}/init/#{user}"
+      exec_or_die "nano", "-R", "#{Config.config["server"]["path"]}/#{game}/init/#{user}.txt"
     end
     Process.wait pid
   end
