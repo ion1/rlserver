@@ -52,8 +52,8 @@ module Users
       Config.config["games"].each_pair do |game, config|
         FileUtils.mkdir_p "#{game}/stuff/#{name}"
         if config.key? "defaultrc" then
-          unless File.exists? "#{game}/init/#{name}" then
-            FileUtils.cp config["defaultrc"], "#{game}/init/#{name}"
+          unless File.exists? "#{game}/init/#{name}.txt" then
+            FileUtils.cp config["defaultrc"], "#{game}/init/#{name}.txt"
           end
         end
       end
