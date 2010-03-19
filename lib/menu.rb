@@ -483,6 +483,9 @@ module Menu
       Config.config["games"].each_pair do |game, config|
         choices += [["#{config["key"]}", "#{config["name"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@user].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
       end
+      choices.sort! do |a, b|
+        a[1] <=> b[1]
+      end
       quit = menu(choices + [["qQ", "Back", lambda {true}]])
     end
   end
