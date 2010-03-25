@@ -435,7 +435,7 @@ module Menu
           aputs win, "$3#{detached} detached$3"
         end
         aputs win, "):"
-        pagesize = win.getmaxy - win.getcury - 2
+        pagesize = win.getmaxy - win.getcury - 3
         if pagesize > 25 then pagesize = 25 end
         offset.upto(offset + pagesize - 1) do |i|
           if i < total.length then
