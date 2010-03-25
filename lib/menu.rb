@@ -371,12 +371,14 @@ module Menu
     quit = false
     offset = 0
     sel = 0
-    chars = "abcdefghijklmnopABCDEFGHIJKLMNOP"
+    chars = "abcdefghijklmnoprstuvwxyz"
+    order = 1
+    sort = 0
     while !quit do
       title "Watch games"
-      status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
+      #status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
-      aputs win, "While watching, press $bq$b to return here.\nThe screen may appear garbled if the terminal is too small (will try to resize automatically).\n\n"
+      aputs win, "While watching, press $bq$b to return here. Arrow keys change sorting.\n"
       Games.populate
       pretty = []
       active_games = []
@@ -391,9 +393,38 @@ module Menu
       end
       active = active_games.length
       detached = detached_games.length
+      active_games.sort! do |a, b|
+        case sort
+        when 0
+          x = a.player
+          y = b.player
+        when 1
+          x = a.game
+          y = b.game
+        when 2
+          x = a.idle
+          y = b.idle
+        end
+        case order
+        when 1
+          x <=> y
+        when -1
+          y <=> x
+        end
+      end
+      detached_games.sort! do |a, b|
+        case sort
+        when 0
+          a.player <=> b.player
+        when 1
+          a.game <=> b.game
+        when 2
+          a.idle <=> b.idle
+        end
+      end
       total = active_games + detached_games
       total.each do |game|
-        pretty += ["%s%-14s%-20s%-14s(idle %s)%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "(%3ux%3u)" % [game.cols, game.rows], mktime(game.idle), GAME_COLOR[game.attached]]]
+        pretty += ["%s%-20s%-20s%-20s%s%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "%3ux%3u" % [game.cols, game.rows], mktime(game.idle), GAME_COLOR[game.attached]]]
       end
       if total.length > 0 then
         aputs win, "Currently running games ("
@@ -405,13 +436,12 @@ module Menu
         end
         aputs win, "):"
         pagesize = win.getmaxy - win.getcury - 2
-        if pagesize > 32 then pagesize = 32 end
+        if pagesize > 25 then pagesize = 25 end
         offset.upto(offset + pagesize - 1) do |i|
           if i < total.length then
             launch = lambda do |key|
               case key
-              when "a"[0].."p"[0]: sel = key - 97
-              when "A"[0].."P"[0]: sel = key - 81
+              when "a"[0].."p"[0], "r"[0].."z"[0]: sel = key - 97
               end
               if sel < active then
                 Ncurses.def_prog_mode
@@ -431,11 +461,39 @@ module Menu
       else
         aputs win, "There are no games running."
       end
-      win.printw "\n\n"
+      win.printw "\n"
+      win.move win.getcury, 4
+      if sort == 0 then
+        aputs win, '$bPlayer '
+        aputs win, order == 1 ? '>$b' : '<$b'
+      else
+        win.printw 'Player'
+      end
+      win.move win.getcury, 24
+      if sort == 1 then
+        aputs win, '$bGame '
+        aputs win, order == 1 ? '>$b' : '<$b'
+      else
+        win.printw 'Game'
+      end
+      win.move win.getcury, 44
+      win.printw 'Size'
+      win.move win.getcury, 64
+      if sort == 2 then
+        aputs win, '$bIdle '
+        aputs win, order == 1 ? '>$b' : '<$b'
+      else
+        win.printw 'Idle'
+      end
+      win.printw "\n"
       socketmenu += [
-        ["qQ", nil, lambda {true}],
         [Ncurses::KEY_PPAGE, nil, lambda {offset -= pagesize; if offset < 0 then offset = 0 end; false}],
-        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= total.length then offset -= pagesize end; false}]]
+        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= total.length then offset -= pagesize end; false}],
+        [Ncurses::KEY_UP, nil, lambda {order = -1; false}],
+        [Ncurses::KEY_DOWN, nil, lambda {order = 1; false}],
+        [Ncurses::KEY_LEFT, nil, lambda {sort -= 1; if sort < 0 then sort = 2 end; false}],
+        [Ncurses::KEY_RIGHT, nil, lambda {sort += 1; if sort > 2 then sort = 0 end; false}],
+        ["qQ", "back", lambda {true}]]
       quit = menu socketmenu
     end
   end
