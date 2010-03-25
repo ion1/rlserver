@@ -396,11 +396,11 @@ module Menu
       active_games.sort! do |a, b|
         case sort
         when 0
-          x = a.player
-          y = b.player
+          x = a.player.downcase
+          y = b.player.downcase
         when 1
-          x = a.game
-          y = b.game
+          x = a.game.downcase
+          y = b.game.downcase
         when 2
           x = a.idle
           y = b.idle
@@ -415,11 +415,20 @@ module Menu
       detached_games.sort! do |a, b|
         case sort
         when 0
-          a.player <=> b.player
+          x = a.player.downcase
+          y = b.player.downcase
         when 1
-          a.game <=> b.game
+          x = a.game.downcase
+          y = b.game.downcase
         when 2
-          a.idle <=> b.idle
+          x = a.idle
+          y = b.idle
+        end
+        case order
+        when 1
+          x <=> y
+        when -1
+          y <=> x
         end
       end
       total = active_games + detached_games
