@@ -378,7 +378,7 @@ module Menu
       title "Watch games"
       #status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
-      aputs win, "While watching, press $bq$b to return here. Arrow keys change sorting.\n"
+      aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
       Games.populate
       pretty = []
       active_games = []
