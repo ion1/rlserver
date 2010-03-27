@@ -268,7 +268,7 @@ module Menu
   
   def self.menu(choices)
     Ncurses.noecho
-    Ncurses.halfdelay 100
+    #Ncurses.halfdelay 100
     win = Ncurses::Panel.panel_window @menu_panel
     row = win.getcury
     keys = {}
