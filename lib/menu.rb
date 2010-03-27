@@ -433,7 +433,7 @@ module Menu
       end
       total = active_games + detached_games
       total.each do |game|
-        pretty += ["%s%-20s%-20s%-20s%s%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "%3ux%3u" % [game.cols, game.rows], mktime(game.idle), GAME_COLOR[game.attached]]]
+        pretty += ["%s%-20s%-26s%-14s%s%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "#{game.cols}x#{game.rows}", mktime(game.idle), GAME_COLOR[game.attached]]]
       end
       if total.length > 0 then
         aputs win, "Currently running games ("
@@ -485,7 +485,7 @@ module Menu
       else
         win.printw 'Game'
       end
-      win.move win.getcury, 44
+      win.move win.getcury, 50
       win.printw 'Size'
       win.move win.getcury, 64
       if sort == 2 then
