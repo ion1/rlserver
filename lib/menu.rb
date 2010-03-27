@@ -23,7 +23,7 @@ module Menu
       Ncurses.init_pair 2, Ncurses::COLOR_YELLOW, Ncurses::COLOR_BLACK
       Ncurses.init_pair 3, Ncurses::COLOR_CYAN, Ncurses::COLOR_BLACK
       Ncurses.curs_set 0
-      Ncurses.halfdelay 100
+      Ncurses.raw
       @ncurses = true
     end
   end
@@ -139,7 +139,6 @@ module Menu
   end
 
   def self.login
-    Ncurses.cbreak
     title "Login"
     loggedin = nil
     win = Ncurses::Panel.panel_window @menu_panel
@@ -163,12 +162,10 @@ module Menu
       end
     end
     Ncurses.curs_set 0
-    Ncurses.halfdelay 100
     loggedin
   end
 
   def self.newuser
-    Ncurses.cbreak
     title "New player"
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
@@ -219,12 +216,10 @@ module Menu
       end
     end
     Ncurses.curs_set 0
-    Ncurses.halfdelay 100
     name
   end
 
   def self.change_password
-    Ncurses.cbreak
     title "Change password"
     win = Ncurses::Panel.panel_window @menu_panel
     Ncurses.noecho
@@ -262,13 +257,11 @@ module Menu
         Ncurses.flushinp
       end
     end
-    Ncurses.halfdelay 100
     Ncurses.curs_set 0
   end
   
   def self.menu(choices)
     Ncurses.noecho
-    #Ncurses.halfdelay 100
     win = Ncurses::Panel.panel_window @menu_panel
     row = win.getcury
     keys = {}
@@ -289,7 +282,6 @@ module Menu
     Ncurses::Panel.update_panels
     Ncurses.doupdate
     key = win.getch
-    Ncurses.cbreak
     if keys.key? key then
       keys[key].call key
     end
@@ -378,7 +370,7 @@ module Menu
       title "Watch games"
       #status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
-      aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
+      aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting. Any key refreshes.\n"
       Games.populate
       pretty = []
       active_games = []
@@ -586,7 +578,6 @@ module Menu
       @cols = Ncurses.stdscr.getmaxx
       @rows = Ncurses.stdscr.getmaxy
       Ncurses.echo
-      Ncurses.nocbreak
       Ncurses.nl
       Ncurses.endwin
       @ncurses = false
