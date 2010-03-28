@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+
+require "users"
+
+args = ARGV
+case args.delete_at 0
+when '--add'
+  print 'Name: '
+  name = gets.chomp
+  unless Users.exists? name then
+    print 'Password: '
+    pw = gets.chomp
+    Users.adduser name, pw
+  else
+    puts 'User exists! Did you mean --password?'
+  end
+when '--convert'
+  Users.loadusers
+  #Users.usercoll.drop
+  Users.users.each do |user, pwdhash|
+    Users.usercoll.insert('name' => user, 'pwdhash' => pwdhash.inspect)
+  end
+  Users.usercoll.create_index 'name', [:unique => true]
+  Users.usercoll.find.each do |userinfo|
+    puts userinfo.inspect
+  end
+when '--index'
+  Users.usercoll.create_index 'name', [:unique => true]
+when '--password'
+  print 'Name: '
+  name = gets.chomp
+  if Users.exists? name then
+    print 'Password: '
+    pw = gets.chomp
+    Users.adduser name, pw
+  else
+    puts 'User not found! Did you mean --add?'
+  end
+else
+  puts 'users --add|--delete|--index|--password'
+end
+
