@@ -8,15 +8,11 @@ module Menu
   def self.ncurses
     @ncurses
   end
+
+  def self.user= info
+    @userinfo = info
+  end
   
-  def self.user
-    @user
-  end
-
-  def self.user= user
-    @user = user
-  end
-
   def self.initncurses
     unless @ncurses then
       puts "\033[8;#{@rows};#{@cols}t"
@@ -44,7 +40,6 @@ module Menu
     @rows = Ncurses.stdscr.getmaxy
     initncurses
     initwindows
-    @user = nil
   end
 
   def self.initwindows
@@ -150,12 +145,12 @@ module Menu
 
   def self.login
     title "Login"
-    loggedin = nil
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
     Ncurses.curs_set 1
-    until loggedin do
+    until @userinfo do
       Ncurses.echo
+      win.printw "Blank entry aborts.\n"
       win.printw "Name: "
       name = ""
       win.getstr name
@@ -164,15 +159,15 @@ module Menu
       win.printw "Password: "
       pass = ""
       win.getstr pass
-      loggedin = Users.login(name, pass)
-      unless loggedin == name then
+      if pass == "" then break end
+      @userinfo = Users.login(name, pass)
+      unless @userinfo then
         sleep 3
         win.printw "\nLogin incorrect.\n\n"
         Ncurses.flushinp
       end
     end
     Ncurses.curs_set 0
-    loggedin
   end
 
   def self.newuser
@@ -217,7 +212,7 @@ module Menu
         end
         if pass == pass2
           Users.adduser name, pass
-          Users.login name, pass
+          @userinfo = Users.login name, pass
           created = true
         else
           win.printw "Sorry, passwords do not match.\n"
@@ -227,6 +222,16 @@ module Menu
     end
     Ncurses.curs_set 0
     name
+  end
+
+  def self.change_key
+    title "Add/remove ssh keys"
+    win = Ncurses::Panel.panel_window @menu_panel
+    Ncurses.echo
+    Ncurses.curs_set 1
+
+    Ncurses.curs_set 0
+    Ncurses.noecho
   end
 
   def self.change_password
@@ -242,7 +247,7 @@ module Menu
       curpass = ""
       win.getstr curpass
       if curpass == "" then break end
-      if Users.login(@user, curpass) == @user then
+      if Users.login(@userinfo['name'], curpass) then
         win.printw "New password: "
         pass = ""
         win.getstr pass
@@ -253,7 +258,7 @@ module Menu
           if pass2 == "" then break end
           if pass == pass2
             changed = true
-            Users.adduser @user, pass
+            Users.adduser @userinfo['name'], pass
           else
             win.printw "Sorry, passwords do not match.\n"
             Ncurses.flushinp
@@ -300,15 +305,15 @@ module Menu
   def self.gen_status
     @count = 0
     running = []
-    if @user then
+    if @userinfo then
       Games.populate
-      if Games.by_user.key? @user then
-        @count = Games.by_user[@user].size
-        Games.by_user[@user].each_key do |game|
+      if Games.by_user.key? @userinfo['name'] then
+        @count = Games.by_user[@userinfo['name']].size
+        Games.by_user[@userinfo['name']].each_key do |game|
           running += ["$b#{Config.config["games"][game]["name"]}$b"]
         end
       end
-      "Logged in as $b#{@user}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
+      "Logged in as $b#{@userinfo['name']}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
     else
       "Not logged in" 
     end
@@ -473,7 +478,7 @@ module Menu
     launch = lambda do
       Ncurses.def_prog_mode
       destroy
-      Games.launchgame @cols, @rows, @user, game
+      Games.launchgame @cols, @rows, @userinfo['name'], game
       initncurses
       Ncurses.reset_prog_mode
       resize
@@ -482,7 +487,7 @@ module Menu
     edit = lambda do
       Ncurses.def_prog_mode
       destroy
-      Games.editrc @user, game
+      Games.editrc @userinfo['name'], game
       initncurses
       Ncurses.reset_prog_mode
       resize
@@ -491,7 +496,7 @@ module Menu
     while !quit do
       win.clear
       status gen_status
-      title "#{Config.config["games"][game]["name"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@user].key? game) ? " (running)" : "") : ""} "
+      title "#{Config.config["games"][game]["name"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
       aputs win, Config.config["games"][game]["description"] + "\n\n"
       quit = menu([["pP", "Play #{Config.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
@@ -508,7 +513,7 @@ module Menu
       win.clear
       choices = []
       Config.config["games"].each_pair do |game, config|
-        choices += [["#{config["key"]}", "#{config["name"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@user].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
+        choices += [["#{config["key"]}", "#{config["name"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
       end
       choices.sort! do |a, b|
         a[1] <=> b[1]
@@ -525,18 +530,18 @@ module Menu
       status gen_status
       win.clear
       aputs win, Config.config["server"]["banner"] + "\n\n"
-      quit =
-        if @user then
-          menu([["pP", "Change password", lambda {change_password; false}],
-               ["gG", "Games", lambda {games; false}],
-               ["wW", "Watch", lambda {watch; false}],
-               ["qQ", "Quit", lambda {true}]])
-        else
-          menu([["lL", "Login", lambda {@user = login; false}],
-               ["nN", "New player", lambda {@user = newuser; false}],
-               ["wW", "Watch games", lambda {watch; false}],
-               ["qQ", "Quit", lambda {true}]])
-        end
+      quit = if @userinfo then
+               menu([["pP", "Change password", lambda {change_password; false}],
+                    ["kK", "Add/remove ssh keys (coming soon)", lambda {change_key; false}],
+                    ["gG", "Games", lambda {games; false}],
+                    ["wW", "Watch", lambda {watch; false}],
+                    ["qQ", "Quit", lambda {true}]])
+             else
+               menu([["lL", "Login", lambda {login; false}],
+                    ["nN", "New player", lambda {newuser; false}],
+                    ["wW", "Watch games", lambda {watch; false}],
+                    ["qQ", "Quit", lambda {true}]])
+             end
     end
   end
 

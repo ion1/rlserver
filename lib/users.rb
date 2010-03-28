@@ -2,9 +2,28 @@ require 'config'
 require 'digest'
 require 'yaml'
 require 'fileutils'
+require 'rubygems'
+require 'mongo'
 
 module Users
   USERS = 'users'
+  USERDB = 'userdb'
+  USERCOLL = 'users'
+  @conn = Mongo::Connection.new
+  @userdb = @conn[USERDB]
+  @usercoll = @userdb[USERCOLL]
+
+  def self.user
+    @user
+  end
+
+  def self.users
+    @users
+  end
+
+  def self.usercoll
+    @usercoll
+  end
 
   def self.loadusers
     if File.exists? USERS then
@@ -22,18 +41,16 @@ module Users
   end
 
   def self.exists?(username)
-    loadusers
-    username != "" and @users.has_key? username
+    @usercoll.find_one('name' => username) != nil
   end
 
   def self.adduser(name, password)
-    loadusers
-    @users[name] = Digest::SHA256.digest password
-    save
+    userinfo = ['name' => name, 'pwdhash' => Digest::SHA256.digest(password).inspect]
+    @usercoll.remove('name' => name)
+    @usercoll.insert userinfo
   end
 
   def self.checkname(name)
-    loadusers
     if name then
       name.each_char do |b|
         case b 
@@ -47,17 +64,17 @@ module Users
   end
 
   def self.login(name, password)
-    loadusers
-    if @users[name] == Digest::SHA256.digest(password) then
+    userinfo = @usercoll.find_one('name' => name, 'pwdhash' => Digest::SHA256.digest(password).inspect)
+    if userinfo then
       Config.config["games"].each_pair do |game, config|
-        FileUtils.mkdir_p "#{game}/stuff/#{name}"
+        FileUtils.mkdir_p "#{game}/stuff/#{userinfo['name']}"
         if config.key? "defaultrc" then
-          unless File.exists? "#{game}/init/#{name}.txt" then
-            FileUtils.cp config["defaultrc"], "#{game}/init/#{name}.txt"
+          unless File.exists? "#{game}/init/#{userinfo['name']}.txt" then
+            FileUtils.cp config["defaultrc"], "#{game}/init/#{userinfo['name']}.txt"
           end
         end
       end
-      name
-    else nil end
+    end
+    userinfo
   end
 end
