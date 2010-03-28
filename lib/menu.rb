@@ -5,7 +5,17 @@ require "fileutils"
 require "config"
 
 module Menu
-  def self.ncurses;@ncurses end; def self.user;@user end
+  def self.ncurses
+    @ncurses
+  end
+  
+  def self.user
+    @user
+  end
+
+  def self.user= user
+    @user = user
+  end
 
   def self.initncurses
     unless @ncurses then
@@ -287,48 +297,6 @@ module Menu
     end
   end
   
-  # Deprecated
-  def self.crawlscores
-    win = Ncurses::Panel.panel_window @menu_panel
-    win.clear
-    scores = Scores::CrawlScores.new Config.config["games"]["crawl"]["scores"]
-    quit = false
-    pretty = []
-    i = 1
-    scores.data.each do |score|
-      str = "%4u. %8s %-10s %s-%02u %7s %s" % [i, score["sc"], score["name"], score["char"], score["xl"], "(#{score["place"]})", score["tmsg"].chomp]
-      str.sub! /\$/, "$$"
-      pretty += [str]
-      i += 1
-    end
-    offset = 0
-    while !quit do
-      title "Crawl scores"
-      status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
-      win.clear
-      row = 0
-      offset.upto(offset + win.getmaxy - 1) do |i|
-        if i < pretty.length then
-          win.move row, 0
-          a = (scores.data[i]["name"] == @user) ? "$b$2" : ""
-          aputs win, a + pretty[i] + a
-          row += 1
-        end
-      end
-      Ncurses::Panel.update_panels
-      Ncurses.doupdate
-      case win.getch
-      when Ncurses::KEY_PPAGE:
-        offset -= win.getmaxy
-        if offset < 0 then offset = 0 end
-      when Ncurses::KEY_NPAGE:
-        offset += win.getmaxy
-        if offset >= pretty.length then offset -= win.getmaxy end
-      when "q"[0], "Q"[0]: quit = true
-      end
-    end
-  end
-
   def self.gen_status
     @count = 0
     running = []
