@@ -296,7 +296,9 @@ module Menu
     end
     Ncurses::Panel.update_panels
     Ncurses.doupdate
+    Ncurses.halfdelay 100
     key = win.getch
+    Ncurses.cbreak
     if keys.key? key then
       keys[key].call key
     end
@@ -343,7 +345,7 @@ module Menu
       title "Watch games"
       #status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
-      aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting. Any key refreshes.\n"
+      aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
       Games.populate
       pretty = []
       active_games = []

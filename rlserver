@@ -27,6 +27,12 @@ begin
     Config.initialize
   end
   Menu.initialize
+  if ARGV[0] then
+    userinfo = Users.usercoll.find_one('name' => ARGV[0])
+    if userinfo then
+      Menu.user = {'name' => userinfo['name']}
+    end
+  end
   Menu.mainmenu
 ensure
   Menu.destroy
