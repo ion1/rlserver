@@ -498,7 +498,7 @@ module Menu
     while !quit do
       win.clear
       status gen_status
-      title "#{Config.config["games"][game]["name"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
+      title "#{Config.config["games"][game]["longname"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
       aputs win, Config.config["games"][game]["description"] + "\n\n"
       quit = menu([["pP", "Play #{Config.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
@@ -515,7 +515,7 @@ module Menu
       win.clear
       choices = []
       Config.config["games"].each_pair do |game, config|
-        choices += [["#{config["key"]}", "#{config["name"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
+        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
       end
       choices.sort! do |a, b|
         a[1] <=> b[1]
