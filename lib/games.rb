@@ -85,7 +85,7 @@ module Games
         Dir.chdir(Config.config["games"][game]["chdir"])
       end
       pid = fork do
-        exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-A", "#{Config.config["server"]["path"]}/socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "#{Config.config["server"]["path"]}/screenrc", "termrec", "#{Config.config["server"]["path"]}/#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
+        exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-A", "#{Config.config["server"]["path"]}/socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "#{Config.config["server"]["path"]}/screenrc", "termrec", "-r", "#{Config.config["server"]["path"]}/#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
       end
     end
     Process.wait pid
