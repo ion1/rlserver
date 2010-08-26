@@ -1,7 +1,7 @@
 require "fileutils"
-require "menu"
-require "games"
-require "users"
+require "lib/menu"
+require "lib/games"
+require "lib/users"
 
 module Config
   RL_CONFIG = "/etc/rlserver"

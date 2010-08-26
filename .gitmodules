@@ -1,3 +1,6 @@
 [submodule "vim-highlight"]
 	path = vim-highlight
 	url = git://github.com/ion1/vim-highlight.git
+[submodule "tmux-ruby"]
+	path = tmux-ruby
+	url = http://github.com/dominikh/tmux-ruby.git

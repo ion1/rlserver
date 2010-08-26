@@ -1,8 +1,10 @@
 require "ncurses" #should get rid of this poop and make a wrapper, especially user input is retarded
-require "users"
-require "games"
+require "lib/users"
+require "lib/games"
 require "fileutils"
-require "config"
+require "lib/config"
+require "rubygems"
+require "mongo"
 
 module Menu
   def self.ncurses
@@ -332,7 +334,6 @@ module Menu
     end
   end
 
-  GAME_COLOR = { true => "$b$3", false => "$3" }
   def self.watch
     win = Ncurses::Panel.panel_window @menu_panel
     quit = false
@@ -348,19 +349,9 @@ module Menu
       aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
       Games.populate
       pretty = []
-      active_games = []
-      detached_games = []
       socketmenu = []
-      Games.games.each do |game|
-        if game.attached then
-          active_games += [game]
-        else
-          detached_games += [game]
-        end
-      end
-      active = active_games.length
-      detached = detached_games.length
-      active_games.sort! do |a, b|
+      games = Games.games      
+      games.sort! do |a, b|
         case sort
         when 0
           x = a.player.downcase
@@ -379,58 +370,29 @@ module Menu
           y <=> x
         end
       end
-      detached_games.sort! do |a, b|
-        case sort
-        when 0
-          x = a.player.downcase
-          y = b.player.downcase
-        when 1
-          x = a.game.downcase
-          y = b.game.downcase
-        when 2
-          x = a.idle
-          y = b.idle
-        end
-        case order
-        when 1
-          x <=> y
-        when -1
-          y <=> x
-        end
+      games.each do |game|
+        pretty += ["%-20s%-26s%-14s%s" % [game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "#{game.cols}x#{game.rows}", mktime(game.idle)]]
       end
-      total = active_games + detached_games
-      total.each do |game|
-        pretty += ["%s%-20s%-26s%-14s%s%s" % [GAME_COLOR[game.attached], game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "#{game.cols}x#{game.rows}", mktime(game.idle), GAME_COLOR[game.attached]]]
-      end
-      if total.length > 0 then
-        aputs win, "Currently running games ("
-        if active > 0 then
-          aputs win, "$b$3#{active} active$b$3#{detached > 0 ? ", " :  ""}"
-        end
-        if detached > 0 then
-          aputs win, "$3#{detached} detached$3"
-        end
-        aputs win, "):"
+      if games.length > 0 then
+        aputs win, "Currently running games"
         pagesize = win.getmaxy - win.getcury - 3
         if pagesize > 25 then pagesize = 25 end
         offset.upto(offset + pagesize - 1) do |i|
-          if i < total.length then
+          if i < games.length then
             launch = lambda do |key|
               case key
               when "a"[0].."p"[0], "r"[0].."z"[0]: sel = key - 97
               end
-              if sel < active then
                 Ncurses.def_prog_mode
                 destroy
-                puts "\033[8;#{active_games[sel].rows};#{active_games[sel].cols}t"
-                Games.watchgame active_games[sel].socket
+                puts "\033[8;#{games[sel].rows};#{games[sel].cols}t"
+                Games.watchgame games[sel].socket
                 initncurses
                 Ncurses.reset_prog_mode
                 resize
-              end
               false
             end
-            socketmenu += [[total[i].attached ? "#{chars[i % pagesize, 1]}" : nil , pretty[i], launch]]
+            socketmenu += [["#{chars[i % pagesize, 1]}" , pretty[i], launch]]
           end
         end
         items = socketmenu.length
@@ -464,7 +426,7 @@ module Menu
       win.printw "\n"
       socketmenu += [
         [Ncurses::KEY_PPAGE, nil, lambda {offset -= pagesize; if offset < 0 then offset = 0 end; false}],
-        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= total.length then offset -= pagesize end; false}],
+        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= games.length then offset -= pagesize end; false}],
         [Ncurses::KEY_UP, nil, lambda {order = -1; false}],
         [Ncurses::KEY_DOWN, nil, lambda {order = 1; false}],
         [Ncurses::KEY_LEFT, nil, lambda {sort -= 1; if sort < 0 then sort = 2 end; false}],

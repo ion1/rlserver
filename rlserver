@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+#$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
-require "menu"
-require "config"
-require "users"
+require "lib/menu"
+require "lib/config"
+require "lib/users"
 
 begin
   Config.initialize

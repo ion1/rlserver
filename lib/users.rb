@@ -1,4 +1,4 @@
-require 'config'
+require 'lib/config'
 require 'digest'
 require 'yaml'
 require 'fileutils'
