@@ -47,10 +47,10 @@ module Menu
   def self.initwindows
     @rows = Ncurses.getmaxy Ncurses.stdscr
     @cols = Ncurses.getmaxx Ncurses.stdscr
-    header = Ncurses::WINDOW.new 1, 0, 0, 0
+    header = Ncurses::WINDOW.new 1, @cols, 0, 0
     menu = Ncurses::WINDOW.new @rows-4, @cols-2, 2, 1
     menu.keypad true
-    footer = Ncurses::WINDOW.new 1, 0, @rows-1, 0
+    footer = Ncurses::WINDOW.new 1, @cols, @rows-1, 0
     header.attrset Ncurses.COLOR_PAIR(1) | Ncurses::A_BOLD
     footer.attrset Ncurses.COLOR_PAIR(1)
     Ncurses.scrollok menu, true
@@ -173,7 +173,7 @@ module Menu
   end
 
   def self.newuser
-    title "New player"
+    title "New user"
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
     created = false
@@ -191,7 +191,7 @@ module Menu
         break
       end
       if Users.exists? name then
-        win.printw "The player already exists.\n"
+        win.printw "The user already exists.\n"
         name = nil
       end
     end
@@ -302,7 +302,7 @@ module Menu
     key = win.getch
     Ncurses.cbreak
     if keys.key? key then
-      keys[key].call key
+      keys[key].call #key
     end
   end
   
@@ -310,13 +310,13 @@ module Menu
     @count = 0
     running = []
     if @userinfo then
-      Games.populate
-      if Games.by_user.key? @userinfo['name'] then
-        @count = Games.by_user[@userinfo['name']].size
-        Games.by_user[@userinfo['name']].each_key do |game|
-          running += ["$b#{Config.config["games"][game]["name"]}$b"]
-        end
-      end
+     # games = Games.by_user @userinfo['name']
+     # if games then
+     #   @count = games.size
+     #   games.each do |game|
+     #     running += ["$b#{RlConfig.config['games'][game]['name']}$b"]
+     #   end
+     # end
       "Logged in as $b#{@userinfo['name']}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
     else
       "Not logged in" 
@@ -347,18 +347,17 @@ module Menu
       #status "$bPage Up$b / $bPage Down$b - scroll, $bq$b - back"
       win.clear
       aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
-      Games.populate
       pretty = []
       socketmenu = []
-      games = Games.games      
-      games.sort! do |a, b|
+      sessions = Games.sessions
+      sessions.sort! do |a, b|
         case sort
         when 0
-          x = a.player.downcase
-          y = b.player.downcase
+          x = a.info[:user].downcase
+          y = b.info[:user].downcase
         when 1
-          x = a.game.downcase
-          y = b.game.downcase
+          x = a.info[:game].downcase
+          y = b.info[:game].downcase
         when 2
           x = a.idle
           y = b.idle
@@ -370,23 +369,24 @@ module Menu
           y <=> x
         end
       end
-      games.each do |game|
-        pretty += ["%-20s%-26s%-14s%s" % [game.player, "#{Config.config["games"][game.game]["name"]} #{Config.config["games"][game.game]["version"]}", "#{game.cols}x#{game.rows}", mktime(game.idle)]]
+      sessions.each do |ses|
+        pretty << ("%-20s%-26s%-14s" % [ses.info[:user], "#{RlConfig.config["games"][ses.info[:game]]["name"]} #{RlConfig.config["games"][ses.info[:game]]["version"]}", "#{ses.info[:width]}x#{ses.info[:height]}", mktime(ses.info[:idle])])
       end
-      if games.length > 0 then
+      if sessions.length > 0 then
         aputs win, "Currently running games"
         pagesize = win.getmaxy - win.getcury - 3
         if pagesize > 25 then pagesize = 25 end
         offset.upto(offset + pagesize - 1) do |i|
-          if i < games.length then
+          if i < sessions.length then
             launch = lambda do |key|
               case key
-              when "a"[0].."p"[0], "r"[0].."z"[0]: sel = key - 97
+              when "a"[0].."p"[0], "r"[0].."z"[0]
+                sel = key - 97
               end
                 Ncurses.def_prog_mode
                 destroy
-                puts "\033[8;#{games[sel].rows};#{games[sel].cols}t"
-                Games.watchgame games[sel].socket
+                puts "\033[8;#{sessions[sel].info[:height]};#{sessions[sel].info[:width]}t"
+                Games.watchgame sessions[sel].name
                 initncurses
                 Ncurses.reset_prog_mode
                 resize
@@ -426,7 +426,7 @@ module Menu
       win.printw "\n"
       socketmenu += [
         [Ncurses::KEY_PPAGE, nil, lambda {offset -= pagesize; if offset < 0 then offset = 0 end; false}],
-        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= games.length then offset -= pagesize end; false}],
+        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}],
         [Ncurses::KEY_UP, nil, lambda {order = -1; false}],
         [Ncurses::KEY_DOWN, nil, lambda {order = 1; false}],
         [Ncurses::KEY_LEFT, nil, lambda {sort -= 1; if sort < 0 then sort = 2 end; false}],
@@ -460,9 +460,9 @@ module Menu
     while !quit do
       win.clear
       status gen_status
-      title "#{Config.config["games"][game]["longname"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
-      aputs win, Config.config["games"][game]["description"] + "\n\n"
-      quit = menu([["pP", "Play #{Config.config["games"][game]["name"]}", launch],
+      title "#{RlConfig.config["games"][game]["longname"]} #{RlConfig.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
+      aputs win, RlConfig.config["games"][game]["description"] + "\n\n"
+      quit = menu([["pP", "Play #{RlConfig.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
                   ["qQ", "Back", lambda {true}]])
     end
@@ -476,7 +476,7 @@ module Menu
       status gen_status
       win.clear
       choices = []
-      Config.config["games"].each_pair do |game, config|
+      RlConfig.config["games"].each_pair do |game, config|
         choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
       end
       choices.sort! do |a, b|
@@ -493,7 +493,7 @@ module Menu
       title "Main menu"
       status gen_status
       win.clear
-      aputs win, Config.config["server"]["banner"] + "\n\n"
+      aputs win, RlConfig.config["server"]["banner"] + "\n\n"
       quit = if @userinfo then
                menu([["pP", "Change password", lambda {change_password; false}],
                     ["kK", "Add/remove ssh keys (coming soon)", lambda {change_key; false}],

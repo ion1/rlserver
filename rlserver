@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby1.9.1
 
 #$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
@@ -7,24 +7,25 @@ require "lib/config"
 require "lib/users"
 
 begin
-  Config.initialize
-  Dir.chdir Config.config["server"]["path"]
+  RlConfig.initialize
+  Dir.chdir RlConfig.config["server"]["path"]
   #Users.load
   ENV.each_key do |k|
     case k
-    when "LANG", "LANGUAGE", /\ALC_/: ENV.delete k
+    when "LANG", "LANGUAGE", /\ALC_/
+      ENV.delete k
     end
     ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
   end
   Signal.trap "HUP" do
     Menu.destroy
-    if Games.socket then
-      system "screen", "-D", Games.socket
-    end
+    #if Games.socket then
+    #  system "screen", "-D", Games.socket
+    #end
     exit 1
   end
   Signal.trap "USR1" do
-    Config.initialize
+    RlConfig.initialize
   end
   Menu.initialize
   if ARGV[0] then

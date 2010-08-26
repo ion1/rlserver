@@ -3,7 +3,7 @@ require "lib/menu"
 require "lib/games"
 require "lib/users"
 
-module Config
+module RlConfig
   RL_CONFIG = "/etc/rlserver"
   def self.config;@config end
 

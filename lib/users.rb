@@ -4,6 +4,7 @@ require 'yaml'
 require 'fileutils'
 require 'rubygems'
 require 'mongo'
+require 'base64'
 
 module Users
   USERS = 'users'
@@ -45,7 +46,7 @@ module Users
   end
 
   def self.adduser(name, password)
-    userinfo = ['name' => name, 'pwdhash' => Digest::SHA256.digest(password).inspect]
+    userinfo = ['name' => name, 'pwdhash' => Base64.encode64(Digest::SHA256.digest(password))]
     @usercoll.remove('name' => name)
     @usercoll.insert userinfo
   end
@@ -54,7 +55,8 @@ module Users
     if name then
       name.each_char do |b|
         case b 
-        when " ", "-", "0".."9", "A".."Z", "_", "a".."z": true
+        when " ", "-", "0".."9", "A".."Z", "_", "a".."z"
+          true
         else 
           false
           break
@@ -64,9 +66,9 @@ module Users
   end
 
   def self.login(name, password)
-    userinfo = @usercoll.find_one('name' => name, 'pwdhash' => Digest::SHA256.digest(password).inspect)
+    userinfo = @usercoll.find_one('name' => name, 'pwdhash' => Base64.encode64(Digest::SHA256.digest(password)))
     if userinfo then
-      Config.config["games"].each_pair do |game, config|
+      RlConfig.config["games"].each_pair do |game, config|
         FileUtils.mkdir_p "#{game}/stuff/#{userinfo['name']}"
         if config.key? "defaultrc" then
           unless File.exists? "#{game}/init/#{userinfo['name']}.txt" then
