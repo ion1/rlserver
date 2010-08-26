@@ -42,11 +42,11 @@ module Users
   end
 
   def self.exists?(username)
-    @usercoll.find_one('name' => username) != nil
+    @usercoll.find_one('name' => username.chomp) != nil
   end
 
   def self.adduser(name, password)
-    userinfo = ['name' => name, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp))]
+    userinfo = ['name' => name.chomp, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp))]
     @usercoll.remove('name' => name)
     @usercoll.insert userinfo
   end
@@ -66,7 +66,7 @@ module Users
   end
 
   def self.login(name, password)
-    userinfo = @usercoll.find_one('name' => name, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp)))
+    userinfo = @usercoll.find_one('name' => name.chomp, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp)))
     if userinfo then
       RlConfig.config["games"].each_pair do |game, config|
         FileUtils.mkdir_p "#{game}/stuff/#{userinfo['name']}"
