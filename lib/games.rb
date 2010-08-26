@@ -53,6 +53,10 @@ module Games
 
   def self.launchgame(cols, rows, user, game)
     populate
+    if Config.config["games"][game].key? "chdir" then
+      pushd = Dir.pwd
+      Dir.chdir(Config.config["games"][game]["chdir"])
+    end
     if @by_user.key? user and @by_user[user].key? game then
       @socket = @by_user[user][game].socket
       puts "\033[8;#{@by_user[user][game].rows};#{@by_user[user][game].cols}t"
@@ -79,10 +83,6 @@ module Games
           arg.gsub! /%game%/, game
           options += [arg.strip]
         end
-      end
-      if Config.config["games"][game].key? "chdir" then
-        pushd = Dir.pwd
-        Dir.chdir(Config.config["games"][game]["chdir"])
       end
       pid = fork do
         exec_or_die "#{Config.config["server"]["path"]}/bin/dtach", "-A", "#{Config.config["server"]["path"]}/socket/#{@socket}", "-E", "-r", "screen", "-C", "^\\", "-z", "screen", "-S", @socket, "-c", "#{Config.config["server"]["path"]}/screenrc", "termrec", "-r", "#{Config.config["server"]["path"]}/#{game}/stuff/#{user}/#{@socket}.ttyrec", "-e", "#{Config.config["games"][game]["binary"]} #{options.join " "}" #cmd_safe("#{Config.config["games"][game]["binary"]}", options)
