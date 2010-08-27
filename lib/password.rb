@@ -1,1 +1,1 @@
-../552198/password.rb
+../password/password.rb
