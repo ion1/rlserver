@@ -6,42 +6,34 @@ require 'tmux-ruby/lib/tmux'
 module Games
   @tmux = Tmux::Server.new 'rlserver'
 
-  class Session
-    attr_reader :info, :name, :idle
-    def initialize(info)
-      @info = info
-      @name = "#{@info[:user]}.#{@info[:game]}.#{@info[:width]}x#{@info[:height]}.#{@info[:date]}"
-      @idle = Time.now - File.stat("#{RlConfig.config["server"]["path"]}/#{@info[:game]}/stuff/#{@info[:user]}/#{@name}.ttyrec").mtime
-    end
-  end
-
   def self.sessions(search = {})
-    sessions = []
+    sessions = {}
     @tmux.sessions.each do |ses|
       user, game, size, date = ses.name.split('.')
       width, height = size.split('x')
-      sessions << Games::Session.new({
+      sessions[ses.name] = {
+        :name => ses.name,
         :user => user,
         :game => game,
         :width => width,
         :height => height,
         :date => DateTime.parse(date),
-      })
+        :attached => ses.attached,
+        :idle => Time.now - File.stat("#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec").mtime,
+      }
     end
-    sessions
+    sessions.select do |k, v|
+      v.all? do |vk, vv|
+        !search.has_key?(vk) || vv == search[vk]
+      end
+    end
   end
 
   def self.launchgame(user, game, width, height)
     pid = fork do
-      if Games.sessions({:user => user, :game => game}) then
-      else
-        session = Session.new({
-          :user => user,
-          :game => game,
-          :width => width,
-          :height => height,
-          :date => DateTime.now
-        })
+      #if Games.sessions({:user => user, :game => game}) then
+      #else
+      begin
         if RlConfig.config['games'][game].key? 'env' then
           RlConfig.config['games'][game]['env'].split(' ').each do |env|
             env.gsub! /%path%/, RlConfig.config['server']['path']
@@ -64,11 +56,12 @@ module Games
           pushd = Dir.pwd
           Dir.chdir(RlConfig.config['games'][game]['chdir'])
         end
+        session = "#{user}.#{game}.#{width}x#{height}.#{Time.now}"
         @tmux.create_session
         ({
-          :name => session.info[:name],
-          :attach => 'attach',
-          :command => "exec termrec -r #{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec -e \'#{RlConfig.config['games'][game]['binary']} #{options.join ' '}\'"
+          :name => session,
+          :attach => true,
+          :command => "exec termrec -r #{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{session}.ttyrec -e \'#{RlConfig.config['games'][game]['binary']} #{options.join ' '}\'"
         })
       end
     end
@@ -86,6 +79,7 @@ module Games
 
   def self.watchgame(session)
     pid = fork do
+      @tmux.sessions({:name => session})[0].attach
     end
     Process.wait pid
   end

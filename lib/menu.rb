@@ -301,7 +301,7 @@ module Menu
     key = win.getch
     Ncurses.cbreak
     if keys.key? key then
-      keys[key].call #key
+      keys[key].call key = 0
     end
   end
   
@@ -337,18 +337,17 @@ module Menu
       aputs win, "While watching, press $bq$b to return here. Scroll with $bPage Up$b and $bPage Down$b. Arrow keys change sorting.\n"
       pretty = []
       socketmenu = []
-      sessions = Games.sessions
-      sessions.sort! do |a, b|
+      sessions = Games.sessions.sort do |a, b|
         case sort
         when 0
-          x = a.info[:user].downcase
-          y = b.info[:user].downcase
+          x = a[1][:user].downcase
+          y = b[1][:user].downcase
         when 1
-          x = a.info[:game].downcase
-          y = b.info[:game].downcase
+          x = a[1][:game].downcase
+          y = b[1][:game].downcase
         when 2
-          x = a.idle
-          y = b.idle
+          x = a[1][:idle]
+          y = b[1][:idle]
         end
         case order
         when 1
@@ -357,8 +356,9 @@ module Menu
           y <=> x
         end
       end
-      sessions.each do |ses|
-        pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [ses.info[:user], "#{RlConfig.config["games"][ses.info[:game]]["name"]} #{RlConfig.config["games"][ses.info[:game]]["version"]}", "#{ses.info[:width]}x#{ses.info[:height]}", ses.idle / 3600, ses.idle % 3600 / 60 , ses.idle % 60])
+      sessions.each do |session|
+        hash = session[1]
+        pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [hash[:user], "#{RlConfig.config["games"][hash[:game]]["name"]} #{RlConfig.config["games"][hash[:game]]["version"]}", "#{hash[:width]}x#{hash[:height]}", hash[:idle] / 3600, hash[:idle] % 3600 / 60 , hash[:idle] % 60])
       end
       if sessions.length > 0 then
         aputs win, "Currently running games"
@@ -373,8 +373,8 @@ module Menu
               end
                 Ncurses.def_prog_mode
                 destroy
-                puts "\033[8;#{sessions[sel].info[:height]};#{sessions[sel].info[:width]}t"
-                Games.watchgame sessions[sel].name
+                puts "\033[8;#{sessions[sel][1][:height]};#{sessions[sel][1][:width]}t"
+                Games.watchgame sessions[sel][1][:name]
                 initncurses
                 Ncurses.reset_prog_mode
                 resize
@@ -413,13 +413,13 @@ module Menu
       end
       win.printw "\n"
       socketmenu += [
-        [Ncurses::KEY_PPAGE, nil, lambda {offset -= pagesize; if offset < 0 then offset = 0 end; false}],
-        [Ncurses::KEY_NPAGE, nil, lambda {offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}],
-        [Ncurses::KEY_UP, nil, lambda {order = -1; false}],
-        [Ncurses::KEY_DOWN, nil, lambda {order = 1; false}],
-        [Ncurses::KEY_LEFT, nil, lambda {sort -= 1; if sort < 0 then sort = 2 end; false}],
-        [Ncurses::KEY_RIGHT, nil, lambda {sort += 1; if sort > 2 then sort = 0 end; false}],
-        ["qQ", "back", lambda {true}]]
+        [Ncurses::KEY_PPAGE, nil, lambda {|k|offset -= pagesize; if offset < 0 then offset = 0 end; false}],
+        [Ncurses::KEY_NPAGE, nil, lambda {|k|offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}],
+        [Ncurses::KEY_UP, nil, lambda {|k|order = -1; false}],
+        [Ncurses::KEY_DOWN, nil, lambda {|k|order = 1; false}],
+        [Ncurses::KEY_LEFT, nil, lambda {|k|sort -= 1; if sort < 0 then sort = 2 end; false}],
+        [Ncurses::KEY_RIGHT, nil, lambda {|k|sort += 1; if sort > 2 then sort = 0 end; false}],
+        ["qQ", "back", lambda {|k|true}]]
       quit = menu socketmenu
     end
   end
@@ -427,16 +427,16 @@ module Menu
   def self.gamemenu(game)
     quit = false
     win = Ncurses::Panel.panel_window @menu_panel
-    launch = lambda do
+    launch = lambda do |k|
       Ncurses.def_prog_mode
       destroy
-      Games.launchgame @cols, @rows, @userinfo['user'], game
+      Games.launchgame @userinfo['user'], game, @cols, @rows
       initncurses
       Ncurses.reset_prog_mode
       resize
       false
     end
-    edit = lambda do
+    edit = lambda do |k|
       Ncurses.def_prog_mode
       destroy
       Games.editrc @userinfo['user'], game
@@ -452,7 +452,7 @@ module Menu
       aputs win, RlConfig.config["games"][game]["description"] + "\n\n"
       quit = menu([["pP", "Play #{RlConfig.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
-                  ["qQ", "Back", lambda {true}]])
+                  ["qQ", "Back", lambda {|k|true}]])
     end
   end
 
@@ -465,12 +465,12 @@ module Menu
       win.clear
       choices = []
       RlConfig.config["games"].each_pair do |game, config|
-        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
+        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""}", lambda {|k|gamemenu game; false}]]
       end
       choices.sort! do |a, b|
         a[1] <=> b[1]
       end
-      quit = menu(choices + [["qQ", "Back", lambda {true}]])
+      quit = menu(choices + [["qQ", "Back", lambda {|k|true}]])
     end
   end
 
@@ -483,16 +483,16 @@ module Menu
       win.clear
       aputs win, RlConfig.config["server"]["banner"] + "\n\n"
       quit = if @userinfo then
-               menu([["pP", "Change password", lambda {change_password; false}],
-                    ["kK", "Add/remove ssh keys (coming soon)", lambda {change_key; false}],
-                    ["gG", "Games", lambda {games; false}],
-                    ["wW", "Watch", lambda {watch; false}],
-                    ["qQ", "Quit", lambda {true}]])
+               menu([["pP", "Change password", lambda {|k|change_password; false}],
+                    ["kK", "Add/remove ssh keys (coming soon)", lambda {|k|change_key; false}],
+                    ["gG", "Games", lambda {|k|games; false}],
+                    ["wW", "Watch", lambda {|k|watch; false}],
+                    ["qQ", "Quit", lambda {|k|true}]])
              else
-               menu([["lL", "Login", lambda {login; false}],
-                    ["nN", "New player", lambda {newuser; false}],
-                    ["wW", "Watch games", lambda {watch; false}],
-                    ["qQ", "Quit", lambda {true}]])
+               menu([["lL", "Login", lambda {|k|login; false}],
+                    ["nN", "New player", lambda {|k|newuser; false}],
+                    ["wW", "Watch games", lambda {|k|watch; false}],
+                    ["qQ", "Quit", lambda {|k|true}]])
              end
     end
   end

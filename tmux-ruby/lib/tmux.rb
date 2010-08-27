@@ -15,6 +15,7 @@ require "tmux/widget"
 # @todo Support querying and modifying keymaps
 module Tmux
   @binary = `which tmux`.chomp
+  BINARY = @binary
   @verbose = false
 
   class << self
