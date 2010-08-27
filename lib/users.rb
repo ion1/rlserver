@@ -2,7 +2,7 @@ require 'lib/config'
 require 'fileutils'
 require 'mongo'
 require 'base64'
-require 'lib/password'
+require 'password/password'
 
 module Users
   USERDB = 'userdb'
@@ -16,19 +16,20 @@ module Users
   end
 
   def self.exists?(user)
-    @coll.find_one('name' => user) != nil
+    user.chomp!
+    @coll.find_one('user' => user) != nil
   end
 
-  def self.add_or_modify(user, pass_plain)
+  def self.add(user, pass_plain)
     pass = Password.new_from_password pass_plain
-    @usercoll.find_and_modify({
-      :query => {'user' => user},
-      :upsert => true,
-      :update => {'user' => user, :password => pass.to_s}
-    })
+    @coll.update(
+      {'user' => user},
+      {'user' => user, :password => pass.to_s},
+      {:upsert => true}
+    )
   end
 
-  def self.set_email(user)
+  def self.email(user, email)
   end
 
   def self.check_name(name)
@@ -46,22 +47,19 @@ module Users
   end
 
   def self.login(user, pass_plain)
-    info = coll.find_one({'user' => name})
+    info = coll.find_one({'user' => user})
     if info then
       pass = Password.new info['password']
       if pass == pass_plain then
         # TODO: Move filesystem stuff
         RlConfig.config["games"].each_pair do |game, config|
-          FileUtils.mkdir_p "#{game}/stuff/#{userinfo['name']}"
+          FileUtils.mkdir_p "#{game}/stuff/#{info['user']}"
           if config.key? "defaultrc" then
-            unless File.exists? "#{game}/init/#{userinfo['name']}.txt" then
-              FileUtils.cp config["defaultrc"], "#{game}/init/#{userinfo['name']}.txt"
+            unless File.exists? "#{game}/init/#{info['user']}.txt" then
+              FileUtils.cp config["defaultrc"], "#{game}/init/#{info['user']}.txt"
             end
           end
         end
-      end
-      info = info.delete_if do |key, value|
-        key = 'password'
       end
     end
     info

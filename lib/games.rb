@@ -1,7 +1,7 @@
 require 'date'
 require 'lib/config'
 require 'fileutils'
-require 'tmux-ruby/lib/tmux.rb'
+require 'tmux-ruby/lib/tmux'
 
 module Games
   @tmux = Tmux::Server.new 'rlserver'
