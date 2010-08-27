@@ -23,7 +23,7 @@ module Tmux
     #
     # @tmuxver &gt;=1.4
     def create_session(args = {})
-      check_for_version!("1.4")
+      check_for_version!("1.3")
 
       if args[:group_with] && (args[:window_name] || args[:command])
         raise ArgumentError, "Cannot combine :group_with and :window_name or :command"
