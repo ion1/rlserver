@@ -25,7 +25,6 @@ module Users
       :query => {'user' => user},
       :upsert => true,
       :update => {'user' => user, :password => pass.to_s}
-      :email => email
     })
   end
 
