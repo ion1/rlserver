@@ -60,9 +60,10 @@ module Users
           end
         end
       end
+      info = info.delete_if do |key, value|
+        key = 'password'
+      end
     end
-    info.delete_if do |key, value|
-      key = 'password'
-    end
+    info
   end
 end
