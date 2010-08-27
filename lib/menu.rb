@@ -322,17 +322,6 @@ module Menu
     end
   end
 
-  def self.mktime(s)
-    if s then
-      h = s / 3600
-      m = s % 3600 / 60
-      s = s % 60
-      "%02d:%02d:%02d" % [h, m, s]
-    else
-      "unknown"
-    end
-  end
-
   def self.watch
     win = Ncurses::Panel.panel_window @menu_panel
     quit = false
@@ -369,7 +358,7 @@ module Menu
         end
       end
       sessions.each do |ses|
-        pretty << ("%-20s%-26s%-14s" % [ses.info[:user], "#{RlConfig.config["games"][ses.info[:game]]["name"]} #{RlConfig.config["games"][ses.info[:game]]["version"]}", "#{ses.info[:width]}x#{ses.info[:height]}", mktime(ses.info[:idle])])
+        pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [ses.info[:user], "#{RlConfig.config["games"][ses.info[:game]]["name"]} #{RlConfig.config["games"][ses.info[:game]]["version"]}", "#{ses.info[:width]}x#{ses.info[:height]}", ses.idle / 3600, ses.idle % 3600 / 60 , ses.idle % 60])
       end
       if sessions.length > 0 then
         aputs win, "Currently running games"

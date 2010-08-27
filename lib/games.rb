@@ -7,10 +7,11 @@ module Games
   @tmux = Tmux::Server.new 'rlserver'
 
   class Session
-    attr_reader :info, :name
+    attr_reader :info, :name, :idle
     def initialize(info)
       @info = info
       @name = "#{@info[:user]}.#{@info[:game]}.#{@info[:width]}x#{@info[:height]}.#{@info[:date]}"
+      @idle = Time.now - File.stat("#{RlConfig.config["server"]["path"]}/#{@info[:game]}/stuff/#{@info[:user]}/#{@name}.ttyrec").mtime
     end
   end
 
@@ -25,7 +26,6 @@ module Games
         :width => width,
         :height => height,
         :date => DateTime.parse(date),
-        :idle => nil
       })
     end
     sessions
