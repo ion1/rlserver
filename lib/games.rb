@@ -50,7 +50,7 @@ module Games
       @ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
       pid = fork do
         MiscHacks.sh(
-          'exec "$binary" -f "$config" -L "$server" attach -d -t "$session"',
+          'exec "$binary" -f "$config" -L "$server" attach -t "$session"',
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
