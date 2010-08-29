@@ -38,7 +38,7 @@ module Games
   end
 
   def self.launchgame(user, game, width, height)
-  @config = RlConfig.config['server']['path']+'/tmux.conf'
+  @config = RlConfig.config['server']['path']+'/play.conf'
     if RlConfig.config['games'][game].key? 'chdir' then
       pushd = Dir.pwd
       Dir.chdir(RlConfig.config['games'][game]['chdir'])
@@ -105,18 +105,20 @@ module Games
   end
 
   def self.watchgame(session)
-    @config = RlConfig.config['server']['path']+'/tmux.conf'
+    @config = RlConfig.config['server']['path']+'/play.conf'
+    @watch_config = RlConfig.config['server']['path']+'/watch.conf'
     info = Games.sessions({:name => session})
     puts "\033[8;#{info.first[:height]};#{info.first[:width]}t"
     ENV['TMUX'] = ''
-    command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{session}"}
     pid = fork do
       MiscHacks.sh(
-        'exec "$binary" -q -f "$config" -L "$server" bind -n q kill-session\; new -d "$command"\; attach -r',
+        %{exec "$binary" -q -f "$watch_config" -L "$watch" new \"exec "$binary" -f "$config" -L "$play" attach -r -t "$session"\"},
         :binary => Tmux.binary,
         :config => @config,
-        :server => WATCH_SERVER,
-        :command => command,
+        :watch_config => @watch_config,
+        :play => PLAY_SERVER,
+        :watch => WATCH_SERVER,
+        :session => session,
       )
     end
     Process.wait pid
