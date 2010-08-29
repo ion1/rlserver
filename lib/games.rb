@@ -46,7 +46,7 @@ module Games
     user_session = Games.sessions({:user => user, :game => game})
     if user_session.size > 0 then
       @session = user_session.first[:name]
-      puts "\033[8;#{user_session.first[:height]};#{user_session.first[:width]}t"
+      print "\033[8;#{user_session.first[:height]};#{user_session.first[:width]}t"
       @ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
       pid = fork do
         MiscHacks.sh(
@@ -108,7 +108,7 @@ module Games
     @config = RlConfig.config['server']['path']+'/play.conf'
     @watch_config = RlConfig.config['server']['path']+'/watch.conf'
     info = Games.sessions({:name => session})
-    puts "\033[8;#{info.first[:height]};#{info.first[:width]}t"
+    print "\033[8;#{info.first[:height]};#{info.first[:width]}t"
     ENV['TMUX'] = ''
     pid = fork do
       MiscHacks.sh(
