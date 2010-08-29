@@ -57,24 +57,22 @@ module Games
           Dir.chdir(RlConfig.config['games'][game]['chdir'])
         end
         session = "#{user}.#{game}.#{width}x#{height}.#{Time.now}"
-        @tmux.create_session
-        ({
+        @tmux.create_session({
           :name => session,
-          :attach => true,
           :command => "exec termrec -r #{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{session}.ttyrec -e \'#{RlConfig.config['games'][game]['binary']} #{options.join ' '}\'"
-        })
+          }).attach
       end
     end
     Process.wait pid
     if RlConfig.config['games'][game].key? 'chdir' then
       Dir.chdir(pushd)
     end
-    unless Games.sessions({:user => user, :game => game}) then
-      pid = fork do
-        MiscHacks.sh 'exec', 'bzip2', "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
-      end
-    end
-    if pid then Process.detach pid end
+    #unless Games.sessions({:user => user, :game => game}) then
+    #  pid = fork do
+    #    MiscHacks.sh 'exec', 'bzip2', "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
+    #  end
+    #end
+    #if pid then Process.detach pid end
   end
 
   def self.watchgame(session)
