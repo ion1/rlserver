@@ -309,14 +309,9 @@ module Menu
     @count = 0
     running = []
     if @userinfo then
-     # games = Games.by_user @userinfo['name']
-     # if games then
-     #   @count = games.size
-     #   games.each do |game|
-     #     running += ["$b#{RlConfig.config['games'][game]['name']}$b"]
-     #   end
-     # end
-      "Logged in as $b#{@userinfo['user']}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
+      games = Games.sessions({:user => @userinfo['user']})
+      @count = games.size
+      "Logged in as $b#{@userinfo['user']}$b#{((@count > 0) ? " - sessions" : "")}"
     else
       "Not logged in" 
     end
@@ -340,14 +335,14 @@ module Menu
       sessions = Games.sessions.sort do |a, b|
         case sort
         when 0
-          x = a[1][:user].downcase
-          y = b[1][:user].downcase
+          x = a[:user].downcase
+          y = b[:user].downcase
         when 1
-          x = a[1][:game].downcase
-          y = b[1][:game].downcase
+          x = a[:game].downcase
+          y = b[:game].downcase
         when 2
-          x = a[1][:idle]
-          y = b[1][:idle]
+          x = a[:idle]
+          y = b[:idle]
         end
         case order
         when 1
@@ -356,8 +351,7 @@ module Menu
           y <=> x
         end
       end
-      sessions.each do |session|
-        hash = session[1]
+      sessions.each do |hash|
         pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [hash[:user], "#{RlConfig.config["games"][hash[:game]]["name"]} #{RlConfig.config["games"][hash[:game]]["version"]}", "#{hash[:width]}x#{hash[:height]}", hash[:idle] / 3600, hash[:idle] % 3600 / 60 , hash[:idle] % 60])
       end
       if sessions.length > 0 then
@@ -373,8 +367,7 @@ module Menu
               end
                 Ncurses.def_prog_mode
                 destroy
-                puts "\033[8;#{sessions[sel][1][:height]};#{sessions[sel][1][:width]}t"
-                Games.watchgame sessions[sel][1][:name]
+                Games.watchgame sessions[sel][:name]
                 initncurses
                 Ncurses.reset_prog_mode
                 resize
@@ -390,10 +383,10 @@ module Menu
       win.printw "\n"
       win.move win.getcury, 4
       if sort == 0 then
-        aputs win, '$bPlayer '
+        aputs win, '$bUser '
         aputs win, order == 1 ? '>$b' : '<$b'
       else
-        win.printw 'Player'
+        win.printw 'User'
       end
       win.move win.getcury, 24
       if sort == 1 then
@@ -448,7 +441,7 @@ module Menu
     while !quit do
       win.clear
       status gen_status
-      title "#{RlConfig.config["games"][game]["longname"]} #{RlConfig.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""} "
+      title "#{RlConfig.config["games"][game]["longname"]} #{RlConfig.config["games"][game]["version"]}"
       aputs win, RlConfig.config["games"][game]["description"] + "\n\n"
       quit = menu([["pP", "Play #{RlConfig.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
@@ -465,7 +458,7 @@ module Menu
       win.clear
       choices = []
       RlConfig.config["games"].each_pair do |game, config|
-        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""}", lambda {|k|gamemenu game; false}]]
+        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}", lambda {|k|gamemenu game; false}]]
       end
       choices.sort! do |a, b|
         a[1] <=> b[1]
