@@ -1,6 +1,6 @@
-require "date"
-require "config"
-require "fileutils"
+require 'date'
+require 'lib/config'
+require 'fileutils'
 
 module Games
   def self.socket; @socket end;def self.games; @games end; def self.by_user; @by_user end

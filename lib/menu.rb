@@ -1,8 +1,8 @@
 require "ncurses" #should get rid of this poop and make a wrapper, especially user input is retarded
-require "users"
-require "games"
+require "lib/users"
+require "lib/games"
 require "fileutils"
-require "config"
+require "lib/config"
 
 module Menu
   def self.ncurses
@@ -151,16 +151,16 @@ module Menu
     until @userinfo do
       Ncurses.echo
       win.printw "Blank entry aborts.\n"
-      win.printw "Name: "
-      name = ""
-      win.getstr name
-      if name == "" then break end
+      win.printw "User name: "
+      user = ""
+      win.getstr user
+      if user == "" then break end
       Ncurses.noecho
       win.printw "Password: "
       pass = ""
       win.getstr pass
       if pass == "" then break end
-      @userinfo = Users.login(name, pass)
+      @userinfo = Users.login(user, pass)
       unless @userinfo then
         sleep 3
         win.printw "\nLogin incorrect.\n\n"
@@ -171,48 +171,47 @@ module Menu
   end
 
   def self.newuser
-    title "New player"
+    title "New user"
     win = Ncurses::Panel.panel_window @menu_panel
     win.clear
     created = false
     Ncurses.curs_set 1
-    name = nil
+    user = nil
     Ncurses.echo
-    until Users.checkname name do
+    until Users.check_name user do
       win.printw "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
-      win.printw "Name: "
-      getname = ""
-      win.getstr getname
-      name = getname
-      if name == "" then
-        name = nil
+      win.printw "User name: "
+      user = ""
+      win.getstr user
+      if user == "" then
+        user = nil
         break
       end
-      if Users.exists? name then
-        win.printw "The player already exists.\n"
-        name = nil
+      if Users.exists? user then
+        win.printw "The user already exists.\n"
+        user = nil
       end
     end
-    if name then
+    if user then
       until created do
         Ncurses.noecho
         win.printw "Password: "
         pass = ""
         win.getstr pass
         if pass == "" then
-          name = nil
+          user = nil
           break
         end
         win.printw "Retype password: "
         pass2 = ""
         win.getstr pass2
         if pass2 == "" then
-          name = nil
+          user = nil
           break
         end
         if pass == pass2
-          Users.adduser name, pass
-          @userinfo = Users.login name, pass
+          Users.add(user, pass)
+          @userinfo = Users.login user, pass
           created = true
         else
           win.printw "Sorry, passwords do not match.\n"
@@ -221,7 +220,7 @@ module Menu
       end
     end
     Ncurses.curs_set 0
-    name
+    user
   end
 
   def self.change_key
@@ -247,7 +246,7 @@ module Menu
       curpass = ""
       win.getstr curpass
       if curpass == "" then break end
-      if Users.login(@userinfo['name'], curpass) then
+      if Users.login(@userinfo['user'], curpass) then
         win.printw "New password: "
         pass = ""
         win.getstr pass
@@ -258,7 +257,7 @@ module Menu
           if pass2 == "" then break end
           if pass == pass2
             changed = true
-            Users.adduser @userinfo['name'], pass
+            Users.add @userinfo['user'], pass
           else
             win.printw "Sorry, passwords do not match.\n"
             Ncurses.flushinp
@@ -309,13 +308,13 @@ module Menu
     running = []
     if @userinfo then
       Games.populate
-      if Games.by_user.key? @userinfo['name'] then
-        @count = Games.by_user[@userinfo['name']].size
-        Games.by_user[@userinfo['name']].each_key do |game|
+      if Games.by_user.key? @userinfo['user'] then
+        @count = Games.by_user[@userinfo['user']].size
+        Games.by_user[@userinfo['user']].each_key do |game|
           running += ["$b#{Config.config["games"][game]["name"]}$b"]
         end
       end
-      "Logged in as $b#{@userinfo['name']}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
+      "Logged in as $b#{@userinfo['user']}$b#{(@count > 0) ? " - You have #{running.join " and "} running" : ""}"
     else
       "Not logged in" 
     end
@@ -480,7 +479,7 @@ module Menu
     launch = lambda do
       Ncurses.def_prog_mode
       destroy
-      Games.launchgame @cols, @rows, @userinfo['name'], game
+      Games.launchgame @cols, @rows, @userinfo['user'], game
       initncurses
       Ncurses.reset_prog_mode
       resize
@@ -489,7 +488,7 @@ module Menu
     edit = lambda do
       Ncurses.def_prog_mode
       destroy
-      Games.editrc @userinfo['name'], game
+      Games.editrc @userinfo['user'], game
       initncurses
       Ncurses.reset_prog_mode
       resize
@@ -498,7 +497,7 @@ module Menu
     while !quit do
       win.clear
       status gen_status
-      title "#{Config.config["games"][game]["longname"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""} "
+      title "#{Config.config["games"][game]["longname"]} #{Config.config["games"][game]["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""} "
       aputs win, Config.config["games"][game]["description"] + "\n\n"
       quit = menu([["pP", "Play #{Config.config["games"][game]["name"]}", launch],
                   ["eE", "Edit configuration file", edit],
@@ -515,7 +514,7 @@ module Menu
       win.clear
       choices = []
       Config.config["games"].each_pair do |game, config|
-        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['name']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
+        choices += [["#{config["key"]}", "#{config["longname"]} #{config["version"]}#{(@count > 0) ? ((Games.by_user[@userinfo['user']].key? game) ? " (running)" : "") : ""}", lambda {gamemenu game; false}]]
       end
       choices.sort! do |a, b|
         a[1] <=> b[1]
@@ -540,7 +539,7 @@ module Menu
                     ["qQ", "Quit", lambda {true}]])
              else
                menu([["lL", "Login", lambda {login; false}],
-                    ["nN", "New player", lambda {newuser; false}],
+                    ["nN", "New user", lambda {newuser; false}],
                     ["wW", "Watch games", lambda {watch; false}],
                     ["qQ", "Quit", lambda {true}]])
              end

@@ -1,57 +1,36 @@
-require 'config'
-require 'digest'
-require 'yaml'
+require 'lib/config'
 require 'fileutils'
 require 'rubygems'
 require 'mongo'
 require 'base64'
+require 'password/password'
 
 module Users
   USERS = 'users'
   USERDB = 'userdb'
-  USERCOLL = 'users'
+  USERCOLL = 'user_salt'
   @conn = Mongo::Connection.new
-  @userdb = @conn[USERDB]
-  @usercoll = @userdb[USERCOLL]
+  @db = @conn[USERDB]
+  @coll = @db[USERCOLL]
 
-  def self.user
-    @user
+  def self.exists?(user)
+    user.chomp!
+    @coll.find_one('user' => user) != nil
   end
 
-  def self.users
-    @users
+  def self.add(user, pass_plain)
+    pass = Password.new_from_password pass_plain
+    @coll.update(
+      {'user' => user},
+      {'user' => user, :password => pass.to_s},
+      {:upsert => true}
+    )
   end
 
-  def self.usercoll
-    @usercoll
+  def self.email(user, email)
   end
 
-  def self.loadusers
-    if File.exists? USERS then
-      @users = YAML.load_file USERS
-    else
-      @users = {}
-      save
-    end
-  end
-
-  def self.save
-    File.open USERS, 'w' do |out|
-      YAML.dump @users, out
-    end
-  end
-
-  def self.exists?(username)
-    @usercoll.find_one('name' => username) != nil
-  end
-
-  def self.adduser(name, password)
-    userinfo = ['name' => name, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp))]
-    @usercoll.remove('name' => name)
-    @usercoll.insert userinfo
-  end
-
-  def self.checkname(name)
+  def self.check_name(name)
     if name then
       name.each_char do |b|
         case b 
@@ -64,18 +43,22 @@ module Users
     end
   end
 
-  def self.login(name, password)
-    userinfo = @usercoll.find_one('name' => name, 'base64' => Base64.encode64(Digest::SHA256.digest(password.chomp)))
-    if userinfo then
-      Config.config["games"].each_pair do |game, config|
-        FileUtils.mkdir_p "#{game}/stuff/#{userinfo['name']}"
-        if config.key? "defaultrc" then
-          unless File.exists? "#{game}/init/#{userinfo['name']}.txt" then
-            FileUtils.cp config["defaultrc"], "#{game}/init/#{userinfo['name']}.txt"
+  def self.login(user, pass_plain)
+    info = @coll.find_one({'user' => user})
+    if info then
+      pass = Password.new info['password']
+      if pass == pass_plain then
+        # TODO: Move filesystem stuff
+        Config.config["games"].each_pair do |game, config|
+          FileUtils.mkdir_p "#{game}/stuff/#{info['user']}"
+          if config.key? "defaultrc" then
+            unless File.exists? "#{game}/init/#{info['user']}.txt" then
+              FileUtils.cp config["defaultrc"], "#{game}/init/#{info['user']}.txt"
+            end
           end
         end
       end
     end
-    userinfo
+    info
   end
 end
