@@ -82,12 +82,14 @@ module Games
       @game = "#{RlConfig.config['games'][game]['name']}"
       pid = fork do
         MiscHacks.sh(
-          'exec "$binary" -q -f "$config" -L "$server" new -s "$session" "$command"',
+          'exec "$binary" -q -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
           :session => @session,
           :command => command,
+          :height => height,
+          :width => width,
         )
       end
     end
@@ -119,6 +121,8 @@ module Games
         :play => PLAY_SERVER,
         :watch => WATCH_SERVER,
         :session => session,
+        :width => info.first[:width],
+        :height => info.first[:height],
       )
     end
     Process.wait pid
