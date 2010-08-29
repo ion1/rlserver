@@ -1,9 +1,3 @@
-[submodule "vim-highlight"]
-	path = vim-highlight
-	url = git://github.com/ion1/vim-highlight.git
 [submodule "tmux-ruby"]
 	path = tmux-ruby
 	url = http://github.com/dominikh/tmux-ruby.git
-[submodule "552198"]
-	path = password
-	url = git://gist.github.com/552198.git

@@ -1,8 +1,6 @@
 require 'lib/config'
 require 'fileutils'
 require 'mongo'
-require 'base64'
-require 'password/password'
 
 module Users
   USERDB = 'userdb'
@@ -21,10 +19,9 @@ module Users
   end
 
   def self.add(user, pass_plain)
-    pass = Password.new_from_password pass_plain
     @coll.update(
       {'user' => user},
-      {'user' => user, :password => pass.to_s},
+      {'user' => user, :password => MiscHacks::Password.new_from_password(pass_plain).to_s},
       {:upsert => true}
     )
   end
@@ -49,8 +46,7 @@ module Users
   def self.login(user, pass_plain)
     info = coll.find_one({'user' => user})
     if info then
-      pass = Password.new info['password']
-      if pass == pass_plain then
+      if MiscHacks::Password.new(info['password']) =~ pass_plain then
         # TODO: Move filesystem stuff
         RlConfig.config["games"].each_pair do |game, config|
           FileUtils.mkdir_p "#{game}/stuff/#{info['user']}"
