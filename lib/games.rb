@@ -3,14 +3,18 @@ require 'lib/config'
 require 'fileutils'
 require 'tmux-ruby/lib/tmux'
 require 'mischacks'
+require 'digest'
+require 'base64'
 
 module Games
-  TMUX_SERVER = 'rlserver'
-  @tmux = Tmux::Server.new TMUX_SERVER
+  PLAY_SERVER = 'rlserver'
+  WATCH_SERVER = 'rlwatch'
+  @play = Tmux::Server.new PLAY_SERVER
+  @watch = Tmux::Server.new WATCH_SERVER
 
   def self.sessions(search = {})
     sessions = {}
-    @tmux.sessions.each do |ses|
+    @play.sessions.each do |ses|
       user, game, size, date = ses.name.split('.')
       if user && game && size && date then
         width, height = size.split('x')
@@ -34,6 +38,7 @@ module Games
   end
 
   def self.launchgame(user, game, width, height)
+  @config = RlConfig.config['server']['path']+'/tmux.conf'
     if RlConfig.config['games'][game].key? 'chdir' then
       pushd = Dir.pwd
       Dir.chdir(RlConfig.config['games'][game]['chdir'])
@@ -44,7 +49,13 @@ module Games
       puts "\033[8;#{user_session.first[:height]};#{user_session.first[:width]}t"
       @ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
       pid = fork do
-        MiscHacks.sh('exec "$1" -f "$2" -L "$3" attach-session -d -t "$4"', Tmux.binary, RlConfig.config['server']['path']+'/tmux.conf', TMUX_SERVER, @session
+        MiscHacks.sh(
+          'exec "$binary" -f "$config" -L "$server" attach -d -t "$session"',
+          :binary => Tmux.binary,
+          :config => @config,
+          :server => PLAY_SERVER,
+          :session => @session,
+        )
       end
     else
       if RlConfig.config['games'][game].key? 'env' then
@@ -70,7 +81,14 @@ module Games
       command = "exec ttyrec #{@ttyrec} -e '#{RlConfig.config['games'][game]['binary']} #{options.join ' '}'"
       @game = "#{RlConfig.config['games'][game]['name']}"
       pid = fork do
-        MiscHacks.sh('exec "$1" -f "$2" -L "$3" new-session -s "$4" "$5"', Tmux.binary, RlConfig.config['server']['path']+'/tmux.conf', TMUX_SERVER, @session, command)
+        MiscHacks.sh(
+          'exec "$binary" -q -f "$config" -L "$server" new -s "$session" "$command"',
+          :binary => Tmux.binary,
+          :config => @config,
+          :server => PLAY_SERVER,
+          :session => @session,
+          :command => command,
+        )
       end
     end
     Process.wait pid
@@ -87,17 +105,26 @@ module Games
   end
 
   def self.watchgame(session)
+    @config = RlConfig.config['server']['path']+'/tmux.conf'
     info = Games.sessions({:name => session})
     puts "\033[8;#{info.first[:height]};#{info.first[:width]}t"
+    ENV['TMUX'] = ''
+    command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{session}"}
     pid = fork do
-      MiscHacks.sh('exec "$1" -L "$2" bind -n q detach-client; attach-session -r -t "$3"', Tmux.binary, TMUX_SERVER, session)
+      MiscHacks.sh(
+        'exec "$binary" -q -f "$config" -L "$server" bind -n q kill-session\; new -d "$command"\; attach -r',
+        :binary => Tmux.binary,
+        :config => @config,
+        :server => WATCH_SERVER,
+        :command => command,
+      )
     end
     Process.wait pid
   end
 
   def self.editrc(user, game)
     pid = fork do
-      MiscHacks.sh('exec nano -R "$1"', "#{RlConfig.config['server']['path']}/#{game}/init/#{user}.txt"
+      MiscHacks.sh('exec nano -R "$1"', "#{RlConfig.config['server']['path']}/#{game}/init/#{user}.txt")
     end
     Process.wait pid
   end
