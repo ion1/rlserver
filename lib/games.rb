@@ -7,13 +7,9 @@ require 'tmux-ruby/lib/tmux'
 require 'config'
 
 module Games
-  PLAY_SERVER = 'rlserver'
-  WATCH_SERVER = 'rlwatch'
-  @play = Tmux::Server.new PLAY_SERVER
-  @watch = Tmux::Server.new WATCH_SERVER
-
   def self.sessions(search = {})
     sessions = []
+    @play = Tmux::Server.new "#{RlConfig.config['server']['path']}/tmux-play"
     @play.sessions.each do |ses|
       user, game, size, date = ses.name.split('.')
       if user && game && size && date then
@@ -53,10 +49,10 @@ module Games
       pid = fork do
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          'exec "$binary" -f "$config" -L "$server" attach -t "$session"',
+          'exec "$binary" -f "$config" -S "$server" attach -t "$session"',
           :binary => Tmux.binary,
           :config => @config,
-          :server => PLAY_SERVER,
+          :server => "#{RlConfig.config['server']['path']}/tmux-play",
           :session => @session[:name],
         )
       end
@@ -96,10 +92,10 @@ module Games
       pid = fork do
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          'exec "$binary" -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
+          'exec "$binary" -f "$config" -S "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
           :binary => Tmux.binary,
           :config => @config,
-          :server => PLAY_SERVER,
+          :server => "#{RlConfig.config['server']['path']}/tmux-play",
           :session => @session[:name],
           :command => command,
           :height => @session[:height],
@@ -128,14 +124,14 @@ module Games
       print "\033[8;#{@session[:height]};#{@session[:width]}t"
       pid = fork do
         ENV['TMUX'] = ''
-        command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+        command = %{exec "#{Tmux.binary}" -f "#{@config}" -S "#{"#{RlConfig.config['server']['path']}/tmux-play"}" attach -r -t "#{@session[:name]}"}
         MiscHacks.sh(
-          %{exec "$binary" -f "$watch_config" -L "$watch" new \"ttyrec /dev/null -e '$command'\"},
+          %{exec "$binary" -f "$watch_config" -S "$watch" new \"ttyrec /dev/null -e '$command'\"},
           :binary => Tmux.binary,
           :config => @config,
           :watch_config => @watch_config,
-          :play => PLAY_SERVER,
-          :watch => WATCH_SERVER,
+          :play => "#{RlConfig.config['server']['path']}/tmux-play",
+          :watch => "#{RlConfig.config['server']['path']}/tmux-watch",
           :session => @session[:name],
           :width => @session[:width],
           :height => @session[:height],
