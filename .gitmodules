@@ -1,3 +1,0 @@
-[submodule "tmux-ruby"]
-	path = tmux-ruby
-	url = http://github.com/dominikh/tmux-ruby.git
