@@ -17,7 +17,7 @@ module Menu
   
   def self.initncurses
     unless @ncurses then
-      puts "\033[8;#{@rows};#{@cols}t"
+      print "\033[8;#{@rows};#{@cols}t"
       Signal.trap "WINCH" do
         resize
       end
