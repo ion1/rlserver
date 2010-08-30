@@ -13,13 +13,13 @@ module Games
   @watch = Tmux::Server.new WATCH_SERVER
 
   def self.sessions(search = {})
-    sessions = {}
+    sessions = []
     @play.sessions.each do |ses|
       user, game, size, date = ses.name.split('.')
       if user && game && size && date then
         width, height = size.split('x')
         ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec"
-        sessions[ses.name] = {
+        sessions << {
           :name => ses.name,
           :user => user,
           :game => game,
@@ -34,11 +34,11 @@ module Games
         }
       end
     end
-    sessions.select do |k, v|
+    sessions.select do |v|
       v.all? do |vk, vv|
         !search.has_key?(vk) || vv == search[vk]
       end
-    end.values
+    end
   end
 
   def self.launchgame(user, game, width, height)
