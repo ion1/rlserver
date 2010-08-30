@@ -1,10 +1,11 @@
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "ncurses" #should get rid of this poop and make a wrapper, especially user input is retarded
-require "lib/users"
-require "lib/games"
 require "fileutils"
-require "lib/config"
-require "rubygems"
 require "mongo"
+
+require "config"
+require "users"
+require "games"
 
 module Menu
   def self.ncurses
@@ -484,7 +485,7 @@ module Menu
                     ["qQ", "Quit", lambda {|k|true}]])
              else
                menu([["lL", "Login", lambda {|k|login; false}],
-                    ["nN", "New player", lambda {|k|newuser; false}],
+                    ["nN", "New user", lambda {|k|newuser; false}],
                     ["wW", "Watch games", lambda {|k|watch; false}],
                     ["qQ", "Quit", lambda {|k|true}]])
              end

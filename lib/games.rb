@@ -1,8 +1,10 @@
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require 'date'
-require 'lib/config'
 require 'fileutils'
-require 'tmux-ruby/lib/tmux'
 require 'mischacks'
+
+require 'tmux-ruby/lib/tmux'
+require 'config'
 
 module Games
   PLAY_SERVER = 'rlserver'

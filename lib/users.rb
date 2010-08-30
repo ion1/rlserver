@@ -1,6 +1,8 @@
-require 'lib/config'
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require 'fileutils'
 require 'mongo'
+
+require 'config'
 
 module Users
   USERDB = 'userdb'

@@ -1,7 +1,9 @@
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "fileutils"
-require "lib/menu"
-require "lib/games"
-require "lib/users"
+
+require "menu"
+require "games"
+require "users"
 
 module RlConfig
   RL_CONFIG = "/etc/rlserver"
