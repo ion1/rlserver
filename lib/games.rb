@@ -3,8 +3,6 @@ require 'lib/config'
 require 'fileutils'
 require 'tmux-ruby/lib/tmux'
 require 'mischacks'
-require 'digest'
-require 'base64'
 
 module Games
   PLAY_SERVER = 'rlserver'
@@ -34,9 +32,9 @@ module Games
         }
       end
     end
-    sessions.select do |v|
-      v.all? do |vk, vv|
-        !search.has_key?(vk) || vv == search[vk]
+    sessions.select do |ses|
+      ses.all? do |key, value|
+        !search.has_key?(key) || value == search[key]
       end
     end
   end
