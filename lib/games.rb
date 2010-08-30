@@ -18,15 +18,19 @@ module Games
       user, game, size, date = ses.name.split('.')
       if user && game && size && date then
         width, height = size.split('x')
+        ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec"
         sessions[ses.name] = {
           :name => ses.name,
           :user => user,
           :game => game,
+          :shortname => "#{RlConfig.config['games'][game]['name']}",
+          :longname => "#{RlConfig.config['games'][game]['longname']}",
           :width => width,
           :height => height,
           :date => DateTime.parse(date),
           :attached => ses.attached,
-          :idle => Time.now - File.stat("#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec").mtime,
+          :ttyrec => ttyrec,
+          :idle => File.exists?(ttyrec) ? Time.now - File.stat(ttyrec).mtime : 0,
         }
       end
     end
@@ -38,26 +42,38 @@ module Games
   end
 
   def self.launchgame(user, game, width, height)
-  @config = RlConfig.config['server']['path']+'/play.conf'
+    @config = RlConfig.config['server']['path']+'/play.conf'
     if RlConfig.config['games'][game].key? 'chdir' then
       pushd = Dir.pwd
       Dir.chdir(RlConfig.config['games'][game]['chdir'])
     end
-    user_session = Games.sessions({:user => user, :game => game})
-    if user_session.size > 0 then
-      @session = user_session.first[:name]
-      print "\033[8;#{user_session.first[:height]};#{user_session.first[:width]}t"
-      @ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
+    @session = Games.sessions({:user => user, :game => game}).first
+    if @session then
+      print "\033[8;#{@session[:height]};#{@session[:width]}t"
       pid = fork do
+        ENV['TMUX'] = ''
         MiscHacks.sh(
           'exec "$binary" -f "$config" -L "$server" attach -t "$session"',
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
-          :session => @session,
+          :session => @session[:name],
         )
       end
     else
+      date = DateTime.now
+      name = "#{user}.#{game}.#{width}x#{height}.#{date}"
+      @session = {
+        :name => name,
+        :user => user,
+        :game => game,
+        :shortname => "#{RlConfig.config['games'][game]['name']}",
+        :longname => "#{RlConfig.config['games'][game]['longname']}",
+        :width => width,
+        :height => height,
+        :date => date,
+        :ttyrec => "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{name}.ttyrec",
+      }
       if RlConfig.config['games'][game].key? 'env' then
         RlConfig.config['games'][game]['env'].split(' ').each do |env|
           env.gsub! /%path%/, RlConfig.config['server']['path']
@@ -76,20 +92,18 @@ module Games
           options += [arg.strip]
         end
       end
-      @session = "#{user}.#{game}.#{width}x#{height}.#{DateTime.now}"
-      @ttyrec = "#{RlConfig.config['server']['path']}/#{game}/stuff/#{user}/#{@session}.ttyrec"
-      command = "exec ttyrec #{@ttyrec} -e '#{RlConfig.config['games'][game]['binary']} #{options.join ' '}'"
-      @game = "#{RlConfig.config['games'][game]['name']}"
+      command = "exec ttyrec #{@session[:ttyrec]} -e '#{RlConfig.config['games'][game]['binary']} #{options.join ' '}'"
       pid = fork do
+        ENV['TMUX'] = ''
         MiscHacks.sh(
           'exec "$binary" -q -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
-          :session => @session,
+          :session => @session[:name],
           :command => command,
-          :height => height,
-          :width => width,
+          :height => @session[:height],
+          :width => @session[:width],
         )
       end
     end
@@ -97,10 +111,10 @@ module Games
     if RlConfig.config['games'][game].key? 'chdir' then
       Dir.chdir(pushd)
     end
-    user_session = Games.sessions({:user => user, :game => game})
-    if user_session.size == 0 then
+    list = Games.sessions({:user => user, :game => game}).first
+    unless list then
       bzip2 = fork do
-        MiscHacks.sh('exec bzip2 "$1"', @ttyrec)
+        MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
       end
     end
     if bzip2 then Process.detach bzip2 end
@@ -109,23 +123,25 @@ module Games
   def self.watchgame(session)
     @config = RlConfig.config['server']['path']+'/play.conf'
     @watch_config = RlConfig.config['server']['path']+'/watch.conf'
-    info = Games.sessions({:name => session})
-    print "\033[8;#{info.first[:height]};#{info.first[:width]}t"
-    ENV['TMUX'] = ''
-    pid = fork do
-      MiscHacks.sh(
-        %{exec "$binary" -q -f "$watch_config" -L "$watch" new \"exec "$binary" -f "$config" -L "$play" attach -r -t "$session"\"},
-        :binary => Tmux.binary,
-        :config => @config,
-        :watch_config => @watch_config,
-        :play => PLAY_SERVER,
-        :watch => WATCH_SERVER,
-        :session => session,
-        :width => info.first[:width],
-        :height => info.first[:height],
-      )
+    @session = Games.sessions({:name => session}).first
+    if @session then
+      print "\033[8;#{@session[:height]};#{@session[:width]}t"
+      pid = fork do
+        ENV['TMUX'] = ''
+        MiscHacks.sh(
+          %{exec "$binary" -q -f "$watch_config" -L "$watch" new \"exec "$binary" -f "$config" -L "$play" attach -r -t "$session"\"},
+          :binary => Tmux.binary,
+          :config => @config,
+          :watch_config => @watch_config,
+          :play => PLAY_SERVER,
+          :watch => WATCH_SERVER,
+          :session => @session[:name],
+          :width => @session[:width],
+          :height => @session[:height],
+        )
+      end
+      Process.wait pid
     end
-    Process.wait pid
   end
 
   def self.editrc(user, game)

@@ -311,7 +311,8 @@ module Menu
     if @userinfo then
       games = Games.sessions({:user => @userinfo['user']})
       @count = games.size
-      "Logged in as $b#{@userinfo['user']}$b#{((@count > 0) ? " - sessions" : "")}"
+      #"Logged in as $b#{@userinfo['user']}$b#{((@count > 0) ? " - sessions" : "")}"
+      "Logged in as $b#{@userinfo['user']}$b"
     else
       "Not logged in" 
     end
