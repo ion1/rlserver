@@ -94,7 +94,7 @@ module Games
       pid = fork do
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          'exec "$binary" -q -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
+          'exec "$binary" -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
@@ -126,8 +126,9 @@ module Games
       print "\033[8;#{@session[:height]};#{@session[:width]}t"
       pid = fork do
         ENV['TMUX'] = ''
+        command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
         MiscHacks.sh(
-          %{exec "$binary" -q -f "$watch_config" -L "$watch" new \"exec "$binary" -f "$config" -L "$play" attach -r -t "$session"\"},
+          %{exec "$binary" -f "$watch_config" -L "$watch" new \"ttyrec /dev/null -e '$command'\"},
           :binary => Tmux.binary,
           :config => @config,
           :watch_config => @watch_config,
@@ -136,6 +137,7 @@ module Games
           :session => @session[:name],
           :width => @session[:width],
           :height => @session[:height],
+          :command => command
         )
       end
       Process.wait pid
