@@ -1,1 +1,1 @@
-tmux-ruby/lib/tmux
+lib/tmux-ruby/lib/tmux
