@@ -1,11 +1,12 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
-require "ncurses" #should get rid of this poop and make a wrapper, especially user input is retarded
-require "fileutils"
-require "mongo"
+require 'ncurses' #should get rid of this poop and make a wrapper, especially user input is retarded
+require 'fileutils'
+require 'mongo'
 
-require "config"
-require "users"
-require "games"
+require 'config'
+require 'users'
+require 'games'
+require 'log'
 
 module RLServer
   module Menu

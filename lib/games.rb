@@ -6,6 +6,7 @@ require 'mischacks'
 # TODO: Simple tmux wrapper
 require 'tmux-ruby/lib/tmux'
 require 'config'
+require 'log'
 
 module RLServer
   module Games
@@ -14,6 +15,7 @@ module RLServer
     @play = Tmux::Server.new PLAY_SERVER
     @watch = Tmux::Server.new WATCH_SERVER
     @ttyrec_binary = `which ttyrec`.chomp
+    @verbosity = ENV['TMUX_VERBOSITY'] ? ENV['TMUX_VERBOSITY'][/-v+/] : ''
 
     def self.sessions(search = {})
       sessions = []
@@ -56,7 +58,7 @@ module RLServer
         pid = fork do
           ENV['TMUX'] = ''
           MiscHacks.sh(
-            'exec "$binary" -f "$config" -L "$server" attach -t "$session"',
+            %{exec "$binary" #{@verbosity} -f "$config" -L "$server" attach -t "$session"},
             :binary => Tmux.binary,
             :config => @config,
             :server => PLAY_SERVER,
@@ -99,7 +101,7 @@ module RLServer
         pid = fork do
           ENV['TMUX'] = ''
           MiscHacks.sh(
-            'exec "$binary" -f "$config" -L "$server" new -d -s "$session" "$command"\; setw force-height "$height"\; setw force-width "$width"\; attach',
+            %{exec "$binary" #{@verbosity} -f "$config" -L "$server" new -s "$session" "$command"},
             :binary => Tmux.binary,
             :config => @config,
             :server => PLAY_SERVER,
@@ -117,7 +119,7 @@ module RLServer
       list = Games.sessions({:user => user, :game => game}).first
       unless list then
         bzip2 = fork do
-          MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
+          RLServer.log.debug MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
         end
       end
       if bzip2 then Process.detach bzip2 end
@@ -131,9 +133,9 @@ module RLServer
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         pid = fork do
           ENV['TMUX'] = ''
-          command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+          command = %{exec "#{Tmux.binary}" #{@verbosity} -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
           MiscHacks.sh(
-            %{exec "$binary" -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
+            %{exec "$binary" #{@verbosity} -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
             :binary => Tmux.binary,
             :config => @config,
             :watch_config => @watch_config,

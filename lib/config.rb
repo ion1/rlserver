@@ -1,5 +1,7 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
-require "fileutils"
+require 'fileutils'
+
+require 'log'
 
 module RLServer
   module Config
@@ -8,6 +10,7 @@ module RLServer
 
     def self.load_config_file(file)
       config = {}
+      RLServer.log.info "Config file: #{file}"
       File.foreach file do |line|
         key, value = line.split "=", 2
         if key and value then
@@ -20,6 +23,7 @@ module RLServer
     def self.load_config_dir(dir)
       config = {}
       path = File.expand_path(dir) + "/"
+      RLServer.log.info "Config directory: #{path}"
       Dir.foreach path do |file|
         if File.directory? path + file then
           if file != ".." and file != "." then
@@ -32,12 +36,8 @@ module RLServer
       config
     end
 
-    def self.load (*dir)
-      if dir = [] then
-        @config = load_config_dir RL_CONFIG
-      else
-        @config = load_config_dir *dir
-      end
+    def self.load
+      @config = load_config_dir RL_CONFIG
     end
   end
 end

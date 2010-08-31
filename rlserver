@@ -4,6 +4,7 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "menu"
 require "config"
 require "users"
+require "log"
 
 module RLServer
   begin
@@ -19,6 +20,7 @@ module RLServer
     end
     Signal.trap "HUP" do
       Menu.destroy
+      @log.close
       exit 1
     end
     Signal.trap "USR1" do
