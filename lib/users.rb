@@ -3,6 +3,7 @@ require 'fileutils'
 require 'mongo'
 
 require 'config'
+require 'log'
 
 module RLServer
   module Users
@@ -22,6 +23,7 @@ module RLServer
     end
 
     def self.add(user, pass_plain)
+      RLServer.log.info "New user: #{user}"
       @coll.update(
         {'user' => user},
         {'user' => user, :password => MiscHacks::Password.new_from_password(pass_plain).to_s},
@@ -62,6 +64,11 @@ module RLServer
         else
           info = nil
         end
+      end
+      if info then
+        RLServer.log.warn "Login successful: #{user}"
+      else
+        RLServer.log.warn "Login failed: #{user}"
       end
       info
     end
