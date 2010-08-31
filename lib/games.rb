@@ -3,7 +3,7 @@ require 'date'
 require 'fileutils'
 require 'mischacks'
 
-# TODO: Simple tmux wrapper
+# TODO: Simple tmux wrapper; lots of duplicated shit
 require 'tmux-ruby/lib/tmux'
 require 'config'
 require 'log'
@@ -46,8 +46,7 @@ module RLServer
 
     def self.launchgame(user, game, width, height)
       @config = Config.config['server']['path']+'/play.conf'
-      #@ttyrec_binary = "#{Config.config['server']['path']}/bin/termrec"
-      @ttyrec_binary = `which ttyrec`.chomp
+      @ttyrec_binary = "#{Config.config['server']['path']}/termrec"
       if Config.config['games'][game].key? 'chdir' then
         pushd = Dir.pwd
         Dir.chdir(Config.config['games'][game]['chdir'])
@@ -92,14 +91,16 @@ module RLServer
             arg.gsub! /%path%/, Config.config['server']['path']
             arg.gsub! /%user%/, user
             arg.gsub! /%game%/, game
-            options += [arg.strip]
+            options << %{'#{arg.strip}'}
           end
         end
-        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e \" #{Config.config['games'][game]['binary']} #{options.join ' '}\"}
+        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e "#{Config.config['games'][game]['binary']} #{options.join ' '}"}
         ENV['TMUX'] = ''
         MiscHacks.sh(
           %{exec "$binary" -f "$config" -L "$server" new -s "$session" "$command"},
           :binary => Tmux.binary,
+          :ttyrec => @session[:ttyrec],
+          :ttyrec_bin => @ttyrec_binary,
           :config => @config,
           :server => PLAY_SERVER,
           :session => @session[:name],
@@ -111,10 +112,10 @@ module RLServer
       if Config.config['games'][game].key? 'chdir' then
         Dir.chdir(pushd)
       end
-      list = Games.sessions({:user => user, :game => game}).first
-      unless list then
+      has_session = Games.sessions({:user => user, :game => game}).first
+      unless has_session then
         bzip2 = fork do
-          RLServer.log.debug MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
+          MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
         end
       end
       if bzip2 then Process.detach bzip2 end
@@ -124,15 +125,15 @@ module RLServer
       @config = Config.config['server']['path']+'/play.conf'
       @watch_config = Config.config['server']['path']+'/watch.conf'
       @session = Games.sessions({:name => session}).first
-      #@ttyrec_binary = "#{Config.config['server']['path']}/bin/termrec"
-      @ttyrec_binary = `which ttyrec`.chomp
+      @ttyrec_binary = "#{Config.config['server']['path']}/termrec"
       if @session then
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
-        command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+        command = %{"#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
         MiscHacks.sh(
-          %{exec "$binary" -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
-          :binary => Tmux.binary,
+          %{exec "$tmux_bin" -f "$watch_config" -L "$watch" new 'exec "$ttyrec_bin" /dev/null -e "$command"'},
+          :tmux_bin => Tmux.binary,
+          :ttyrec_bin => @ttyrec_binary,
           :config => @config,
           :watch_config => @watch_config,
           :play => PLAY_SERVER,
