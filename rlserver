@@ -5,26 +5,28 @@ require "menu"
 require "config"
 require "users"
 
-begin
-  RlConfig.load
-  Dir.chdir RlConfig.config["server"]["path"]
-  #Users.load
-  ENV.each_key do |k|
-    case k
-    when "LANG", "LANGUAGE", /\ALC_/
-      ENV.delete k
+module RLServer
+  begin
+    Config.load
+    Dir.chdir Config.config["server"]["path"]
+    #Users.load
+    ENV.each_key do |k|
+      case k
+      when "LANG", "LANGUAGE", /\ALC_/
+        ENV.delete k
+      end
+      ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
     end
-    ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
-  end
-  Signal.trap "HUP" do
+    Signal.trap "HUP" do
+      Menu.destroy
+      exit 1
+    end
+    Signal.trap "USR1" do
+      Config.load
+    end
+    Menu.initialize
+    Menu.mainmenu
+  ensure
     Menu.destroy
-    exit 1
   end
-  Signal.trap "USR1" do
-    RlConfig.load
-  end
-  Menu.initialize
-  Menu.mainmenu
-ensure
-  Menu.destroy
 end
