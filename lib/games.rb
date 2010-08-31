@@ -13,6 +13,7 @@ module RLServer
     WATCH_SERVER = 'rlwatch'
     @play = Tmux::Server.new PLAY_SERVER
     @watch = Tmux::Server.new WATCH_SERVER
+    @ttyrec_binary = `which ttyrec`.chomp
 
     def self.sessions(search = {})
       sessions = []
@@ -94,7 +95,7 @@ module RLServer
             options += [arg.strip]
           end
         end
-        command = %{exec ttyrec "#{@session[:ttyrec]}" -e "#{Config.config['games'][game]['binary']} #{options.join ' '}"}
+        command = %{exec "#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e "#{Config.config['games'][game]['binary']} #{options.join ' '}"}
         pid = fork do
           ENV['TMUX'] = ''
           MiscHacks.sh(
@@ -132,7 +133,7 @@ module RLServer
           ENV['TMUX'] = ''
           command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
           MiscHacks.sh(
-            %{exec "$binary" -f "$watch_config" -L "$watch" new \"ttyrec /dev/null -e '$command'\"},
+            %{exec "$binary" -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
             :binary => Tmux.binary,
             :config => @config,
             :watch_config => @watch_config,
