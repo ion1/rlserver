@@ -14,7 +14,7 @@ module RLServer
     WATCH_SERVER = 'rlwatch'
     @play = Tmux::Server.new PLAY_SERVER
     @watch = Tmux::Server.new WATCH_SERVER
-    @ttyrec_binary = `which termrec`.chomp
+    @ttyrec_binary = `which ttyrec`.chomp
     @verbosity = ENV['TMUX_VERBOSITY'] ? ENV['TMUX_VERBOSITY'][/-v+/] : ''
 
     def self.sessions(search = {})
@@ -95,7 +95,7 @@ module RLServer
             options += [arg.strip]
           end
         end
-        command = %{exec "#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e \"#{Config.config['games'][game]['binary']} #{options.join ' '}\"}
+        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e \"#{Config.config['games'][game]['binary']} #{options.join ' '}\"}
         ENV['TMUX'] = ''
         MiscHacks.sh(
           %{exec "$binary" #{@verbosity} -f "$config" -L "$server" new -s "$session" "$command"},
