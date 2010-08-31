@@ -36,15 +36,10 @@ module RLServer
 
     def self.check_name(name)
       if name then
-        name.each_char do |b|
-          case b 
-          when " ", "-", "0".."9", "A".."Z", "_", "a".."z"
-            true
-          else 
-            false
-            break
-          end
-        end
+        name.force_encoding 'UTF-8'
+        name == name[/[\w\d_\-]+/]
+      else
+        nil
       end
     end
 

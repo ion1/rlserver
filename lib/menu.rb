@@ -184,7 +184,7 @@ module RLServer
       user = nil
       Ncurses.echo
       until Users.check_name user do
-        win.printw "Alphanumerics, spaces, dashes and underscores only. Blank entry aborts.\n"
+        win.printw "Alphanumerics, dashes and underscores only. Blank entry aborts.\n"
         win.printw "Name: "
         user = ""
         win.getstr user
