@@ -95,7 +95,7 @@ module RLServer
             options += [arg.strip]
           end
         end
-        command = %{exec "#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e "#{Config.config['games'][game]['binary']} #{options.join ' '}"}
+        command = %{exec "#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e '#{Config.config['games'][game]['binary']} #{options.join ' '}'}
         ENV['TMUX'] = ''
         MiscHacks.sh(
           %{exec "$binary" #{@verbosity} -f "$config" -L "$server" new -s "$session" "$command"},
