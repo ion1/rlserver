@@ -14,7 +14,7 @@ module RLServer
     WATCH_SERVER = 'rlwatch'
     @play = Tmux::Server.new PLAY_SERVER
     @watch = Tmux::Server.new WATCH_SERVER
-    @ttyrec_binary = `which ttyrec`.chomp
+    @ttyrec_binary = `which termrec`.chomp
     @verbosity = ENV['TMUX_VERBOSITY'] ? ENV['TMUX_VERBOSITY'][/-v+/] : ''
 
     def self.sessions(search = {})
