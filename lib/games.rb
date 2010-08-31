@@ -14,8 +14,6 @@ module RLServer
     WATCH_SERVER = 'rlwatch'
     @play = Tmux::Server.new PLAY_SERVER
     @watch = Tmux::Server.new WATCH_SERVER
-    @ttyrec_binary = `which ttyrec`.chomp
-    @verbosity = ENV['TMUX_VERBOSITY'] ? ENV['TMUX_VERBOSITY'][/-v+/] : ''
 
     def self.sessions(search = {})
       sessions = []
@@ -48,6 +46,8 @@ module RLServer
 
     def self.launchgame(user, game, width, height)
       @config = Config.config['server']['path']+'/play.conf'
+      #@ttyrec_binary = "#{Config.config['server']['path']}/bin/termrec"
+      @ttyrec_binary = `which ttyrec`.chomp
       if Config.config['games'][game].key? 'chdir' then
         pushd = Dir.pwd
         Dir.chdir(Config.config['games'][game]['chdir'])
@@ -57,7 +57,7 @@ module RLServer
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          %{exec "$binary" #{@verbosity} -f "$config" -L "$server" attach -t "$session"},
+          %{exec "$binary" -f "$config" -L "$server" attach -t "$session"},
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
@@ -95,10 +95,10 @@ module RLServer
             options += [arg.strip]
           end
         end
-        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e \"#{Config.config['games'][game]['binary']} #{options.join ' '}\"}
+        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e \" #{Config.config['games'][game]['binary']} #{options.join ' '}\"}
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          %{exec "$binary" #{@verbosity} -f "$config" -L "$server" new -s "$session" "$command"},
+          %{exec "$binary" -f "$config" -L "$server" new -s "$session" "$command"},
           :binary => Tmux.binary,
           :config => @config,
           :server => PLAY_SERVER,
@@ -124,12 +124,14 @@ module RLServer
       @config = Config.config['server']['path']+'/play.conf'
       @watch_config = Config.config['server']['path']+'/watch.conf'
       @session = Games.sessions({:name => session}).first
+      #@ttyrec_binary = "#{Config.config['server']['path']}/bin/termrec"
+      @ttyrec_binary = `which ttyrec`.chomp
       if @session then
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
-        command = %{exec "#{Tmux.binary}" #{@verbosity} -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+        command = %{exec "#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
         MiscHacks.sh(
-          %{exec "$binary" #{@verbosity} -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
+          %{exec "$binary" -f "$watch_config" -L "$watch" new \"#{@ttyrec_binary} /dev/null -e '$command'\"},
           :binary => Tmux.binary,
           :config => @config,
           :watch_config => @watch_config,

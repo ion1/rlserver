@@ -21,7 +21,7 @@ module RLServer
     def self.initncurses
       unless @ncurses then
         print "\033[8;#{@rows};#{@cols}t"
-        Signal.trap "WINCH" do
+        @winch = Signal.trap "WINCH" do
           resize
         end
         Ncurses.nonl
@@ -494,7 +494,7 @@ module RLServer
     end
 
     def self.destroy
-      Signal.trap "WINCH" do end
+      Signal.trap "WINCH" do @winch end
       if @ncurses then
         @cols = Ncurses.stdscr.getmaxx
         @rows = Ncurses.stdscr.getmaxy
