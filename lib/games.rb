@@ -92,7 +92,7 @@ module Games
           options += [arg.strip]
         end
       end
-      command = "exec ttyrec #{@session[:ttyrec]} -e '#{RlConfig.config['games'][game]['binary']} #{options.join ' '}'"
+      command = %{exec ttyrec "#{@session[:ttyrec]}" -e "#{RlConfig.config['games'][game]['binary']} #{options.join ' '}"}
       pid = fork do
         ENV['TMUX'] = ''
         MiscHacks.sh(
