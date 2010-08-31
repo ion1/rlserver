@@ -3,6 +3,7 @@ require 'date'
 require 'fileutils'
 require 'mischacks'
 
+# TODO: Simple tmux wrapper
 require 'tmux-ruby/lib/tmux'
 require 'config'
 
@@ -67,8 +68,8 @@ module Games
         :name => name,
         :user => user,
         :game => game,
-        :shortname => "#{RlConfig.config['games'][game]['name']}",
-        :longname => "#{RlConfig.config['games'][game]['longname']}",
+        :shortname => "#{RlConfig.config['games'][game]['name']} #{RlConfig.config["games"][hash[:game]]["version"]}",
+        :longname => "#{RlConfig.config['games'][game]['longname']} #{RlConfig.config["games"][hash[:game]]["version"]}",
         :width => width,
         :height => height,
         :date => date,

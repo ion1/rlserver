@@ -58,12 +58,10 @@ module Users
             end
           end
         end
-        info
       else
-        nil
+        info = nil
       end
-    else
-      nil
     end
+    info
   end
 end

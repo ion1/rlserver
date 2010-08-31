@@ -354,7 +354,7 @@ module Menu
         end
       end
       sessions.each do |hash|
-        pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [hash[:user], "#{RlConfig.config["games"][hash[:game]]["name"]} #{RlConfig.config["games"][hash[:game]]["version"]}", "#{hash[:width]}x#{hash[:height]}", hash[:idle] / 3600, hash[:idle] % 3600 / 60 , hash[:idle] % 60])
+        pretty << ("%-20s%-26s%-14s%02d:%02d:%02d" % [hash[:user], hash[:shortname], "#{hash[:width]}x#{hash[:height]}", hash[:idle] / 3600, hash[:idle] % 3600 / 60 , hash[:idle] % 60])
       end
       if sessions.length > 0 then
         aputs win, "Currently running games"
