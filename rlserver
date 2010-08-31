@@ -6,7 +6,7 @@ require "config"
 require "users"
 
 begin
-  RlConfig.initialize
+  RlConfig.load
   Dir.chdir RlConfig.config["server"]["path"]
   #Users.load
   ENV.each_key do |k|
@@ -18,21 +18,12 @@ begin
   end
   Signal.trap "HUP" do
     Menu.destroy
-    #if Games.socket then
-    #  system "screen", "-D", Games.socket
-    #end
     exit 1
   end
   Signal.trap "USR1" do
-    RlConfig.initialize
+    RlConfig.load
   end
   Menu.initialize
-  if ARGV[0] then
-    userinfo = Users.usercoll.find_one('name' => ARGV[0])
-    if userinfo then
-      Menu.user = {'name' => userinfo['name']}
-    end
-  end
   Menu.mainmenu
 ensure
   Menu.destroy

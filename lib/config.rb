@@ -1,10 +1,6 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require "fileutils"
 
-require "menu"
-require "games"
-require "users"
-
 module RlConfig
   RL_CONFIG = "/etc/rlserver"
   def self.config;@config end
@@ -35,11 +31,11 @@ module RlConfig
     config
   end
 
-  def self.initialize (*file)
-    if file = [] then
+  def self.load (*dir)
+    if dir = [] then
       @config = load_config_dir RL_CONFIG
     else
-      @config = load_config_dir *file
+      @config = load_config_dir *dir
     end
   end
 end
