@@ -18,12 +18,20 @@ module RLServer
       @userinfo = info
     end
 
+    def self.trapwinch enable
+      case enable
+      when true
+        Signal.trap "WINCH" do
+          resize
+        end
+      when false
+        Signal.trap "WINCH" do end
+      end
+    end
     def self.initncurses
       unless @ncurses then
         print "\033[8;#{@rows};#{@cols}t"
-        @winch = Signal.trap "WINCH" do
-          resize
-        end
+        trapwinch true
         Ncurses.nonl
         Ncurses.stdscr.intrflush false
         Ncurses.noecho
@@ -369,11 +377,11 @@ module RLServer
                 when "a"[0].."p"[0], "r"[0].."z"[0]
                   sel = key - 97
                 end
+                trapwinch false
                 Ncurses.def_prog_mode
-                destroy
                 Games.watchgame sessions[sel][:name]
-                initncurses
                 Ncurses.reset_prog_mode
+                trapwinch true
                 resize
                 false
               end
@@ -424,20 +432,20 @@ module RLServer
       quit = false
       win = Ncurses::Panel.panel_window @menu_panel
       launch = lambda do |k|
+        trapwinch false
         Ncurses.def_prog_mode
-        destroy
         Games.launchgame @userinfo['user'], game, @cols, @rows
-        initncurses
         Ncurses.reset_prog_mode
+        trapwinch true
         resize
         false
       end
       edit = lambda do |k|
+        trapwinch false
         Ncurses.def_prog_mode
-        destroy
         Games.editrc @userinfo['user'], game
-        initncurses
         Ncurses.reset_prog_mode
+        trapwinch true
         resize
         false
       end
@@ -494,7 +502,7 @@ module RLServer
     end
 
     def self.destroy
-      Signal.trap "WINCH" do @winch end
+      trapwinch false
       if @ncurses then
         @cols = Ncurses.stdscr.getmaxx
         @rows = Ncurses.stdscr.getmaxy
