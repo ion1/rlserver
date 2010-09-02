@@ -2,6 +2,9 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require 'date'
 require 'fileutils'
 require 'mischacks'
+require 'base64'
+require 'digest'
+require 'ncurses'
 
 # TODO: Simple tmux wrapper; lots of duplicated shit
 require 'tmux-ruby/lib/tmux'
@@ -45,8 +48,6 @@ module RLServer
     end
 
     def self.launchgame(user, game, width, height)
-      @config = Config.config['server']['path']+'/play.conf'
-      @ttyrec_binary = "#{Config.config['server']['path']}/termrec"
       if Config.config['games'][game].key? 'chdir' then
         pushd = Dir.pwd
         Dir.chdir(Config.config['games'][game]['chdir'])
@@ -56,9 +57,9 @@ module RLServer
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          %{exec "$binary" -f "$config" -L "$server" attach -t "$session"},
-          :binary => Tmux.binary,
-          :config => @config,
+          %{exec "$tmux_bin" -f "$config" -L "$server" attach -t "$session"},
+          :tmux_bin => Tmux.binary,
+          :config => "#{Config.config['server']['path']}/play.conf",
           :server => PLAY_SERVER,
           :session => @session[:name],
         )
@@ -94,19 +95,17 @@ module RLServer
             options << %{'#{arg.strip}'}
           end
         end
-        command = %{"#{@ttyrec_binary}" "#{@session[:ttyrec]}" -e "#{Config.config['games'][game]['binary']} #{options.join ' '}"}
         ENV['TMUX'] = ''
         MiscHacks.sh(
-          %{exec "$binary" -f "$config" -L "$server" new -s "$session" "$command"},
-          :binary => Tmux.binary,
+          %{exec "$tmux_bin" -f "$config" -L "$server" new -s "$session" "exec $ttyrec_bin $ttyrec -e '$game_bin $options'"},
+          :tmux_bin => Tmux.binary,
+          :config => "#{Config.config['server']['path']}/play.conf",
           :ttyrec => @session[:ttyrec],
-          :ttyrec_bin => @ttyrec_binary,
-          :config => @config,
+          :ttyrec_bin => "#{Config.config['server']['path']}/termrec",
           :server => PLAY_SERVER,
           :session => @session[:name],
-          :command => command,
-          :height => @session[:height],
-          :width => @session[:width],
+          :game_bin => Config.config['games'][game]['binary'],
+          :options => options.join(' '),
         )
       end
       if Config.config['games'][game].key? 'chdir' then
@@ -122,27 +121,49 @@ module RLServer
     end
 
     def self.watchgame(session)
-      @config = Config.config['server']['path']+'/play.conf'
-      @watch_config = Config.config['server']['path']+'/watch.conf'
       @session = Games.sessions({:name => session}).first
-      @ttyrec_binary = "#{Config.config['server']['path']}/termrec"
       if @session then
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
-        command = %{"#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+        #command = %{"#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
+        watch_session = Base64.encode64(Digest::MD5.digest("#{ENV['SSH_CLIENT'][/\d+\.\d+\.\d+\.\d+/]}#{Time.now.hash}")).chomp
+        unless @play.sessions({:name => watch_session}).first then
+          MiscHacks.sh(
+            %{stty rows "$height"; stty cols "$width"; exec "$tmux_bin" -f "$config" -L "$server" new -d -s "$watch_session" -t "$session"},
+            :config => "#{Config.config['server']['path']}/play.conf",
+            :watch_config => "#{Config.config['server']['path']}/watch.conf",
+            :watch_session => watch_session,
+            :session => @session[:name],
+            :tmux_bin => Tmux.binary,
+            :server => PLAY_SERVER,
+            :height => @session[:height],
+            :width => @session[:width],
+          )
+          MiscHacks.sh(
+            %{"$dtach_bin" -n "/tmp/$watch_session" -E sh -c 'stty rows "$height"; stty cols "$width"; "$tmux_bin" -L "$server" attach -r -t "$watch_session"'},
+            :dtach_bin => "#{Config.config['server']['path']}/dtach",
+            :watch_session => watch_session,
+            :tmux_bin => Tmux.binary,
+            :server => PLAY_SERVER,
+            :height => @session[:height],
+            :width => @session[:width],
+          )
+        end
         MiscHacks.sh(
-          %{exec "$tmux_bin" -f "$watch_config" -L "$watch" new 'exec "$ttyrec_bin" /dev/null -e "$command"'},
-          :tmux_bin => Tmux.binary,
-          :ttyrec_bin => @ttyrec_binary,
-          :config => @config,
-          :watch_config => @watch_config,
-          :play => PLAY_SERVER,
-          :watch => WATCH_SERVER,
-          :session => @session[:name],
-          :width => @session[:width],
+          %{stty rows "$height"; stty cols "$width"; exec "$dtach_bin" -a "/tmp/$session" -e \q -R -z},
+          :dtach_bin => "#{Config.config['server']['path']}/dtach",
+          :session => watch_session,
           :height => @session[:height],
-          :command => command
+          :width => @session[:width],
         )
+        if @play.sessions({:name => watch_session}).first then
+          MiscHacks.sh(
+            %{exec "$tmux_bin" -L "$server" kill-session -t "$session"},
+            :tmux_bin => Tmux.binary,
+            :server => PLAY_SERVER,
+            :session => watch_session,
+          )
+        end
       end
     end
 
