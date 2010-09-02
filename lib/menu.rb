@@ -491,14 +491,14 @@ module RLServer
                  menu([["pP", "Change password", lambda {|k|change_password; false}],
                       ["kK", "Add/remove ssh keys (coming soon)", lambda {|k|change_key; false}],
                       ["gG", "Games", lambda {|k|games; false}],
-                      #["wW", "Watch", lambda {|k|watch; false}],
-                      ["wW", "Watch (temporarily disabled)", lambda {|k|false}],
+                      ["wW", "Watch", lambda {|k|watch; false}],
+                      #["wW", "Watch (temporarily disabled)", lambda {|k|false}],
                       ["qQ", "Quit", lambda {|k|true}]])
                else
                  menu([["lL", "Login", lambda {|k|login; false}],
                       ["nN", "New user", lambda {|k|newuser; false}],
-                      #["wW", "Watch", lambda {|k|watch; false}],
-                      ["wW", "Watch (temporarily disabled)", lambda {|k|false}],
+                      ["wW", "Watch", lambda {|k|watch; false}],
+                      #["wW", "Watch (temporarily disabled)", lambda {|k|false}],
                       ["qQ", "Quit", lambda {|k|true}]])
                end
       end

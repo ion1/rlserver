@@ -18,11 +18,6 @@ module RLServer
       end
       ENV["LANG"] = "en_US.UTF-8" #should this be in the config?
     end
-    Signal.trap "HUP" do
-      Menu.destroy
-      @log.close
-      exit 1
-    end
     Signal.trap "USR1" do
       Config.load
     end
@@ -30,6 +25,7 @@ module RLServer
     Menu.mainmenu
   rescue Exception => exc
     @log.error exc.to_formatted_string
+    Menu.destroy
   ensure
     Menu.destroy
   end

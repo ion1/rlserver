@@ -1,0 +1,15 @@
+.libs/
+crawl-0.6/
+crawl-0.7/
+crawl/
+crawl_trunk/
+dtach
+heh
+nethack/
+nethackrc/
+recover
+rlserver.log*
+sprint/
+termplay
+termrec
+util/
