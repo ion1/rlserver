@@ -389,6 +389,8 @@ module RLServer
             end
           end
           items = socketmenu.length
+          socketmenu << [Ncurses::KEY_PPAGE, nil, lambda {|k|offset -= pagesize; if offset < 0 then offset = 0 end; false}]
+          socketmenu << [Ncurses::KEY_NPAGE, nil, lambda {|k|offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}]
         else
           aputs win, "There are no games running."
         end
@@ -417,8 +419,6 @@ module RLServer
           win.printw 'Idle'
         end
         win.printw "\n"
-        socketmenu << [Ncurses::KEY_PPAGE, nil, lambda {|k|offset -= pagesize; if offset < 0 then offset = 0 end; false}]
-        socketmenu << [Ncurses::KEY_NPAGE, nil, lambda {|k|offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}]
         socketmenu << [Ncurses::KEY_UP, nil, lambda {|k|order = -1; false}]
         socketmenu << [Ncurses::KEY_DOWN, nil, lambda {|k|order = 1; false}]
         socketmenu << [Ncurses::KEY_LEFT, nil, lambda {|k|sort -= 1; if sort < 0 then sort = 2 end; false}]
