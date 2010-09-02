@@ -434,7 +434,7 @@ module RLServer
       launch = lambda do |k|
         trapwinch false
         Ncurses.def_prog_mode
-        Games.launchgame @userinfo['user'], game, @cols, @rows
+        Games.launchgame @userinfo['user'], game
         Ncurses.reset_prog_mode
         trapwinch true
         resize

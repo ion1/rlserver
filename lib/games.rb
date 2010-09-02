@@ -2,7 +2,6 @@ $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 require 'date'
 require 'fileutils'
 require 'mischacks'
-require 'base64'
 require 'digest'
 require 'ncurses'
 
@@ -23,7 +22,6 @@ module RLServer
       @play.sessions.each do |ses|
         user, game, size, date = ses.name.split('.')
         if user && game && size && date then
-          width, height = size.split('x')
           ttyrec = "#{Config.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec"
           sessions << {
             :name => ses.name,
@@ -31,8 +29,8 @@ module RLServer
             :game => game,
             :shortname => "#{Config.config['games'][game]['name']} #{Config.config["games"][game]["version"]}",
             :longname => "#{Config.config['games'][game]['longname']} #{Config.config["games"][game]["version"]}",
-            :width => width,
-            :height => height,
+            :width => ses.width,
+            :height => ses.height,
             :date => DateTime.parse(date),
             :attached => ses.attached,
             :ttyrec => ttyrec,
@@ -47,15 +45,18 @@ module RLServer
       end
     end
 
-    def self.launchgame(user, game, width, height)
+    def self.launchgame(user, game)
       if Config.config['games'][game].key? 'chdir' then
         pushd = Dir.pwd
         Dir.chdir(Config.config['games'][game]['chdir'])
       end
+      height = Ncurses.getmaxy Ncurses.stdscr
+      width = Ncurses.getmaxx Ncurses.stdscr
       @session = Games.sessions({:user => user, :game => game}).first
       if @session then
-        print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
+        print "\033[8;#{@session[:height]};#{@session[:width]}t"
+        MiscHacks.sh('stty rows "$1"; stty cols "$2"', @session[:height], @session[:width])
         MiscHacks.sh(
           %{exec "$tmux_bin" -f "$config" -L "$server" attach -t "$session"},
           :tmux_bin => Tmux.binary,
@@ -118,15 +119,18 @@ module RLServer
         end
       end
       if bzip2 then Process.detach bzip2 end
+      print "\033[8;#{height};#{width}t"
+      MiscHacks.sh('stty rows "$1"; stty cols "$2"', height, width)
     end
 
     def self.watchgame(session)
+      width = Ncurses.getmaxx Ncurses.stdscr
+      height = Ncurses.getmaxy Ncurses.stdscr
       @session = Games.sessions({:name => session}).first
       if @session then
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
-        #command = %{"#{Tmux.binary}" -f "#{@config}" -L "#{PLAY_SERVER}" attach -r -t "#{@session[:name]}"}
-        watch_session = Base64.encode64(Digest::MD5.digest("#{ENV['SSH_CLIENT'][/\d+\.\d+\.\d+\.\d+/]}#{Time.now.hash}")).chomp
+        watch_session = Digest::SHA1.hexdigest("#{ENV['SSH_CLIENT']}")
         unless @play.sessions({:name => watch_session}).first then
           MiscHacks.sh(
             %{stty rows "$height"; stty cols "$width"; exec "$tmux_bin" -f "$config" -L "$server" new -d -s "$watch_session" -t "$session"},
@@ -140,7 +144,7 @@ module RLServer
             :width => @session[:width],
           )
           MiscHacks.sh(
-            %{"$dtach_bin" -n "/tmp/$watch_session" -E sh -c 'stty rows "$height"; stty cols "$width"; "$tmux_bin" -L "$server" attach -r -t "$watch_session"'},
+            %{"$dtach_bin" -n "/tmp/$watch_session" -E sh -c 'stty rows "$height"; stty cols "$width"; "$tmux_bin" -L "$server" attach -r -d -t "$watch_session"'},
             :dtach_bin => "#{Config.config['server']['path']}/dtach",
             :watch_session => watch_session,
             :tmux_bin => Tmux.binary,
@@ -164,6 +168,8 @@ module RLServer
             :session => watch_session,
           )
         end
+        print "\033[8;#{height};#{width}t"
+        MiscHacks.sh('stty rows "$1"; stty cols "$2"', height, width)
       end
     end
 
