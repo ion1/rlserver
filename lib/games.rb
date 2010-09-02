@@ -107,6 +107,8 @@ module RLServer
           :session => @session[:name],
           :game_bin => Config.config['games'][game]['binary'],
           :options => options.join(' '),
+          :width => width,
+          :height => height,
         )
       end
       if Config.config['games'][game].key? 'chdir' then

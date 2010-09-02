@@ -28,6 +28,8 @@ module RLServer
     end
     Menu.initialize
     Menu.mainmenu
+  rescue Exception => exc
+    @log.error exc
   ensure
     Menu.destroy
   end

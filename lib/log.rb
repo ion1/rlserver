@@ -2,7 +2,7 @@ require 'logger'
 
 module RLServer
   client = ENV['SSH_CLIENT']
-  @log = Logger.new("#{client}.log", 'daily')
+  @log = Logger.new("rlserver.log", 'daily')
   @log.datetime_format = '%Y-%m-%d %H:%M:%S'
   @log.sev_threshold = case ENV['RL_LOG_SEVERITY']
                        when 'DEBUG'
