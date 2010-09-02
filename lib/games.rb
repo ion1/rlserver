@@ -20,7 +20,7 @@ module RLServer
     def self.sessions(search = {})
       sessions = []
       @play.sessions.each do |ses|
-        info = ses.name.match(/^(?<user>[\w\d\-_]+?)\.(?<game>[\w\d\-_]+?)\.(?<size>[\w\d]+?)\.(?<date>.+)$/)
+        info = ses.name.match(/^(?<user>[\w\d\-_]+?)\.(?<game>[\w\d\-_\.]+?)\.(?<size>\d+x\d+)\.(?<date>.+)$/)
         if info  then
           ttyrec = "#{Config.config['server']['path']}/#{info[:game]}/stuff/#{info[:user]}/#{ses.name}.ttyrec"
           sessions << {
