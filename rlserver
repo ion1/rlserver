@@ -29,7 +29,7 @@ module RLServer
     Menu.initialize
     Menu.mainmenu
   rescue Exception => exc
-    @log.error exc
+    @log.error exc.to_formatted_string
   ensure
     Menu.destroy
   end

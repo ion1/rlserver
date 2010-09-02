@@ -20,18 +20,18 @@ module RLServer
     def self.sessions(search = {})
       sessions = []
       @play.sessions.each do |ses|
-        user, game, size, date = ses.name.split('.')
-        if user && game && size && date then
-          ttyrec = "#{Config.config['server']['path']}/#{game}/stuff/#{user}/#{ses.name}.ttyrec"
+        info = ses.name.match(/^(?<user>[\w\d\-_]+?)\.(?<game>[\w\d\-_]+?)\.(?<size>[\w\d]+?)\.(?<date>.+)$/)
+        if info  then
+          ttyrec = "#{Config.config['server']['path']}/#{info[:game]}/stuff/#{info[:user]}/#{ses.name}.ttyrec"
           sessions << {
             :name => ses.name,
-            :user => user,
-            :game => game,
-            :shortname => "#{Config.config['games'][game]['name']} #{Config.config["games"][game]["version"]}",
-            :longname => "#{Config.config['games'][game]['longname']} #{Config.config["games"][game]["version"]}",
+            :user => info[:user],
+            :game => info[:game],
+            :shortname => "#{Config.config['games'][info[:game]]['name']} #{Config.config["games"][info[:game]]["version"]}",
+            :longname => "#{Config.config['games'][info[:game]]['longname']} #{Config.config["games"][info[:game]]["version"]}",
             :width => ses.width,
             :height => ses.height,
-            :date => DateTime.parse(date),
+            :date => DateTime.parse(info[:date]),
             :attached => ses.attached,
             :ttyrec => ttyrec,
             :idle => File.exists?(ttyrec) ? Time.now - File.stat(ttyrec).mtime : 0,
