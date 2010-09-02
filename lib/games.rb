@@ -3,6 +3,7 @@ require 'date'
 require 'fileutils'
 require 'mischacks'
 require 'digest'
+require 'base64'
 require 'ncurses'
 
 # TODO: Simple tmux wrapper; lots of duplicated shit
@@ -126,20 +127,22 @@ module RLServer
     end
 
     def self.watchgame(session)
+      RLServer.log.error session
       width = Ncurses.getmaxx Ncurses.stdscr
       height = Ncurses.getmaxy Ncurses.stdscr
       @session = Games.sessions({:name => session}).first
+      RLServer.log.error @session
       if @session then
         print "\033[8;#{@session[:height]};#{@session[:width]}t"
         ENV['TMUX'] = ''
-        watch_session = Digest::SHA1.hexdigest("#{ENV['SSH_CLIENT']}")
+        watch_session = Base64.encode64(Digest::SHA256.digest("#{@session[:name]}#{ENV['SSH_CLIENT']}")).chomp
         unless @play.sessions({:name => watch_session}).first then
           MiscHacks.sh(
             %{stty rows "$height"; stty cols "$width"; exec "$tmux_bin" -f "$config" -L "$server" new -d -s "$watch_session" -t "$session"},
             :config => "#{Config.config['server']['path']}/play.conf",
             :watch_config => "#{Config.config['server']['path']}/watch.conf",
             :watch_session => watch_session,
-            :session => @session[:name],
+            :session => session,
             :tmux_bin => Tmux.binary,
             :server => PLAY_SERVER,
             :height => @session[:height],

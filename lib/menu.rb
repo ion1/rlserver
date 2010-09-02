@@ -373,22 +373,23 @@ module RLServer
           offset.upto(offset + pagesize - 1) do |i|
             if i < sessions.length then
               launch = lambda do |key|
-                case key
-                when "a"[0].."p"[0], "r"[0].."z"[0]
+                case key.chr
+                when "a".."p"
                   sel = key - 97
+                when "r".."z"
+                  sel = key - 98
                 end
                 trapwinch false
                 Ncurses.def_prog_mode
-                Games.watchgame sessions[sel][:name]
+                Games.watchgame sessions[offset+sel][:name]
                 Ncurses.reset_prog_mode
                 trapwinch true
                 resize
                 false
               end
-              socketmenu += [["#{chars[i % pagesize, 1]}" , pretty[i], launch]]
+              socketmenu << ["#{chars[i % pagesize, 1]}" , pretty[i], launch]
             end
           end
-          items = socketmenu.length
           socketmenu << [Ncurses::KEY_PPAGE, nil, lambda {|k|offset -= pagesize; if offset < 0 then offset = 0 end; false}]
           socketmenu << [Ncurses::KEY_NPAGE, nil, lambda {|k|offset += pagesize; if offset >= sessions.length then offset -= pagesize end; false}]
         else
