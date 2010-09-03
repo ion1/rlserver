@@ -1,0 +1,8 @@
+name = DCSS
+longname = Dungeon Crawl Stone Soup
+version = 0.5.2
+description = A variant of Linley's Dungeon Crawl.\n\nhttp://crawl-ref.sourceforge.net/\n\nDungeon Crawl Stone Soup is a fun, free rogue-like game of exploration and treasure-hunting in dungeons filled with dangerous and unfriendly monsters in a quest for the mystifyingly fabulous Orb of Zot.\n\nDungeon Crawl has superb, deep tactical gameplay, innovative magic and religion systems, and a grand variety of monsters to fight. Crawl is also one of the hardest roguelikes to beat.
+key = c
+binary = /usr/games/crawl
+parameters = -name "%user%" -rc "%path%/%game%/init/%user%.txt" -macro "%path%/%game%/init/%user%.macro" -morgue "%path%/%game%/stuff/%user%" -rcdir "%path%/%game%/init/settings"
+env =

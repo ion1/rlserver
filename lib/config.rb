@@ -10,9 +10,11 @@ module Config
   def self.load_config_file(file)
     config = {}
     File.foreach file do |line|
-      key, value = line.split "=", 2
-      if key and value then
-        config[key.strip] = value.strip.gsub /\\n/, "\n"
+      unless line[/^#/] then
+        key, value = line.split "=", 2
+        if key and value then
+          config[key.strip] = value.strip.gsub /\\n/, "\n"
+        end
       end
     end
     config
