@@ -3,7 +3,10 @@ longname = NetHack
 version = 3.4.3
 description = http://www.nethack.org/\n\nCompiled with Jukka Lahtinen's patch set (including dump, paranoid, hpmon, sortloot, menucolor, and fixes to known crashing bugs). Gameplay is Vanilla with an enhanced interface.
 defaultrc = /home/rl/rlserver/nethackrc/nethack.txt
+# Menu key. Multiple keys can be assigned: key = cC
 key = n
 binary = /usr/games/lib/nethackdir/nethack
+# Parameters passed to the game. %path% is replaced by server path, %game% with the name of this file, %user% with the user name
 parameters = -u "%user%"
+# Environment variables. env = RC=%path%/%game%/init/%user%.txt
 env = NETHACKOPTIONS=%path%/%game%/init/%user%.txt
