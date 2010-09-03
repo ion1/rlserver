@@ -3,7 +3,8 @@ longname = Dungeon Crawl Stone Soup Sprint
 version = 0.7.1
 description = http://crawl.develz.org/wordpress/dungeon-sprint-fast-and-furious\n\nDungeon Sprint is a twist on Dungeon Crawl: only one dungeon level is generated, but it's...\n\nA mostly-fixed (i.e., mostly non-random), very difficult level; the player gains experience and trains skills at 27 times the normal rate, and gains piety at 9 times the normal rate. Some problematic features in Crawl such as certain teleportation effects are disabled in Sprint.
 defaultrc = /home/rl/crawl-0.7.1/2010-08-23/data/settings/default_user_config
+# Menu key. Case-sensitive. Multiple keys can be assigned: key = cC
 key = d
 binary = /home/rl/crawl-0.7.1/2010-08-23/bin/crawl
+# Parameters passed to the game. %path% is replaced by server path, %game% with the name of this file, %user% with the user name
 parameters = -sprint -name "%user%" -rc "%path%/%game%/init/%user%.txt" -morgue "%path%/%game%/stuff/%user%" -rcdir "/home/rl/crawl-0.7.1/2010-08-23/data/settings" -macro "%path%/%game%/init/"
-env =

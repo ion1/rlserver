@@ -3,6 +3,8 @@ longname = Dungeon Crawl Stone Soup
 version = 0.6.1
 description = http://crawl.develz.org/\n\nDungeon Crawl Stone Soup is a free roguelike game of exploration and treasure-hunting in dungeons filled with dangerous and unfriendly monsters in a quest to rescue the mystifyingly fabulous Orb of Zot.\n\nDungeon Crawl Stone Soup has diverse species and many different character backgrounds to choose from, deep tactical game-play, sophisticated magic, religion and skill systems, and a grand variety of monsters to fight and run from, making each game unique and challenging.
 defaultrc = /home/rl/crawl-0.6-1/data/settings/default_user_config
+# Menu key. Multiple keys can be assigned: key = cC
 key = 6
 binary = /home/rl/crawl-0.6.1-0/bin/crawl
+# Parameters passed to the game. %path% is replaced by server path, %game% with the name of this file, %user% with the user name
 parameters = -name "%user%" -rc "%path%/%game%/init/%user%.txt" -morgue "%path%/%game%/stuff/%user%" -rcdir "/home/rl/crawl-0.6-1/data/settings" -macro "%path%/%game%/init/"
