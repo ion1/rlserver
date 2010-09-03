@@ -1,0 +1,9 @@
+name = SporkHack
+longname = SporkHack
+version = 0.6.2
+description = http://sporkhack.com/\n\nSporkHack is a variant  of Nethack 3.4.3 by Derek Ray aimed at game balance. Its stated purpose is to "try to make the game more interesting for experienced/skilled players, while making it no harder...for the newbie."
+defaultrc = /home/rl/rlserver/sporkhack/nethackrc
+key = s
+binary = /usr/games/lib/sporkhackdir/sporkhack
+parameters = -u "%user%"
+env = NETHACKOPTIONS=%path%/%game%/init/%user%.txt

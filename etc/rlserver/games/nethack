@@ -1,0 +1,9 @@
+name = NetHack
+longname = NetHack
+version = 3.4.3
+description = http://www.nethack.org/\n\nCompiled with Jukka Lahtinen's patch set (including dump, paranoid, hpmon, sortloot, menucolor, and fixes to known crashing bugs). Gameplay is Vanilla with an enhanced interface.
+defaultrc = /home/rl/rlserver/nethackrc/nethack.txt
+key = n
+binary = /usr/games/lib/nethackdir/nethack
+parameters = -u "%user%"
+env = NETHACKOPTIONS=%path%/%game%/init/%user%.txt

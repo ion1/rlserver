@@ -1,0 +1,3 @@
+path = /home/joosa/src/rlserver
+user = joosa
+banner = http://rl.heh.fi/\n\nrlserver - Roguelike server in the spirit of dgamelaunch\nGames on this server are recorded for in-progress viewing and playback! Source code available at http://gitweb.heh.fi/?p=joosa/rlserver.git

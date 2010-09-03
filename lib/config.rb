@@ -29,9 +29,11 @@ module RLServer
       config = {}
       RLServer.log.info "Config file: #{file}"
       File.foreach file do |line|
-        key, value = line.split "=", 2
-        if key and value then
-          config[key.strip] = value.strip.gsub /\\n/, "\n"
+        unless line[/^#/] then
+          key, value = line.split "=", 2
+          if key and value then
+            config[key.strip] = value.strip.gsub /\\n/, "\n"
+          end
         end
       end
       config
