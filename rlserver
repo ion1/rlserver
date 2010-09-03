@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby1.9.1
+#
 # Roguelike server in the spirit of dgamelaunch
 #
 # Copyright © 2010 Joosa Riekkinen
@@ -13,8 +15,6 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-#!/usr/bin/env ruby1.9.1
 
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
