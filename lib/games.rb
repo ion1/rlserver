@@ -39,6 +39,7 @@ module RLServer
       @play.sessions.each do |ses|
         info = ses.name.match(/^(?<user>[\w\d\-_]+?)\.(?<game>[\w\d\-_\.]+?)\.(?<size>\d+x\d+)\.(?<date>.+)$/)
         if info then
+          width, height = info[:size].split('x')
           ttyrec = "#{Config.config['server']['path']}/#{info[:game]}/stuff/#{info[:user]}/#{ses.name}.ttyrec"
           sessions << {
             :name => ses.name,
@@ -46,8 +47,8 @@ module RLServer
             :game => info[:game],
             :shortname => "#{Config.config['games'][info[:game]]['name']} #{Config.config["games"][info[:game]]["version"]}",
             :longname => "#{Config.config['games'][info[:game]]['longname']} #{Config.config["games"][info[:game]]["version"]}",
-            :width => ses.width,
-            :height => ses.height,
+            :width => width,
+            :height => height,
             :date => DateTime.parse(info[:date]),
             :attached => ses.attached,
             :ttyrec => ttyrec,
