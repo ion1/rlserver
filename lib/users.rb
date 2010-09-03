@@ -61,7 +61,7 @@ module RLServer
         end
       end
       if info then
-        RLServer.log.warn "Login successful: #{user}"
+        RLServer.log.info "Login successful: #{user}"
       else
         RLServer.log.warn "Login failed: #{user}"
       end

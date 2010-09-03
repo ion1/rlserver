@@ -21,11 +21,11 @@ module RLServer
     def self.trapwinch enable
       case enable
       when true
-        Signal.trap "WINCH" do
+        @winch = Signal.trap "WINCH" do
           resize
         end
       when false
-        Signal.trap "WINCH" do end
+        Signal.trap "WINCH" do @winch end
       end
     end
     def self.initncurses
@@ -379,11 +379,9 @@ module RLServer
                 when "r".."z"
                   sel = key - 98
                 end
-                trapwinch false
-                Ncurses.def_prog_mode
+                destroy
                 Games.watchgame sessions[offset+sel][:name]
-                Ncurses.reset_prog_mode
-                trapwinch true
+                initncurses
                 resize
                 false
               end
@@ -433,20 +431,16 @@ module RLServer
       quit = false
       win = Ncurses::Panel.panel_window @menu_panel
       launch = lambda do |k|
-        trapwinch false
-        Ncurses.def_prog_mode
+        destroy
         Games.launchgame @userinfo['user'], game
-        Ncurses.reset_prog_mode
-        trapwinch true
+        initncurses
         resize
         false
       end
       edit = lambda do |k|
-        trapwinch false
-        Ncurses.def_prog_mode
+        destroy
         Games.editrc @userinfo['user'], game
-        Ncurses.reset_prog_mode
-        trapwinch true
+        initncurses
         resize
         false
       end

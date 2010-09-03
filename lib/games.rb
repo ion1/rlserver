@@ -115,13 +115,12 @@ module RLServer
       if Config.config['games'][game].key? 'chdir' then
         Dir.chdir(pushd)
       end
-      has_session = Games.sessions({:user => user, :game => game}).first
-      unless has_session then
+      unless Games.sessions({:user => user, :game => game}).first then
         bzip2 = fork do
           MiscHacks.sh('exec bzip2 "$1"', @session[:ttyrec])
         end
+        Process.detach bzip2
       end
-      if bzip2 then Process.detach bzip2 end
       print "\033[8;#{height};#{width}t"
       MiscHacks.sh('stty rows "$1"; stty cols "$2"', height, width)
     end
