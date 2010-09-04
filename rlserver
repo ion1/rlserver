@@ -23,6 +23,7 @@ require "users"
 require "log"
 
 module RLServer
+  exit_value = 0
   begin
     Config.load
     Dir.chdir Config.config["server"]["path"]
@@ -38,8 +39,10 @@ module RLServer
     Menu.mainmenu
   rescue Exception => exc
     @log.error exc.to_formatted_string
-    Menu.destroy
+    exit_value = 1
   ensure
     Menu.destroy
   end
+
+  exit exit_value
 end
