@@ -24,6 +24,8 @@ require "log"
 
 module RLServer
   exit_value = 0
+  exit_message = nil
+
   begin
     Config.load
     Dir.chdir Config.config["server"]["path"]
@@ -40,9 +42,11 @@ module RLServer
   rescue Exception => exc
     @log.error exc.to_formatted_string
     exit_value = 1
+    exit_message = "Sorry, the dungeon collapsed. The error has been logged."
   ensure
     Menu.destroy
   end
 
+  $stderr.puts exit_message if exit_message
   exit exit_value
 end
